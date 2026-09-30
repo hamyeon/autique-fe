@@ -1,63 +1,142 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
+/* dark 테마는 쓰지 않습니다. shadcn 생성 코드의 dark: 클래스가 OS 다크모드에 반응하지 않도록
+   .dark 클래스 기반 변형만 남겨둡니다(.dark 클래스는 어디에도 붙이지 않음). */
 @custom-variant dark (&:is(.dark *));
 
-/* ───────────── 디자인 토큰 (shadcn/ui 테마 변수) ─────────────
-   색을 바꾸고 싶으면 이 값들만 수정하면 전체 컴포넌트 톤이 바뀝니다. */
-:root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+/* ───────────── 디자인 시스템 토큰 (design-system/tokens.md) ─────────────
+   Tailwind 기본 색·글자 크기·반경은 지우고 DS 토큰만 등록합니다.
+   숫자 간격(p-4, h-11 등)은 기본 --spacing을 그대로 씁니다. */
+@theme {
+  --color-*: initial;
+  --text-*: initial;
+  --radius-*: initial;
+
+  /* 색 17 → bg-primary1, text-gray5, border-gray2 … */
+  --color-primary1: #3662ff;
+  --color-primary2: #b9c8ff;
+  --color-primary3: #e4e9ff;
+  --color-primary4: #fafbff;
+  --color-error1: #ff4744;
+  --color-error2: #ffc4c2;
+  --color-error3: #ffe2e0;
+  --color-error4: #fffafa;
+  --color-white0: #ffffff;
+  --color-gray1: #ececec;
+  --color-gray2: #dedede;
+  --color-gray3: #cacaca;
+  --color-gray4: #9a9a9a;
+  --color-gray5: #808080;
+  --color-gray6: #4a4a4a;
+  --color-gray7: #303030;
+  --color-black0: #1a1a1a;
+
+  /* 폰트 */
+  --font-sans:
+    'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo',
+    'Noto Sans KR', system-ui, sans-serif;
+
+  /* 타이포 15 → text-title01 … text-label02 (크기·줄높이·굵기를 한 번에) */
+  --text-title01: 28px;
+  --text-title01--line-height: 1.6;
+  --text-title01--font-weight: 700;
+  --text-title02: 24px;
+  --text-title02--line-height: 1.4;
+  --text-title02--font-weight: 700;
+  --text-head01: 20px;
+  --text-head01--line-height: 1.4;
+  --text-head01--font-weight: 600;
+  --text-head02: 18px;
+  --text-head02--line-height: 1.4;
+  --text-head02--font-weight: 600;
+  --text-head03: 16px;
+  --text-head03--line-height: 1.6;
+  --text-head03--font-weight: 600;
+  --text-body01: 16px;
+  --text-body01--line-height: 1.6;
+  --text-body01--font-weight: 500;
+  --text-body02: 16px;
+  --text-body02--line-height: 1.6;
+  --text-body02--font-weight: 400;
+  --text-body03: 14px;
+  --text-body03--line-height: 1.6;
+  --text-body03--font-weight: 600;
+  --text-body04: 14px;
+  --text-body04--line-height: 1.6;
+  --text-body04--font-weight: 500;
+  --text-body05: 14px;
+  --text-body05--line-height: 1.6;
+  --text-body05--font-weight: 400;
+  --text-body06: 14px;
+  --text-body06--line-height: 1.4;
+  --text-body06--font-weight: 400;
+  --text-caption01: 12px;
+  --text-caption01--line-height: 1.6;
+  --text-caption01--font-weight: 500;
+  --text-caption02: 12px;
+  --text-caption02--line-height: 1.6;
+  --text-caption02--font-weight: 400;
+  --text-label01: 10px;
+  --text-label01--line-height: 1.4;
+  --text-label01--font-weight: 600;
+  --text-label02: 10px;
+  --text-label02--line-height: 1.4;
+  --text-label02--font-weight: 400;
+
+  /* 간격 원시값 → p-space-4, gap-space-12 … */
+  --spacing-space-4: 4px;
+  --spacing-space-8: 8px;
+  --spacing-space-12: 12px;
+  --spacing-space-16: 16px;
+  --spacing-space-20: 20px;
+  --spacing-space-24: 24px;
+  --spacing-space-32: 32px;
+
+  /* 간격 의미 토큰 → px-layout-gutter, gap-card-row … (원시값보다 먼저 고르기) */
+  --spacing-layout-gutter: var(--spacing-space-20);
+  --spacing-layout-top: var(--spacing-space-16);
+  --spacing-layout-section: var(--spacing-space-24);
+  --spacing-layout-step: var(--spacing-space-32);
+  --spacing-section-title: var(--spacing-space-8);
+  --spacing-card-padding: var(--spacing-space-16);
+  --spacing-card-row: var(--spacing-space-8);
+  --spacing-stack-tight: var(--spacing-space-4);
+  --spacing-stack-related: var(--spacing-space-12);
+  --spacing-form-field: var(--spacing-space-16);
+  --spacing-form-label: var(--spacing-space-8);
+
+  /* 반경 4 → rounded-sm(칩·입력·카드), rounded-md(버튼), rounded-lg(바텀시트), rounded-full */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 20px;
+  --radius-full: 100px;
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+/* ───────────── shadcn/ui 테마 변수 → DS 색 매핑 ───────────── */
+:root {
+  --background: var(--color-white0);
+  --foreground: var(--color-black0);
+  --card: var(--color-white0);
+  --card-foreground: var(--color-black0);
+  --popover: var(--color-white0);
+  --popover-foreground: var(--color-black0);
+  /* DS 기본(Primary) 버튼은 black0 배경. 브랜드 블루는 primary1로 따로 씁니다. */
+  --primary: var(--color-black0);
+  --primary-foreground: var(--color-white0);
+  --secondary: var(--color-gray1);
+  --secondary-foreground: var(--color-black0);
+  --muted: var(--color-gray1);
+  --muted-foreground: var(--color-gray5);
+  --accent: var(--color-gray1);
+  --accent-foreground: var(--color-black0);
+  --destructive: var(--color-error1);
+  --border: var(--color-gray2);
+  --input: var(--color-gray2);
+  --ring: var(--color-primary1);
 }
 
 @theme inline {
-  --font-sans:
-    'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui,
-    'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
-
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -91,7 +170,7 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground text-body02 font-sans antialiased;
     /* 탭할 때 회색 하이라이트 제거 */
     -webkit-tap-highlight-color: transparent;
     /* 페이지 끝에서 당겨지는 바운스(새로고침) 방지 — 앱처럼 동작 */
