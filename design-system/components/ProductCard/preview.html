@@ -1,0 +1,15 @@
+<!-- @dsCard group="Auction" height=300 -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>ProductCard — preview</title>
+<style>body{margin:0;background:var(--white0)} #root{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px 20px;max-width:375px}</style></head>
+<body>
+<div id="root"></div>
+<script>
+  var G = window.Autique, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(h(React.Fragment, null,
+    h(G.ProductCard, { grade: 'A등급', brand: 'BAPE', name: '베이프 슬라이드 #1 블랙', price: '234,000원', meta: '관심 556' }),
+    h(G.ProductCard, { status: 'live', grade: 'B등급', brand: 'NIKE', name: '덩크 로우 판다', price: '98,000원', meta: '관심 128', favorited: true })));
+</script>
+</body>
+</html>

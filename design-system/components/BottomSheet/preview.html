@@ -1,0 +1,16 @@
+<!-- @dsCard group="Overlay" height=480 -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>BottomSheet — preview</title>
+<style>body{margin:0;background:var(--white0)} #root{height:460px;max-width:375px}</style></head>
+<body>
+<div id="root"></div>
+<script>
+  var G = window.Autique, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(h(G.BottomSheet, { inline: true, title: '자동 입찰 상한가 설정',
+    footer: h(G.BottomButtonBar, { primaryLabel: '자동 입찰 예약' }) },
+    h(G.InfoBanner, null, '설정한 금액은 실제 결제 금액이 아니에요. 다른 입찰자가 나타나면 5,000원씩 자동으로 입찰하고, 이때 설정한 상한가를 넘지 않아요.'),
+    h(G.AmountStepper, { label: '내 자동 입찰 상한가', value: '120,000원' })));
+</script>
+</body>
+</html>

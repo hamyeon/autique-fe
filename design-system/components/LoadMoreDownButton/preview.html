@@ -1,0 +1,16 @@
+<!-- @dsCard group="Actions" height=240 -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>LoadMoreDownButton — preview</title>
+<style>body{margin:0;background:var(--white0)} #root{display:flex;flex-direction:column;gap:12px;padding:16px 20px;max-width:375px}</style></head>
+<body>
+<div id="root"></div>
+<script>
+  var G = window.Autique, h = React.createElement;
+  var why = '당근마켓과 후르츠패밀리의 Dunk Low 중고 매물 116건을 분석했어요. 상품 상태가 A급인 점을 반영해 시세의 95% 수준으로 조정했어요.';
+  ReactDOM.createRoot(document.getElementById('root')).render(h(React.Fragment, null,
+    h(G.LoadMoreDownButton, { title: '가격 산정 근거 자세히 보기' }, why),
+    h(G.LoadMoreDownButton, { title: '가격 산정 근거 자세히 보기', defaultOpen: true }, why)));
+</script>
+</body>
+</html>

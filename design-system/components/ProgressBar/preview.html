@@ -1,0 +1,15 @@
+<!-- @dsCard group="Status" height=70 -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>ProgressBar — preview</title>
+<style>body{margin:0;background:var(--white0)} #root{padding:20px;max-width:375px;display:flex;flex-direction:column;gap:16px}</style></head>
+<body>
+<div id="root"></div>
+<script>
+  var G = window.Autique, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(h(React.Fragment, null,
+    h(G.ProgressBar, { value: 0.875, label: '상한가 대비 현재가' }),
+    h(G.ProgressBar, { value: 0.3 })));
+</script>
+</body>
+</html>

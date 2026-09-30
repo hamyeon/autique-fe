@@ -1,0 +1,14 @@
+<!-- @dsCard group="Foundations" height=90 -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Divider — preview</title>
+<style>body{margin:0;background:var(--white0)} #root{padding:16px 20px;max-width:375px;display:flex;flex-direction:column;gap:16px}</style></head>
+<body>
+<div id="root"></div>
+<script>
+  var G = window.Autique, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(h(React.Fragment, null,
+    h(G.Divider), h(G.Divider, { tone: 'primary' }), h(G.Divider, { tone: 'error' })));
+</script>
+</body>
+</html>

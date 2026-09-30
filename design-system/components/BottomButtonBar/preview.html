@@ -1,0 +1,17 @@
+<!-- @dsCard group="Actions" height=520 -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>BottomButtonBar — preview</title>
+<style>body{margin:0;background:var(--gray1)} #root{display:flex;flex-direction:column;gap:12px;max-width:375px}</style></head>
+<body>
+<div id="root"></div>
+<script>
+  var G = window.Autique, h = React.createElement;
+  var L = { primaryLabel: '입찰하기', secondaryLabel: '상한가 수정', dangerLabel: '자동 입찰 취소' };
+  ReactDOM.createRoot(document.getElementById('root')).render(h(React.Fragment, null,
+    ['single', 'double', 'triple', 'secondary', 'primaryDanger'].map(function (l) {
+      return h(G.BottomButtonBar, Object.assign({ key: l, layout: l }, L));
+    })));
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<!-- @dsCard group="Navigation" height=220 -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Header — preview</title>
+<style>body{margin:0;background:var(--white0)} #root{display:flex;flex-direction:column;gap:12px;max-width:375px}</style></head>
+<body>
+<div id="root"></div>
+<script>
+  var G = window.Autique, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(h(React.Fragment, null,
+    h(G.Header, { title: '결제' }),
+    h(G.Header, { title: '경매 상품 상세', trailing: 'favorite' }),
+    h(G.Header, { title: '실시간 경매', trailing: 'live' })));
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+<!-- @dsCard group="Status" height=80 -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Chip — preview</title>
+<style>body{margin:0;background:var(--white0)} #root{display:flex;flex-wrap:wrap;gap:8px;padding:16px 20px}</style></head>
+<body>
+<div id="root"></div>
+<script>
+  var G = window.Autique, h = React.createElement;
+  var items = [['plan','경매 예정'],['finish','경매 종료'],['level','A등급'],['live','LIVE'],['best','최고가'],['worst','최고가'],['caution','결제 기한 만료'],['recommend','차순위 구매 대기']];
+  ReactDOM.createRoot(document.getElementById('root')).render(h(React.Fragment, null,
+    items.map(function (it) { return h(G.Chip, { key: it[0], kind: it[0] }, it[1]); })));
+</script>
+</body>
+</html>

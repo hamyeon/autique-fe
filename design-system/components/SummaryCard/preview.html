@@ -1,0 +1,15 @@
+<!-- @dsCard group="Auction" height=330 -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>SummaryCard — preview</title>
+<style>body{margin:0;background:var(--white0)} #root{padding:16px 20px;max-width:375px;display:flex;flex-direction:column;gap:16px}</style></head>
+<body>
+<div id="root"></div>
+<script>
+  var G = window.Autique, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(h(React.Fragment, null,
+    h(G.SummaryCard, { dividerAfter: 2, rows: [{ label: '최종 낙찰가', value: '105,000원' }, { label: '배송비', value: '3,000원' }, { label: '결제할 금액', value: '108,000원', emphasis: 'total' }] }),
+    h(G.SummaryCard, { tone: 'primary', dividerAfter: 2, rows: [{ label: '상태', value: '자동 입찰 예약 전', emphasis: 'regular' }, { label: 'AI 적정 시세', value: '120,000원', emphasis: 'hero' }, { label: '경매 시작까지', value: '3시간' }] })));
+</script>
+</body>
+</html>

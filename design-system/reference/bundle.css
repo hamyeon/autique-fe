@@ -1,0 +1,189 @@
+/* Autique — component styles. Text sizes come from the generated type classes (.head03, .body05 …). */
+.au, .au * { box-sizing: border-box; }
+.au { font-family: var(--font-sans); color: var(--black0); margin: 0; }
+.au p, .au h2 { margin: 0; }
+.au button { font-family: inherit; color: inherit; }
+.au-icon { display: inline-flex; flex-shrink: 0; line-height: 0; }
+.au-icon svg { display: block; }
+
+/* Headers */
+.au-header { display: flex; align-items: center; justify-content: space-between; width: 100%; height: 60px;
+  padding: var(--space-12) var(--space-20) var(--space-12) var(--space-8);
+  background: var(--white0); border-bottom: 1px solid var(--gray2); }
+.au-header-left { display: flex; align-items: center; gap: var(--space-4); }
+.au-header-back, .au-header-action { display: inline-flex; align-items: center; justify-content: center; padding: 0; border: 0;
+  background: none; cursor: pointer; }
+.au-home-header { padding-left: var(--space-20); }
+.au-home-logo { display: inline-flex; }
+.au-home-logo svg { width: 108px; height: 28px; display: block; }
+.au-home-actions { display: flex; gap: var(--space-16); align-items: center; }
+.au-search-header { width: 100%; height: 60px; padding: 5px var(--space-20); background: var(--white0); }
+.au-search-box { display: flex; align-items: center; gap: var(--space-8); padding: var(--space-12); border: 1px solid var(--gray2);
+  border-radius: var(--radius-sm); background: var(--white0); }
+.au-search-input { flex: 1; min-width: 0; border: 0; outline: none; background: none; color: var(--black0); padding: 0; font-family: inherit; }
+.au-search-input::placeholder { color: var(--gray5); }
+.au-search-input::-webkit-search-cancel-button { display: none; }
+.au-tabbar { display: flex; align-items: flex-end; width: 100%;
+  padding: var(--space-12) 0 var(--space-8); background: var(--white0); border-top: 1px solid var(--gray2); }
+.au-tab { display: flex; flex: 1 1 0; flex-direction: column; align-items: center; gap: var(--space-4); min-width: 0; padding: 0; border: 0;
+  background: none; cursor: pointer; color: var(--gray5); }
+.au-tab-on { color: var(--black0); }
+
+/* Buttons */
+.au-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 54px; padding: var(--space-12) var(--space-16);
+  border-radius: var(--radius-md); border: 1px solid transparent; cursor: pointer; white-space: nowrap; }
+.au-btn-block { width: 100%; }
+.au-btn-primary { background: var(--black0); color: var(--white0); }
+.au-btn-primary:active { background: var(--gray7); }
+.au-btn-primary:disabled { background: var(--gray5); cursor: default; }
+.au-btn-neutral { background: var(--gray5); color: var(--white0); }
+.au-btn-neutral:active { background: var(--gray4); }
+.au-btn-neutral:disabled { background: var(--gray2); cursor: default; }
+.au-btn-outline { background: var(--white0); color: var(--black0); border-color: var(--gray3); }
+.au-btn-danger { background: var(--white0); color: var(--error1); border-color: var(--error2); }
+.au-btn:focus-visible, .au-seg-item:focus-visible, .au-radio:focus-visible, .au-more-head:focus-visible, .au-upload:focus-visible,
+.au-tab:focus-visible, .au-header-back:focus-visible, .au-header-action:focus-visible { outline: 2px solid var(--primary1); outline-offset: 2px; }
+.au-bbar { display: flex; flex-direction: column; gap: var(--space-12); width: 100%; padding: var(--space-12) var(--space-20); background: var(--white0); }
+.au-bbar-row { display: flex; gap: var(--space-12); width: 100%; }
+.au-bbar-row > .au-btn { flex: 1 1 0; min-width: 0; }
+.au-fab { display: inline-flex; align-items: center; gap: var(--space-4); height: 48px; padding: var(--space-12) var(--space-16) var(--space-12) var(--space-12);
+  border: 0; border-radius: 24px; background: var(--black0); color: var(--white0); cursor: pointer; }
+.au-more { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: var(--space-12);
+  background: var(--white0); border: 1px solid var(--gray2); border-radius: var(--radius-sm); color: var(--black0); cursor: pointer; text-align: left; }
+.au-more-down { flex-direction: column; align-items: stretch; gap: var(--space-12); cursor: default; }
+.au-more-head { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 0; border: 0; background: none;
+  color: var(--black0); cursor: pointer; text-align: left; }
+.au-more-open .au-more-chev { transform: rotate(180deg); }
+.au-more-body { color: var(--gray5); }
+.au-more-body p + p { margin-top: 0; }
+
+/* Chips & indicator */
+.au-chip { display: inline-flex; align-items: center; gap: 5px; padding: var(--space-4) var(--space-8); border-radius: var(--radius-sm);
+  border: 1px solid transparent; white-space: nowrap; }
+.au-chip-plan { background: var(--black0); color: var(--white0); }
+.au-chip-finish { background: var(--gray5); color: var(--white0); }
+.au-chip-level { background: var(--gray1); color: var(--gray6); }
+.au-chip-live, .au-chip-worst { background: var(--error1); color: var(--white0); }
+.au-chip-best { background: var(--primary1); color: var(--white0); }
+.au-chip-caution { background: var(--white0); color: var(--error1); border-color: var(--error2); }
+.au-chip-recommend { background: var(--white0); color: var(--primary1); border-color: var(--primary2); }
+.au-chip-dot { width: 5px; height: 5px; border-radius: var(--radius-full); background: var(--white0); }
+.au-dots { display: inline-flex; gap: var(--space-8); align-items: center; }
+.au-dot { width: 8px; height: 8px; border-radius: var(--radius-full); background: var(--gray3); }
+.au-dot-on { width: 32px; }
+
+/* Info banner */
+.au-banner { display: flex; gap: var(--space-8); align-items: flex-start; width: 100%; padding: var(--space-12);
+  border-radius: var(--radius-sm); color: var(--gray6); }
+.au-banner-default { background: var(--gray1); }
+.au-banner-error { background: var(--error4); border: 1px solid var(--error2); }
+.au-banner-icon { margin-top: 1px; }
+.au-banner p { flex: 1; min-width: 0; }
+
+/* Forms */
+.au-field { display: flex; flex-direction: column; gap: var(--space-8); width: 100%; }
+.au-input { width: 100%; height: 50px; padding: var(--space-12); background: var(--white0); color: var(--black0);
+  border: 1px solid var(--gray2); border-radius: var(--radius-sm); font-family: inherit; }
+.au-textarea { height: 102px; resize: none; }
+.au-input::placeholder { color: var(--gray5); }
+.au-input:focus { outline: none; border-color: var(--primary1); }
+.au-input:disabled { background: var(--gray1); color: var(--gray5); }
+.au-seg { display: flex; gap: var(--space-8); width: 100%; }
+.au-seg-item { flex: 1 1 0; min-width: 0; height: 40px; padding: 10px; background: var(--white0); color: var(--black0);
+  border: 1px solid var(--gray2); border-radius: var(--radius-sm); cursor: pointer; }
+.au-seg-item:active { background: var(--gray2); }
+.au-seg-item[aria-checked="true"] { background: var(--gray6); border-color: var(--gray6); color: var(--white0); }
+.au-seg-item:disabled { background: var(--gray2); color: var(--gray5); cursor: default; }
+.au-time-row { display: flex; gap: var(--space-8); }
+.au-time { flex: 1 1 0; min-width: 0; display: flex; align-items: center; justify-content: space-between; height: 50px; padding: var(--space-12);
+  background: var(--white0); border: 1px solid var(--gray2); border-radius: var(--radius-sm); white-space: nowrap; }
+.au-time-label { color: var(--gray5); }
+.au-stepper-label { color: var(--gray7); }
+.au-stepper { display: flex; align-items: center; justify-content: space-between; padding: var(--space-8) var(--space-12);
+  border: 1px solid var(--gray2); border-radius: var(--radius-sm); }
+.au-stepper-btn { display: inline-flex; padding: 0; border: 0; background: none; cursor: pointer; }
+.au-stepper-btn:disabled { opacity: .3; cursor: default; }
+.au-stepper-value { font-size: 22px; line-height: 22px; font-weight: 700; padding: 7px 0; color: var(--black0); }
+.au-stepper-hint { color: var(--gray5); }
+.au-radiolist { display: flex; flex-direction: column; gap: var(--space-12); width: 100%; padding: var(--space-12);
+  border: 1px solid var(--gray1); border-radius: var(--radius-sm); }
+.au-radiolist-sep { height: 1px; background: var(--gray1); }
+.au-radio { display: flex; align-items: center; gap: var(--space-8); padding: 0; border: 0; background: none; cursor: pointer; color: var(--black0); text-align: left; }
+.au-radio-badge { width: 42px; height: 24px; object-fit: contain; }
+.au-upload { position: relative; width: 100%; aspect-ratio: 1 / 1; padding: 0; border: 1px solid var(--gray2); border-radius: var(--radius-sm);
+  background: var(--white0); cursor: pointer; overflow: hidden; }
+.au-upload-inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--space-8); padding-top: var(--space-8); color: var(--gray7); }
+.au-upload-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.au-step { display: flex; flex-direction: column; width: 100%; }
+.au-step-count { color: var(--gray5); }
+.au-step-body { display: flex; flex-direction: column; gap: var(--space-4); }
+.au-step-title { display: flex; align-items: center; gap: var(--space-4); }
+.au-step-info { display: inline-flex; padding: 0; border: 0; background: none; cursor: pointer; }
+
+/* Auction */
+.au-bid { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: var(--space-8) 0; }
+.au-bid-left { display: flex; align-items: center; gap: var(--space-12); }
+.au-bid-time { width: 44px; color: var(--black0); }
+.au-bid-who { display: flex; flex-direction: column; }
+.au-bid-name { color: var(--gray5); }
+.au-bid-method { color: var(--gray4); }
+.au-bid-right { display: flex; align-items: center; gap: var(--space-8); }
+.au-bid-price-default { color: var(--black0); }
+.au-bid-price-best { color: var(--primary1); }
+.au-bid-price-worst { color: var(--error1); }
+.au-product { display: flex; flex-direction: column; gap: var(--space-12); width: 100%; }
+.au-product-media { position: relative; width: 100%; aspect-ratio: 1 / 1; background: var(--gray1); overflow: hidden; }
+.au-product-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.au-product-chips { position: absolute; left: var(--space-8); top: var(--space-8); display: flex; gap: var(--space-4); }
+.au-product-fav { position: absolute; right: var(--space-8); top: var(--space-8); padding: 0; border: 0; background: none; cursor: pointer; }
+.au-product-info { display: flex; flex-direction: column; }
+.au-product-price { display: flex; gap: var(--space-4); }
+.au-product-price-label { color: var(--gray5); }
+.au-product-meta { color: var(--gray4); }
+.au-card { display: flex; flex-direction: column; gap: var(--space-8); width: 100%; padding: var(--space-16);
+  border-radius: var(--radius-sm); border: 1px solid var(--gray2); background: var(--white0); }
+.au-card-primary { background: var(--primary4); border-color: var(--primary2); }
+.au-divider { height: 1px; width: 100%; background: var(--gray1); }
+.au-card-primary .au-divider { background: var(--primary3); }
+.au-card-error { background: var(--error4); border-color: var(--error2); }
+.au-divider-primary, .au-card-primary .au-divider-primary { background: var(--primary3); }
+.au-divider-error, .au-card-error .au-divider-error { background: var(--error3); }
+.au-row { display: flex; align-items: center; justify-content: space-between; width: 100%; gap: var(--space-8); }
+.au-row-label { color: var(--gray5); }
+.au-row-value { color: var(--black0); text-align: right; }
+.au-tag { display: inline-flex; align-items: center; padding: var(--space-4) var(--space-8); border-radius: var(--radius-sm);
+  border: 1px solid var(--primary2); background: var(--white0); color: var(--primary1); white-space: nowrap; }
+.au-tag-primary { border-color: var(--primary2); color: var(--primary1); }
+.au-tag-error { border-color: var(--error2); color: var(--error1); }
+.au-price-hero { color: var(--primary1); }
+.au-status-top { display: flex; align-items: flex-start; justify-content: space-between; width: 100%; }
+.au-status-price { display: flex; flex-direction: column; gap: var(--space-4); }
+.au-infofield { display: flex; flex-direction: column; gap: var(--space-4); width: 100%; color: var(--black0); }
+.au-sort { display: inline-flex; gap: var(--space-4); }
+.au-sort-item { padding: 0; border: 0; background: none; cursor: pointer; color: var(--gray4); }
+.au-sort-item[aria-checked="true"] { color: var(--black0); }
+.au-sort-item:focus-visible { outline: 2px solid var(--primary1); outline-offset: 2px; }
+.au-placeholder { display: block; background: var(--gray1); object-fit: cover; }
+.au-progress { width: 100%; height: 6px; border-radius: var(--radius-full); background: var(--gray1); overflow: hidden; }
+.au-progress-fill { height: 100%; background: var(--primary1); }
+.au-progress-caption { color: var(--gray4); }
+
+/* Seller profile · product summary */
+.au-seller { display: flex; align-items: center; gap: var(--space-12); }
+.au-seller-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--gray1); object-fit: cover; flex-shrink: 0; display: block; }
+.au-seller-name { color: var(--gray7); }
+.au-seller-meta { color: var(--gray4); }
+.au-summary { display: flex; align-items: center; gap: var(--space-8); width: 100%; }
+.au-summary-thumb { width: 48px; height: 48px; border-radius: var(--radius-sm); background: var(--gray1); object-fit: cover; flex-shrink: 0; display: block; }
+.au-summary-text { display: flex; flex-direction: column; min-width: 0; flex: 1 1 auto; }
+.au-summary-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.au-summary-sub { color: var(--gray5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Bottom sheet */
+.au-sheet-wrap { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; justify-content: flex-end; }
+.au-sheet-inline { position: relative; inset: auto; height: 100%; }
+.au-sheet-dim { position: absolute; inset: 0; background: rgb(26 26 26 / .9); }
+.au-sheet { position: relative; background: var(--white0); border-radius: var(--radius-lg) var(--radius-lg) 0 0; padding-top: var(--space-8); }
+.au-sheet-handle { width: 60px; height: 4px; margin: 0 auto; border-radius: var(--radius-full); background: var(--gray2); }
+.au-sheet-body { display: flex; flex-direction: column; gap: var(--space-12); padding: var(--space-24) var(--space-20) var(--space-24); }

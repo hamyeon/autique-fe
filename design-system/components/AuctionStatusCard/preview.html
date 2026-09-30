@@ -1,0 +1,22 @@
+<!-- @dsCard group="Auction" height=720 -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>AuctionStatusCard — preview</title>
+<style>body{margin:0;background:var(--white0)} #root{padding:16px 20px;max-width:375px;display:flex;flex-direction:column;gap:16px}</style></head>
+<body>
+<div id="root"></div>
+<script>
+  var G = window.Autique, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(h(React.Fragment, null,
+    h(G.AuctionStatusCard, { price: '105,000원', badge: '최고 입찰자 · 나',
+      rows: [{ label: '남은 시간', value: '42:18', emphasis: 'danger' }],
+      extraRows: [{ label: '내 자동 입찰 상한가', value: '120,000원' }],
+      progress: 105 / 120, caption: '현재가 105,000 / 상한가 120,000' }),
+    h(G.AuctionStatusCard, { status: 'exceeded', price: '125,000원', badge: '상한가 초과',
+      rows: [{ label: '남은 시간', value: '42:18', emphasis: 'danger' }],
+      extraRows: [{ label: '내 자동 입찰 상한가', value: '120,000원 도달', emphasis: 'totalDanger' }] }),
+    h(G.AuctionStatusCard, { status: 'watching', price: '105,000원',
+      rows: [{ label: '남은 시간', value: '42:18' }, { label: '최소 다음 입찰가', value: '110,000원' }] })));
+</script>
+</body>
+</html>

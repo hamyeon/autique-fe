@@ -1,0 +1,15 @@
+<!-- @dsCard group="Forms" height=130 -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>StepHeader — preview</title>
+<style>body{margin:0;background:var(--white0)} #root{padding:16px 20px;max-width:375px}</style></head>
+<body>
+<div id="root"></div>
+<script>
+  var G = window.Autique, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+    h(G.StepHeader, { step: '2/6', title: 'AI 상품 분석', onInfo: function () {},
+      description: '업로드한 이미지를 바탕으로 AI가 상품을 분석했어요. 잘못된 정보가 있다면 알맞게 수정해주세요.' }));
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<!-- @dsCard group="Auction" height=200 -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>BiddingListItem — preview</title>
+<style>body{margin:0;background:var(--white0)} #root{padding:8px 20px;max-width:375px}
+.sep{height:1px;background:var(--gray1)}</style></head>
+<body>
+<div id="root"></div>
+<script>
+  var G = window.Autique, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(h(React.Fragment, null,
+    h(G.BiddingListItem, { price: 'best', time: '20:32', bidder: '나', method: '자동 입찰', amount: '105,000원' }),
+    h('div', { className: 'sep' }),
+    h(G.BiddingListItem, { price: 'worst', time: '20:35', bidder: 'mmaybei', method: '직접 입찰', amount: '125,000원' }),
+    h('div', { className: 'sep' }),
+    h(G.BiddingListItem, { price: 'default', time: '20:12', bidder: '나', method: '자동 입찰', amount: '100,000원' })));
+</script>
+</body>
+</html>

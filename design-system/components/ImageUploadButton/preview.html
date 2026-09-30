@@ -1,0 +1,14 @@
+<!-- @dsCard group="Forms" height=380 -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>ImageUploadButton — preview</title>
+<style>body{margin:0;background:var(--white0)} #root{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:16px 20px;max-width:375px}</style></head>
+<body>
+<div id="root"></div>
+<script>
+  var G = window.Autique, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(h(React.Fragment, null,
+    ['front', 'side', 'outsole', 'defect'].map(function (d) { return h(G.ImageUploadButton, { key: d, direction: d }); })));
+</script>
+</body>
+</html>

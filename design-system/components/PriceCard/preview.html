@@ -1,0 +1,15 @@
+<!-- @dsCard group="Auction" height=180 -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>PriceCard — preview</title>
+<style>body{margin:0;background:var(--white0)} #root{padding:16px 20px;max-width:375px}</style></head>
+<body>
+<div id="root"></div>
+<script>
+  var G = window.Autique, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+    h(G.PriceCard, { tag: 'AI 적정 기준가', price: '220,000원',
+      rows: [{ label: '최소 추천가', value: '180,000원' }, { label: '최대 추천가', value: '240,000원' }] }));
+</script>
+</body>
+</html>

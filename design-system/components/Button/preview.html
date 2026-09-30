@@ -1,0 +1,19 @@
+<!-- @dsCard group="Actions" height=170 -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Button — preview</title>
+<style>body{margin:0;background:var(--white0)} #root{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px 20px;max-width:560px}</style></head>
+<body>
+<div id="root"></div>
+<script>
+  var G = window.Autique, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(h(React.Fragment, null,
+    h(G.Button, { variant: 'primary' }, '입찰하기'),
+    h(G.Button, { variant: 'outline' }, '상한가 수정'),
+    h(G.Button, { variant: 'danger' }, '자동 입찰 취소'),
+    h(G.Button, { variant: 'neutral' }, '나중에 하기'),
+    h(G.Button, { variant: 'primary', disabled: true }, '다음'),
+    h(G.Button, { variant: 'neutral', disabled: true }, '다음')));
+</script>
+</body>
+</html>
