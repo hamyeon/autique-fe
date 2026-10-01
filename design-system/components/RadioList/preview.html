@@ -1,14 +1,16 @@
-<!-- @dsCard group="Forms" height=230 -->
+<!-- @dsCard group="Forms" height=470 -->
 <!doctype html>
 <html>
 <head><meta charset="utf-8"><title>RadioList — preview</title>
-<style>body{margin:0;background:var(--white0)} #root{padding:16px 20px;max-width:375px}</style></head>
+<style>body{margin:0;background:var(--white0)} #root{display:flex;flex-direction:column;gap:16px;padding:16px 20px;max-width:375px}</style></head>
 <body>
 <div id="root"></div>
 <script>
   var G = window.Autique, h = React.createElement;
-  ReactDOM.createRoot(document.getElementById('root')).render(h(G.RadioList, { label: '결제 수단', defaultValue: 'card',
-    options: [{ value: 'card', label: '신용/체크카드' }, { value: 'kakao', label: '카카오페이' }, { value: 'naver', label: '네이버페이' }, { value: 'etc', label: '기타 결제' }] }));
+  var opts = [{ value: 'card', label: '신용/체크카드' }, { value: 'kakao', label: '카카오페이' }, { value: 'naver', label: '네이버페이' }, { value: 'etc', label: '기타 결제' }];
+  ReactDOM.createRoot(document.getElementById('root')).render(h(React.Fragment, null,
+    h(G.RadioList, { label: '결제 수단', defaultValue: 'card', options: opts }),
+    h(G.RadioList, { label: '결제 수단', options: opts, error: '결제 수단을 골라 주세요.' })));
 </script>
 </body>
 </html>

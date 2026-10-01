@@ -26,15 +26,16 @@ There is no test runner configured yet.
 ## Architecture
 
 - Entry: `src/main.tsx` → `AppProviders` (`src/app/providers.tsx`) wraps `QueryClientProvider` + `RouterProvider`; React Query Devtools render only in dev.
-- Routing: `src/app/router.tsx` uses `createBrowserRouter` from `react-router` (v8, data-router style — not `react-router-dom`). All routes are children of `MobileLayout`, which centers content at phone width (`max-w-md`) and applies safe-area padding. Add new pages in `src/pages/` and register them as children there.
+- Routing: `src/app/router.tsx` uses `createBrowserRouter` from `react-router` (v8, data-router style — not `react-router-dom`). All routes are children of `MobileLayout`, which centers content at phone width (`max-w-md`). Add new pages in `src/pages/` and register them as children there.
+- Every page is wrapped in `Screen` (`src/layouts/screen.tsx`: sticky `header`, body with DS screen spacing, sticky `bottom` for BottomButtonBar/TabBar; it owns safe-area padding). Never put `overflow-hidden`/`overflow-auto` on its ancestors — it breaks sticky.
 - Server state: TanStack Query with a shared client in `src/lib/query-client.ts` (1 min `staleTime`, `retry: 1`, `refetchOnWindowFocus: false` to avoid refetching on mobile app switches). API functions and query hooks go in `src/api/`.
 - Client state: Zustand stores in `src/stores/`. Forms: React Hook Form + Zod (`@hookform/resolvers`).
-- UI: shadcn/ui (new-york style, Radix via the `radix-ui` package, lucide icons) with Tailwind CSS v4 configured CSS-first in `src/index.css` (no `tailwind.config`). Theme colors are CSS variables on `:root`; dark mode via `.dark` class custom variant.
+- UI: Tailwind CSS v4 configured CSS-first in `src/index.css` (no `tailwind.config`). Design-system tokens are defined in `@theme`; Tailwind's default colors, font sizes and radii are removed. DS components in `src/components/ds/`; shadcn/ui (Radix) is used only as behavior underneath them.
 
 ## Conventions
 
 - Import via the `@/` alias (→ `src/`). Files are kebab-case (`home-page.tsx`); components are named exports (`export function HomePage`).
-- ESLint enforces `consistent-type-imports` (use `import type`); unused vars prefixed with `_` are allowed. `react-refresh/only-export-components` is disabled only for `src/components/ui/`.
+- ESLint enforces `consistent-type-imports` (use `import type`); unused vars prefixed with `_` are allowed. `react-refresh/only-export-components` is disabled for `src/components/ui/` and `src/components/ds/`.
 - Prettier: no semicolons, single quotes, trailing commas, width 100; `prettier-plugin-tailwindcss` sorts classes, including inside `cn()` and `cva()`.
 - Use `cn()` from `@/lib/utils` to merge class names.
 
@@ -49,21 +50,23 @@ There is no test runner configured yet.
 
 - After making changes, run `pnpm lint && pnpm typecheck && pnpm build` and fix any errors before reporting done.
 - Do not start `pnpm dev` yourself; the user keeps the dev server running and checks the result in the browser.
-- Ask before adding new dependencies. Prefer what's already installed (shadcn/ui, lucide, TanStack Query, Zustand, RHF + Zod).
+- Ask before adding new dependencies. Prefer what's already installed (Radix via shadcn/ui, TanStack Query, Zustand, RHF + Zod). Use the DS `Icon` component, not lucide.
 - Do not commit or push unless asked. Commit messages follow Conventional Commits in Korean (e.g. `feat: 홈 화면 탭바 추가`).
 - Respond to the user in Korean.
 
 ## Design system
 
-- Source of truth: `design-system/` (read-only, exported from claude.ai). Start with `design-system/HOW-TO-USE.md`, then `README.md`, `tokens.md`, and the component's `README.md`.
+- Source of truth: `design-system/` (read-only, exported from claude.ai). Start with `design-system/HOW-TO-USE.md`, then `README.md`, `tokens.md`, and the component's `README.md`, `preview.html`.
 - Use tokens only (Tailwind classes backed by `src/index.css` @theme). No raw hex/px or arbitrary values like `text-[13px]`.
-- DS components live in `src/components/ds/`, with props matching `design-system/reference/index.d.ts`. Build screens from them; don't restyle per page.
+- DS components live in `src/components/ds/` and are exported from `src/components/ds/index.ts`. Props match `design-system/reference/index.d.ts`. Build screens from them; don't restyle per page.
 - `design-system/reference/*` is for reading dimensions only — never import it.
+- When adding shadcn components, use them only for behavior (Radix) and replace their default classes with DS tokens.
+- For spacing, prefer semantic tokens (`px-layout-gutter`, `gap-form-field`, `p-card-padding`) and fall back to numeric spacing only when no semantic token fits.
 - Light theme only, flat (no shadows/gradients).
+- Every new or changed DS component gets a section on the `/design-system` page showing all variants and states, with interactive demos. Finish with a short Korean checklist of what the user should check by eye and by tapping.
 
 ## Components
 
-- Customize shadcn/ui components by adding `cva` variants rather than overriding classes at every call site.
 - Page-specific components go in `src/pages/<page>/` or next to the page; move to `src/components/` only when reused.
 - Every screen needs loading, empty, and error states.
 

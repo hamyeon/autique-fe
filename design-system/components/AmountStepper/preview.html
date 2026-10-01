@@ -1,20 +1,17 @@
-<!-- @dsCard group="Forms" height=160 -->
+<!-- @dsCard group="Forms" height=250 -->
 <!doctype html>
 <html>
 <head><meta charset="utf-8"><title>AmountStepper — preview</title>
-<style>body{margin:0;background:var(--white0)} #root{padding:16px 20px;max-width:375px}</style></head>
+<style>body{margin:0;background:var(--white0)} #root{display:flex;flex-direction:column;gap:16px;padding:16px 20px;max-width:375px}</style></head>
 <body>
 <div id="root"></div>
 <script>
   var G = window.Autique, h = React.createElement;
-  function Demo() {
-    var s = React.useState(120000), v = s[0];
-    return h(G.AmountStepper, { label: '내 자동 입찰 상한가', value: v.toLocaleString('ko-KR') + '원',
-      onDecrease: function () { s[1](Math.max(105000, v - 5000)); }, onIncrease: function () { s[1](v + 5000); },
-      minDisabled: v <= 105000,
-      hint: '상한가는 현재가보다 5,000원 이상 높게 정할 수 있어요. 입찰은 5,000원씩 올라가고, 실제 결제 금액은 경쟁 상황에 따라 달라져요.' });
-  }
-  ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+  ReactDOM.createRoot(document.getElementById('root')).render(h(React.Fragment, null,
+    h(G.AmountStepper, { label: '내 자동 입찰 상한가', defaultValue: 120000, min: 105000, max: 150000, step: 5000,
+      hint: '상한가는 현재가보다 5,000원 이상 높게 정할 수 있어요. 입찰은 5,000원씩 올라가고, 실제 결제 금액은 경쟁 상황에 따라 달라져요.' }),
+    h(G.AmountStepper, { label: '입찰 금액', defaultValue: 110000, min: 110000,
+      error: '상한가는 현재가(115,000원)보다 5,000원 이상 높아야 해요.' })));
 </script>
 </body>
 </html>

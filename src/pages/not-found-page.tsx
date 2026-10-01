@@ -1,15 +1,16 @@
 import { Link } from 'react-router'
+import { Screen } from '@/layouts/screen'
 
 export function NotFoundPage() {
   return (
-    <section className="gap-space-16 px-layout-gutter flex min-h-dvh flex-col items-center justify-center text-center">
-      <p className="text-muted-foreground text-body05">페이지를 찾을 수 없어요.</p>
+    <Screen className="gap-space-16 items-center justify-center text-center">
+      <p className="text-gray6 text-body05">페이지를 찾을 수 없어요.</p>
       <Link
         to="/"
-        className="bg-primary text-primary-foreground px-space-20 text-head03 inline-flex h-11 items-center rounded-md"
+        className="bg-black0 text-white0 px-space-20 text-head03 inline-flex h-11 items-center rounded-md"
       >
         홈으로
       </Link>
-    </section>
+    </Screen>
   )
 }

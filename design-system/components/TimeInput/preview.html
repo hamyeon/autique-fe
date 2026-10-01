@@ -1,13 +1,16 @@
-<!-- @dsCard group="Forms" height=110 -->
+<!-- @dsCard group="Forms" height=230 -->
 <!doctype html>
 <html>
 <head><meta charset="utf-8"><title>TimeInput — preview</title>
-<style>body{margin:0;background:var(--white0)} #root{padding:16px 20px;max-width:375px}</style></head>
+<style>body{margin:0;background:var(--white0)} #root{display:flex;flex-direction:column;gap:16px;padding:16px 20px;max-width:375px}</style></head>
 <body>
 <div id="root"></div>
 <script>
   var G = window.Autique, h = React.createElement;
-  ReactDOM.createRoot(document.getElementById('root')).render(h(G.TimeInput, { label: '시작 시간', date: '2026.09.21', time: '오후 4:00' }));
+  ReactDOM.createRoot(document.getElementById('root')).render(h(React.Fragment, null,
+    h(G.TimeInput, { label: '시작 시간', date: '2026.09.21', time: '오후 4:00', onDateClick: function () {}, onTimeClick: function () {} }),
+    h(G.TimeInput, { label: '종료 시간', date: '2026.09.21', time: '오전 9:00', onDateClick: function () {}, onTimeClick: function () {},
+      error: '종료 시간은 시작 시간 이후여야 해요.' })));
 </script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-<!-- @dsCard group="Forms" height=160 -->
+<!-- @dsCard group="Forms" height=250 -->
 <!doctype html>
 <html>
 <head><meta charset="utf-8"><title>SegmentedControl — preview</title>
@@ -7,10 +7,12 @@
 <div id="root"></div>
 <script>
   var G = window.Autique, h = React.createElement;
+  var opts = ['전체 있음', '일부 있음', '구성품 없음'];
   ReactDOM.createRoot(document.getElementById('root')).render(
     h(React.Fragment, null,
-      h(G.SegmentedControl, { label: '구성품 여부', options: ['전체 있음', '일부 있음', '구성품 없음'], defaultValue: '일부 있음' }),
-      h(G.SegmentedControl, { options: ['전체 있음', '일부 있음', '구성품 없음'], disabledOptions: ['구성품 없음'] })));
+      h(G.SegmentedControl, { label: '구성품 여부', options: opts, defaultValue: '일부 있음' }),
+      h(G.SegmentedControl, { options: opts, disabledOptions: ['구성품 없음'] }),
+      h(G.SegmentedControl, { label: '구성품 여부', options: opts, error: '구성품 여부를 골라 주세요.' })));
 </script>
 </body>
 </html>

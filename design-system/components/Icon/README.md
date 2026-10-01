@@ -11,7 +11,7 @@ Figma `Icon/<Name>` 세트 14개를 그리는 컴포넌트로, 이름과 크기�
 | `ArrowRight` | 16 · 36 | | 더보기 버튼(16) |
 | `ArrowUp` | 20 | | |
 | `ArrowDown` | 16 · 20 | | 펼침 버튼(16) |
-| `Favorite` | 24 | `style`: `line` · `fill` | 헤더(검은 선), 상품 카드(`error1`) |
+| `Favorite` | 24 | `style`: `line` · `fill` | 헤더(`black0`: 기본 선, 관심 시 채움), 상품 카드(`error1`) |
 | `Home` · `Product` · `User` | 24 | `state`: `default` · `active` | 탭 바 |
 
 - SVG는 `currentColor`로 칠해집니다. `color`에 색 토큰 이름(`black0`, `gray5`, `primary1`, `error1`, `white0` …)을 넘기거나, 주변 글자색을 따르게 두세요. Figma도 마스터는 `black0`이고 인스턴스에서 색만 바꿉니다.

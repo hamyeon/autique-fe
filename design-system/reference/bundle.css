@@ -7,10 +7,14 @@
 .au-icon svg { display: block; }
 
 /* Headers */
+/* 오른쪽 18(Figma 값, 4의 배수 밖) — LIVE 칩일 때만 20 */
 .au-header { display: flex; align-items: center; justify-content: space-between; width: 100%; height: 60px;
-  padding: var(--space-12) var(--space-20) var(--space-12) var(--space-8);
+  padding: var(--space-12) 18px var(--space-12) var(--space-8);
   background: var(--white0); border-bottom: 1px solid var(--gray2); }
-.au-header-left { display: flex; align-items: center; gap: var(--space-4); }
+.au-header-left { display: flex; align-items: center; gap: var(--space-4); min-width: 0; }
+.au-header-noback { padding-left: var(--space-20); }
+.au-header-live { padding-right: var(--space-20); }
+.au-header-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .au-header-back, .au-header-action { display: inline-flex; align-items: center; justify-content: center; padding: 0; border: 0;
   background: none; cursor: pointer; }
 .au-home-header { padding-left: var(--space-20); }
@@ -36,9 +40,6 @@
 .au-btn-primary { background: var(--black0); color: var(--white0); }
 .au-btn-primary:active { background: var(--gray7); }
 .au-btn-primary:disabled { background: var(--gray5); cursor: default; }
-.au-btn-neutral { background: var(--gray5); color: var(--white0); }
-.au-btn-neutral:active { background: var(--gray4); }
-.au-btn-neutral:disabled { background: var(--gray2); cursor: default; }
 .au-btn-outline { background: var(--white0); color: var(--black0); border-color: var(--gray3); }
 .au-btn-danger { background: var(--white0); color: var(--error1); border-color: var(--error2); }
 .au-btn:focus-visible, .au-seg-item:focus-visible, .au-radio:focus-visible, .au-more-head:focus-visible, .au-upload:focus-visible,
@@ -58,7 +59,7 @@
 .au-more-body p + p { margin-top: 0; }
 
 /* Chips & indicator */
-.au-chip { display: inline-flex; align-items: center; gap: 5px; padding: var(--space-4) var(--space-8); border-radius: var(--radius-sm);
+.au-chip { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 var(--space-8); border-radius: var(--radius-sm);
   border: 1px solid transparent; white-space: nowrap; }
 .au-chip-plan { background: var(--black0); color: var(--white0); }
 .au-chip-finish { background: var(--gray5); color: var(--white0); }
@@ -78,7 +79,7 @@
 .au-banner-default { background: var(--gray1); }
 .au-banner-error { background: var(--error4); border: 1px solid var(--error2); }
 .au-banner-icon { margin-top: 1px; }
-.au-banner p { flex: 1; min-width: 0; }
+.au-banner p { flex: 1; min-width: 0; word-break: keep-all; }
 
 /* Forms */
 .au-field { display: flex; flex-direction: column; gap: var(--space-8); width: 100%; }
@@ -88,33 +89,48 @@
 .au-input::placeholder { color: var(--gray5); }
 .au-input:focus { outline: none; border-color: var(--primary1); }
 .au-input:disabled { background: var(--gray1); color: var(--gray5); }
+/* 에러: 테두리 error1(포커스 중에도 유지) + 입력 아래 4px에 caption01 error1 메시지 */
+.au-input-error, .au-input-error:focus { border-color: var(--error1); }
+.au-field-error { color: var(--error1); margin-top: calc(var(--space-4) * -1); }
 .au-seg { display: flex; gap: var(--space-8); width: 100%; }
 .au-seg-item { flex: 1 1 0; min-width: 0; height: 40px; padding: 10px; background: var(--white0); color: var(--black0);
   border: 1px solid var(--gray2); border-radius: var(--radius-sm); cursor: pointer; }
 .au-seg-item:active { background: var(--gray2); }
-.au-seg-item[aria-checked="true"] { background: var(--gray6); border-color: var(--gray6); color: var(--white0); }
+.au-seg-item[aria-checked="true"] { background: var(--black0); border-color: var(--black0); color: var(--white0); }
+.au-seg-error .au-seg-item:not([aria-checked="true"]) { border-color: var(--error1); }
 .au-seg-item:disabled { background: var(--gray2); color: var(--gray5); cursor: default; }
 .au-time-row { display: flex; gap: var(--space-8); }
 .au-time { flex: 1 1 0; min-width: 0; display: flex; align-items: center; justify-content: space-between; height: 50px; padding: var(--space-12);
   background: var(--white0); border: 1px solid var(--gray2); border-radius: var(--radius-sm); white-space: nowrap; }
 .au-time-label { color: var(--gray5); }
+.au-time-btn { font-family: inherit; color: var(--black0); text-align: left; cursor: pointer; }
+.au-time-btn:focus { outline: none; border-color: var(--primary1); }
+.au-time-error, .au-time-error:focus { border-color: var(--error1); }
 .au-stepper-label { color: var(--gray7); }
 .au-stepper { display: flex; align-items: center; justify-content: space-between; padding: var(--space-8) var(--space-12);
   border: 1px solid var(--gray2); border-radius: var(--radius-sm); }
 .au-stepper-btn { display: inline-flex; padding: 0; border: 0; background: none; cursor: pointer; }
 .au-stepper-btn:disabled { opacity: .3; cursor: default; }
-.au-stepper-value { font-size: 22px; line-height: 22px; font-weight: 700; padding: 7px 0; color: var(--black0); }
+.au-stepper-value { color: var(--black0); }
+.au-stepper-error { border-color: var(--error1); }
 .au-stepper-hint { color: var(--gray5); }
 .au-radiolist { display: flex; flex-direction: column; gap: var(--space-12); width: 100%; padding: var(--space-12);
   border: 1px solid var(--gray1); border-radius: var(--radius-sm); }
 .au-radiolist-sep { height: 1px; background: var(--gray1); }
+.au-radiolist-error { border-color: var(--error1); }
+.au-radio-wrap { display: flex; flex-direction: column; gap: var(--space-4); width: 100%; }
+.au-radio-wrap .au-field-error { margin-top: 0; }
 .au-radio { display: flex; align-items: center; gap: var(--space-8); padding: 0; border: 0; background: none; cursor: pointer; color: var(--black0); text-align: left; }
 .au-radio-badge { width: 42px; height: 24px; object-fit: contain; }
-.au-upload { position: relative; width: 100%; aspect-ratio: 1 / 1; padding: 0; border: 1px solid var(--gray2); border-radius: var(--radius-sm);
+.au-upload { position: relative; display: block; width: 100%; aspect-ratio: 1 / 1; padding: 0; border: 1px solid var(--gray2); border-radius: var(--radius-sm);
   background: var(--white0); cursor: pointer; overflow: hidden; }
 .au-upload-inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: var(--space-8); padding-top: var(--space-8); color: var(--gray7); }
 .au-upload-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.au-upload-invalid { border-color: var(--error1); }
+.au-upload-disabled { cursor: default; }
+.au-upload:has(input:focus-visible) { outline: 2px solid var(--primary1); outline-offset: 2px; }
+.au-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .au-step { display: flex; flex-direction: column; width: 100%; }
 .au-step-count { color: var(--gray5); }
 .au-step-body { display: flex; flex-direction: column; gap: var(--space-4); }
@@ -137,7 +153,9 @@
 .au-product-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .au-product-chips { position: absolute; left: var(--space-8); top: var(--space-8); display: flex; gap: var(--space-4); }
 .au-product-fav { position: absolute; right: var(--space-8); top: var(--space-8); padding: 0; border: 0; background: none; cursor: pointer; }
-.au-product-info { display: flex; flex-direction: column; }
+.au-product-info { display: flex; flex-direction: column; min-width: 0; }
+.au-product-brand { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.au-product-name { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-all; }
 .au-product-price { display: flex; gap: var(--space-4); }
 .au-product-price-label { color: var(--gray5); }
 .au-product-meta { color: var(--gray4); }
@@ -160,7 +178,7 @@
 .au-status-top { display: flex; align-items: flex-start; justify-content: space-between; width: 100%; }
 .au-status-price { display: flex; flex-direction: column; gap: var(--space-4); }
 .au-infofield { display: flex; flex-direction: column; gap: var(--space-4); width: 100%; color: var(--black0); }
-.au-sort { display: inline-flex; gap: var(--space-4); }
+.au-sort { display: inline-flex; gap: var(--space-8); }
 .au-sort-item { padding: 0; border: 0; background: none; cursor: pointer; color: var(--gray4); }
 .au-sort-item[aria-checked="true"] { color: var(--black0); }
 .au-sort-item:focus-visible { outline: 2px solid var(--primary1); outline-offset: 2px; }
@@ -184,6 +202,7 @@
 .au-sheet-wrap { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; justify-content: flex-end; }
 .au-sheet-inline { position: relative; inset: auto; height: 100%; }
 .au-sheet-dim { position: absolute; inset: 0; background: rgb(26 26 26 / .9); }
-.au-sheet { position: relative; background: var(--white0); border-radius: var(--radius-lg) var(--radius-lg) 0 0; padding-top: var(--space-8); }
+.au-sheet { position: relative; display: flex; flex-direction: column; max-height: 91.667%; background: var(--white0); border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding-top: var(--space-8); padding-bottom: env(safe-area-inset-bottom); }
 .au-sheet-handle { width: 60px; height: 4px; margin: 0 auto; border-radius: var(--radius-full); background: var(--gray2); }
-.au-sheet-body { display: flex; flex-direction: column; gap: var(--space-12); padding: var(--space-24) var(--space-20) var(--space-24); }
+.au-sheet-body { display: flex; flex-direction: column; gap: var(--space-12); min-height: 0; overflow-y: auto; padding: var(--space-24) var(--space-20) var(--space-24); }

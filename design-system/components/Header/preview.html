@@ -1,4 +1,4 @@
-<!-- @dsCard group="Navigation" height=220 -->
+<!-- @dsCard group="Navigation" height=300 -->
 <!doctype html>
 <html>
 <head><meta charset="utf-8"><title>Header — preview</title>
@@ -7,10 +7,16 @@
 <div id="root"></div>
 <script>
   var G = window.Autique, h = React.createElement;
+  function Fav() {
+    var s = React.useState(true);
+    return h(G.Header, { title: '경매 상품 상세', trailing: 'favorite', favorited: s[0], onFavorite: function () { s[1](!s[0]); } });
+  }
   ReactDOM.createRoot(document.getElementById('root')).render(h(React.Fragment, null,
     h(G.Header, { title: '결제' }),
     h(G.Header, { title: '경매 상품 상세', trailing: 'favorite' }),
-    h(G.Header, { title: '실시간 경매', trailing: 'live' })));
+    h(Fav),
+    h(G.Header, { title: '실시간 경매', trailing: 'live' }),
+    h(G.Header, { title: '뒤로 가기 없는 화면', showBack: false })));
 </script>
 </body>
 </html>

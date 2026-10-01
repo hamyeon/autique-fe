@@ -23,7 +23,7 @@ const ART_SVGS = loadSvgs(
 )
 
 /** 이름별로 제공되는 크기. 첫 번째 값이 기본 크기입니다. */
-const ICON_SIZES = {
+export const ICON_SIZES = {
   Add: [24, 20],
   Minus: [24, 20],
   Info: [24, 18],

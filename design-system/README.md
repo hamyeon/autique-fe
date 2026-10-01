@@ -7,7 +7,7 @@ AI가 상품 정보를 분석하고 시세 기반 가격 판단을 돕는 빈티
 ## 원칙
 
 - **숫자가 주인공.** 경매 앱이라 금액이 가장 중요한 정보입니다. 핵심 금액 하나만 title02 + `primary1`로 크게, 나머지 금액은 body03 `black0`.
-- **블루는 '나와 AI', 레드는 '시간과 위험'.** `primary1` 계열은 AI 시세·내 입찰·기회에, `error1` 계열은 남은 시간·LIVE·초과·만료·관심(하트)에만 씁니다. 장식용 색은 없습니다.
+- **블루는 '나와 AI', 레드는 '시간과 위험'.** `primary1` 계열은 AI 시세·내 입찰·기회에, `error1` 계열은 남은 시간·LIVE·초과·만료·관심(상품 카드 하트)·입력 에러에만 씁니다. 장식용 색은 없습니다.
 - **흑백이 기본.** 배경은 `white0`, 텍스트는 `black0`, 주 버튼도 `black0`. 색은 의미가 있을 때만 들어옵니다.
 - **평평하게.** 그림자·그라데이션 없음. 영역은 1px 테두리(`gray2`)와 구분선(`gray1`)으로 나눕니다.
 
@@ -15,7 +15,7 @@ AI가 상품 정보를 분석하고 시세 기반 가격 판단을 돕는 빈티
 
 **색.** 스타일가이드의 product color(`primary1`~`primary4`), caution color(`error1`~`error4`), gray scale(`white0`, `gray1`~`gray7`, `black0`) 17개가 전부입니다. 숫자가 클수록 연해지는(primary·error) / 진해지는(gray) 구조입니다. 테마는 라이트 하나뿐. 바텀시트 딤만 `black0` 90% 불투명도를 씁니다.
 
-**타이포.** Pretendard 한 가족(Regular 400 · Medium 500 · SemiBold 600 · Bold 700, `fonts/`의 .otf 파일 포함). title(700) · head(600) · body(400~600) · caption(12px) · label(10px) 15단계. 줄 높이는 대부분 160%, 제목·라벨은 140%. 예외 하나: 금액 스테퍼 숫자는 Bold 22px(줄 높이 22px).
+**타이포.** Pretendard 한 가족(Regular 400 · Medium 500 · SemiBold 600 · Bold 700, `fonts/`의 .otf 파일 포함). title(700) · head(600) · body(400~600) · caption(12px) · label(10px) 15단계. 줄 높이는 대부분 160%, 제목·라벨은 140%. 금액 스테퍼 숫자도 title02로, 타입 스케일 밖의 값은 없습니다.
 
 **간격.** 원시값 4 · 8 · 12 · 16 · 20 · 24 · 32 위에 용도 이름을 붙인 의미 토큰을 씁니다: `layout-gutter`(20, 화면 좌우), `layout-top`(16, 헤더 아래), `layout-section`(24, 섹션 사이), `layout-step`(32, 등록 단계 화면), `section-title`(8), `card-padding`(16), `card-row`(8), `stack-tight`(4), `stack-related`(12), `form-field`(16), `form-label`(8). 의미 토큰을 먼저 고르고, 맞는 용도가 없을 때만 `space-N`을 씁니다. Figma의 Spacing / Primitives 변수와 이름이 같습니다(`/` ↔ `-`).
 
@@ -61,12 +61,12 @@ AI가 상품 정보를 분석하고 시세 기반 가격 판단을 돕는 빈티
 
 - 맨 아래 24 밑에 붙는 BottomButtonBar·TabBar가 위쪽 패딩 12를 더해서, 스크롤 화면에서 마지막 콘텐츠와 버튼 사이는 36으로 보여요.
 - 스크롤이 없는 화면은 남는 공간이 본문 아래로 가서 버튼이 화면 맨 아래에 붙어요.
-- 앱에서는 하단 바가 스크롤과 상관없이 고정이라, 본문 아래 여백은 하단 바 높이(78 또는 144) + 24로 둬야 마지막 콘텐츠가 바에 가려지지 않아요.
+- 앱에서는 헤더와 하단 바가 화면 위아래에 붙어 있지만(sticky) 흐름 안에 자리를 차지해서, 본문 아래 여백은 24면 마지막 콘텐츠가 바에 가려지지 않아요. 노치·홈 인디케이터 여백(safe-area)은 헤더 위·하단 바 아래에 더해요.
 - 예외: 가운데 정렬 화면(AI 로딩, 등록 완료, 결제 완료)은 콘텐츠를 세로 가운데에 둬요. iOS 푸시 알림 화면은 시스템 UI라 규칙 밖이에요.
 
 ## 아이콘과 일러스트
 
-아이콘은 Figma `Icon/<Name>` 세트 14개(Add, Minus, Info, Search, Bell, Bag, ArrowLeft, ArrowRight, ArrowUp, ArrowDown, Favorite, Home, Product, User)이고, 크기(`size`)·모양(`style=line|fill`)·탭 상태(`state=default|active`)가 변형입니다. 1.4~2px 라인이며, 모양은 한 벌이고 색은 인스턴스에서 바꿉니다: 기본 `black0`, 비활성 탭·회색 검색은 `gray5`, 도움말 정보는 `gray4`, 관심 하트는 `error1`, 배너 정보는 `primary1`/`error1`, 검은 버튼 위는 `white0`. 코드도 같은 규칙으로 `Autique.Icon`의 `color`를 씁니다(SVG는 `currentColor`). 파일 이름은 `<name>-<size>[-<style>].svg`(Assets 탭).
+아이콘은 Figma `Icon/<Name>` 세트 14개(Add, Minus, Info, Search, Bell, Bag, ArrowLeft, ArrowRight, ArrowUp, ArrowDown, Favorite, Home, Product, User)이고, 크기(`size`)·모양(`style=line|fill`)·탭 상태(`state=default|active`)가 변형입니다. 1.4~2px 라인이며, 모양은 한 벌이고 색은 인스턴스에서 바꿉니다: 기본 `black0`, 비활성 탭·회색 검색은 `gray5`, 도움말 정보는 `gray4`, 상품 카드 관심 하트는 `error1`(헤더 하트는 `black0`), 배너 정보는 `primary1`/`error1`, 검은 버튼 위는 `white0`. 코드도 같은 규칙으로 `Autique.Icon`의 `color`를 씁니다(SVG는 `currentColor`). 파일 이름은 `<name>-<size>[-<style>].svg`(Assets 탭).
 
 일러스트는 업로드 칸용 신발 4종(`img_shoe_front/side/outsole/defect`, `gray7`)과 로고(`autique-logo.svg`)입니다.
 
@@ -74,14 +74,21 @@ AI가 상품 정보를 분석하고 시세 기반 가격 판단을 돕는 빈티
 
 원본 팔레트의 `gray5`(3.95:1), `gray4`(2.8:1), `error1`(3.4:1)은 흰 배경 위 본문 크기 대비 기준 4.5:1에 못 미칩니다. 원본 그대로 두었으니 라벨·캡션·짧은 강조에만 쓰고, 꼭 읽어야 하는 문장에는 `gray6` 이상을 쓰세요.
 
+## 앱과 함께 정한 것
+
+앱을 만들며 정한 규칙으로, Figma에도 같은 변형이 있어요(입력 컴포넌트의 `state=error`·`invalid`, `_FieldError`, BottomButton `primary`·`outline`·`danger`, Header `trailing=favorited`·`showBack`).
+
+- **에러 상태(폼):** TextField · Textarea · TimeInput · SegmentedControl · RadioList · AmountStepper · ImageUploadButton. 테두리 `error1`(포커스 중에도 유지), 메시지는 입력 아래 4px에 caption01 `error1`, 해요체 한 문장. 값을 고치면 바로 풀려요. 사진처럼 여러 칸이면 메시지를 한 줄로 모읍니다("측면, 밑창 사진을 올려 주세요.").
+- **값:** Button은 `primary`·`outline`·`danger` 세 가지, SegmentedControl 선택 `black0`, Header 눌린 하트 `black0` 채움(상품 카드 하트는 `error1`), Header 뒤로 가기 없을 때 왼쪽 20, SortTabs 간격 8, 금액 스테퍼 숫자 title02, Chip 높이 22 고정, 상품 카드 금액은 숫자 body03 + '원' body04.
+- **동작:** 터치 영역은 겉모양을 바꾸지 않고 44px 안팎으로 넓혀요. 키보드 포커스는 `primary1` 2px 링. 긴 텍스트: 상품 카드 상품명 두 줄, 브랜드·닉네임·헤더 제목 한 줄 말줄임, 배너는 단어 단위 줄바꿈.
+
 ## 동기화되지 않은 것
 
 컴포넌트 설명과 토큰 사용 메모는 Figma 파일을 보고 제가 풀어 쓴 것입니다. 아래는 가져오지 않았거나 원본과 다릅니다.
 
 - 카카오페이·네이버페이 로고(`img_kakao_pay`, `img_naver_pay`): 제3자 상표 이미지라 넣지 않았습니다. RadioList의 `badge`로 소비 측에서 제공하세요.
 - 상품 썸네일 자리표시(`img_thumb`)와 iOS 상태바·홈 인디케이터: 기기 UI라 컴포넌트로 만들지 않았습니다.
-- outline·danger 버튼의 눌림/비활성 상태: Figma에 정의되지 않았습니다.
-- AmountStepper 테두리 `#DADADA`: 팔레트 밖 값이라 `gray2`로 맞췄습니다.
+- outline·danger 버튼의 눌림/비활성 상태: 두지 않기로 했습니다.
 - 딤 불투명도는 Figma 색 스타일 `overlay/dim`(`black0` 90%)입니다. 토큰에는 따로 두지 않았습니다.
 - Figma 화면 안 일부 값(칩·배지 안쪽 간격 2·5·6·7·9·10, 알림 카드 모서리 16)은 4의 배수 체계 밖이라 변수에 연결하지 않았습니다.
-- Figma 컴포넌트 안쪽 일부 값(입력칸·세그먼트 안쪽 10, 헤더 오른쪽 18, LIVE 칩 점 간격 5)은 4의 배수 체계 밖이라 변수에 연결하지 않았습니다.
+- Figma 컴포넌트 안쪽 일부 값(입력칸·세그먼트 안쪽 10, 헤더 오른쪽 18 — LIVE 칩일 때만 20, LIVE 칩 점 간격 5)은 4의 배수 체계 밖이라 변수에 연결하지 않았습니다. 앱 코드도 같은 값을 그대로 씁니다.

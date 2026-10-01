@@ -29,8 +29,8 @@ export default defineConfig([
     },
   },
   {
-    // shadcn/ui 컴포넌트는 variants 등을 함께 export 하므로 예외 처리
-    files: ['src/components/ui/**/*.{ts,tsx}'],
+    // shadcn/ui·DS 컴포넌트는 variants·타입 표 등을 함께 export 하므로 예외 처리
+    files: ['src/components/{ui,ds}/**/*.{ts,tsx}'],
     rules: { 'react-refresh/only-export-components': 'off' },
   },
   // Prettier와 충돌하는 포맷팅 규칙 끄기 (항상 마지막)

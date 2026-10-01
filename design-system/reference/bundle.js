@@ -68,17 +68,20 @@
   function Header(p) {
     var trailing = null;
     if (p.trailing === 'favorite') {
-      trailing = h('button', { className: 'au-header-action', 'aria-label': '관심 상품', 'aria-pressed': !!p.favorited, onClick: p.onFavorite },
-        h(Icon, { name: 'Favorite', style: p.favorited ? 'fill' : 'line', color: p.favorited ? 'error1' : undefined }));
+      /* 눌린 하트도 검정(앱 코드와 같음) */
+      trailing = h('button', { type: 'button', className: 'au-header-action', 'aria-label': '관심 상품', 'aria-pressed': !!p.favorited, onClick: p.onFavorite },
+        h(Icon, { name: 'Favorite', style: p.favorited ? 'fill' : 'line', color: 'black0' }));
     } else if (p.trailing === 'live') {
       trailing = h(Chip, { kind: 'live' }, 'LIVE');
     } else if (p.trailing) {
       trailing = p.trailing;
     }
-    return h('header', { className: cx('au', 'au-header', p.className) },
+    var noBack = p.showBack === false;
+    /* 뒤로 가기가 없으면 제목이 화면 좌우 여백(20)에서 시작합니다. */
+    return h('header', { className: cx('au', 'au-header', noBack && 'au-header-noback', p.trailing === 'live' && 'au-header-live', p.className) },
       h('div', { className: 'au-header-left' },
-        p.showBack === false ? null : h('button', { className: 'au-header-back', 'aria-label': '뒤로 가기', onClick: p.onBack }, h(Icon, { name: 'ArrowLeft', size: 36 })),
-        h('p', { className: 'head02' }, p.title)),
+        noBack ? null : h('button', { type: 'button', className: 'au-header-back', 'aria-label': '뒤로 가기', onClick: p.onBack }, h(Icon, { name: 'ArrowLeft', size: 36 })),
+        h('p', { className: 'au-header-title head02' }, p.title)),
       trailing);
   }
 
@@ -114,9 +117,10 @@
   }
 
   /* ---------- Actions ---------- */
-  /* variant: primary | outline | danger | neutral  (secondary = outline, kept for older screens) */
   function Button(p) {
-    var variant = p.variant === 'secondary' ? 'outline' : (p.variant || 'primary');
+    /* variant: primary | outline | danger ('secondary'는 outline의 예전 이름). 그 밖의 값은 primary로 그립니다. */
+    var v = p.variant === 'secondary' ? 'outline' : p.variant;
+    var variant = v === 'outline' || v === 'danger' ? v : 'primary';
     var rest = omit(p, ['variant', 'block', 'className', 'children']);
     return h('button', Object.assign({ type: 'button' }, rest, {
       className: cx('au', 'au-btn', 'head03', 'au-btn-' + variant, p.block !== false && 'au-btn-block', p.className)
@@ -190,78 +194,137 @@
   }
 
   /* ---------- Forms ---------- */
+  /* 폼 공통: 에러 메시지 id와 문구 */
+  var auUid = 0;
+  function useUid(prefix) {
+    var r = React.useRef(null);
+    if (r.current === null) r.current = prefix + (++auUid);
+    return r.current;
+  }
+  function FieldError(id, error) {
+    return error ? h('p', { id: id, role: 'alert', className: 'au-field-error caption01' }, error) : null;
+  }
+  function a11yError(id, error) {
+    return { 'aria-invalid': error ? true : undefined, 'aria-describedby': error ? id : undefined };
+  }
+
+  /* error: 메시지가 있으면 테두리 error1(포커스 중에도) + 아래 caption01 error1 */
   function TextField(p) {
-    var rest = omit(p, ['label', 'className']);
+    var id = useUid('au-tf-');
+    var rest = omit(p, ['label', 'className', 'error']);
     return h('label', { className: cx('au', 'au-field', p.className) },
       p.label ? h('span', { className: 'head03' }, p.label) : null,
-      h('input', Object.assign({ className: 'au-input body02' }, rest)));
+      h('input', Object.assign({ className: cx('au-input body02', p.error && 'au-input-error') }, a11yError(id, p.error), rest)),
+      FieldError(id, p.error));
   }
 
   function Textarea(p) {
-    var rest = omit(p, ['label', 'className']);
+    var id = useUid('au-ta-');
+    var rest = omit(p, ['label', 'className', 'error']);
     return h('label', { className: cx('au', 'au-field', p.className) },
       p.label ? h('span', { className: 'head03' }, p.label) : null,
-      h('textarea', Object.assign({ className: 'au-input au-textarea body02' }, rest)));
+      h('textarea', Object.assign({ className: cx('au-input au-textarea body02', p.error && 'au-input-error') }, a11yError(id, p.error), rest)),
+      FieldError(id, p.error));
   }
 
   function SegmentedControl(p) {
     var options = p.options || [];
+    var id = useUid('au-seg-');
     var st = React.useState(p.defaultValue), value = p.value !== undefined ? p.value : st[0];
     return h('div', { className: cx('au', 'au-field', p.className) },
       p.label ? h('span', { className: 'head03' }, p.label) : null,
-      h('div', { className: 'au-seg', role: 'radiogroup', 'aria-label': p.label },
+      h('div', Object.assign({ className: cx('au-seg', p.error && 'au-seg-error'), role: 'radiogroup', 'aria-label': p.label }, a11yError(id, p.error)),
         options.map(function (o) {
           var dis = p.disabledOptions && p.disabledOptions.indexOf(o) >= 0;
           return h('button', { key: o, type: 'button', role: 'radio', 'aria-checked': value === o, disabled: dis,
             className: 'au-seg-item body05', onClick: function () { if (p.value === undefined) st[1](o); p.onChange && p.onChange(o); } }, o);
-        })));
+        })),
+      FieldError(id, p.error));
   }
 
+  /* onDateClick·onTimeClick을 넘기면 그 칸이 버튼이 됩니다(피커는 소비 측). */
   function TimeInput(p) {
-    function part(v, lab, key) {
-      return h('div', { key: key, className: 'au-time body02' }, h('span', null, v), h('span', { className: 'au-time-label body04' }, lab));
+    var id = useUid('au-ti-');
+    function part(v, lab, key, onClick) {
+      var kids = [h('span', { key: 'v' }, v), h('span', { key: 'l', className: 'au-time-label body04' }, lab)];
+      var cls = cx('au-time body02', p.error && 'au-time-error');
+      return onClick
+        ? h('button', Object.assign({ key: key, type: 'button', className: cls + ' au-time-btn', onClick: onClick,
+            'aria-label': (p.label ? p.label + ' ' : '') + lab + ' ' + v }, a11yError(id, p.error)), kids)
+        : h('div', { key: key, className: cls }, kids);
     }
     return h('div', { className: cx('au', 'au-field', p.className) },
       p.label ? h('span', { className: 'head03' }, p.label) : null,
-      h('div', { className: 'au-time-row' }, part(p.date, '날짜', 'd'), part(p.time, '시간', 't')));
+      h('div', { className: 'au-time-row' }, part(p.date, '날짜', 'd', p.onDateClick), part(p.time, '시간', 't', p.onTimeClick)),
+      FieldError(id, p.error));
   }
 
+  /* 숫자 value(또는 defaultValue) + min·max·step(기본 5,000)을 받아 스스로 계산하고, 한계에서 버튼을 막습니다. */
   function AmountStepper(p) {
+    var id = useUid('au-st-');
+    var min = p.min != null ? p.min : 0, max = p.max != null ? p.max : Infinity, step = p.step || 5000;
+    var st = React.useState(typeof p.defaultValue === 'number' ? p.defaultValue : min);
+    var controlled = typeof p.value === 'number';
+    var v = controlled ? p.value : st[0];
+    function set(n) {
+      n = Math.min(max, Math.max(min, n));
+      if (!controlled) st[1](n);
+      if (p.onChange) p.onChange(n);
+    }
+    var fmt = p.format || function (n) { return n.toLocaleString('ko-KR') + '원'; };
     return h('div', { className: cx('au', 'au-field', p.className) },
       p.label ? h('span', { className: 'au-stepper-label body04' }, p.label) : null,
-      h('div', { className: 'au-stepper' },
-        h('button', { type: 'button', className: 'au-stepper-btn', 'aria-label': '금액 내리기', disabled: p.minDisabled, onClick: p.onDecrease }, h(Icon, { name: 'Minus' })),
-        h('output', { className: 'au-stepper-value' }, p.value),
-        h('button', { type: 'button', className: 'au-stepper-btn', 'aria-label': '금액 올리기', disabled: p.maxDisabled, onClick: p.onIncrease }, h(Icon, { name: 'Add' }))),
+      h('div', Object.assign({ className: cx('au-stepper', p.error && 'au-stepper-error'), role: 'group', 'aria-label': p.label }, a11yError(id, p.error)),
+        h('button', { type: 'button', className: 'au-stepper-btn', 'aria-label': '금액 내리기', disabled: v <= min, onClick: function () { set(v - step); } }, h(Icon, { name: 'Minus' })),
+        h('output', { className: 'au-stepper-value title02', 'aria-live': 'polite' }, fmt(v)),
+        h('button', { type: 'button', className: 'au-stepper-btn', 'aria-label': '금액 올리기', disabled: v >= max, onClick: function () { set(v + step); } }, h(Icon, { name: 'Add' }))),
+      FieldError(id, p.error),
       p.hint ? h('p', { className: 'au-stepper-hint caption02' }, p.hint) : null);
   }
 
   /* options: [{ value, label, badge? }] — badge is an image URL (결제사 로고 등). */
   function RadioList(p) {
     var options = p.options || [];
+    var id = useUid('au-radio-');
     var st = React.useState(p.defaultValue), value = p.value !== undefined ? p.value : st[0];
-    return h('div', { className: cx('au', 'au-radiolist', p.className), role: 'radiogroup', 'aria-label': p.label },
-      options.map(function (o, i) {
-        var on = value === o.value;
-        return h(React.Fragment, { key: o.value },
-          i ? h('div', { className: 'au-radiolist-sep' }) : null,
-          h('button', { type: 'button', role: 'radio', 'aria-checked': on, className: 'au-radio body04',
-            onClick: function () { if (p.value === undefined) st[1](o.value); p.onChange && p.onChange(o.value); } },
-            h(Radio, { checked: on }),
-            o.badge ? h('img', { className: 'au-radio-badge', src: o.badge, alt: '' }) : null,
-            h('span', null, o.label)));
-      }));
+    return h('div', { className: cx('au', 'au-radio-wrap', p.className) },
+      h('div', Object.assign({ className: cx('au-radiolist', p.error && 'au-radiolist-error'), role: 'radiogroup', 'aria-label': p.label }, a11yError(id, p.error)),
+        options.map(function (o, i) {
+          var on = value === o.value;
+          return h(React.Fragment, { key: o.value },
+            i ? h('div', { className: 'au-radiolist-sep' }) : null,
+            h('button', { type: 'button', role: 'radio', 'aria-checked': on, className: 'au-radio body04',
+              onClick: function () { if (p.value === undefined) st[1](o.value); p.onChange && p.onChange(o.value); } },
+              h(Radio, { checked: on }),
+              o.badge ? h('img', { className: 'au-radio-badge', src: o.badge, alt: '' }) : null,
+              h('span', null, o.label)));
+        })),
+      FieldError(id, p.error));
   }
 
   /* direction: front | side | outsole | defect */
+  /* 칸을 누르면 사진 선택 창이 열리고, 고르면 미리보기로 채워집니다. 네이티브 input 속성(name, onChange, disabled…)은 숨긴 file input으로 갑니다.
+     image(이미 올라간 사진 URL)가 있으면 그것을 보여주고, invalid면 테두리 error1. */
   function ImageUploadButton(p) {
     var d = p.direction || 'front';
     var names = { front: '앞면', side: '측면', outsole: '밑창', defect: '하자' };
-    return h('button', { type: 'button', className: cx('au', 'au-upload', p.className), onClick: p.onClick },
-      p.image ? h('img', { className: 'au-upload-img', src: p.image, alt: '' })
+    var name = p.label || names[d];
+    var st = React.useState(null), preview = st[0];
+    React.useEffect(function () { return preview ? function () { URL.revokeObjectURL(preview); } : undefined; }, [preview]);
+    var rest = omit(p, ['direction', 'label', 'image', 'invalid', 'className', 'onChange']);
+    function change(e) {
+      var f = e.target.files && e.target.files[0];
+      st[1](f ? URL.createObjectURL(f) : null);
+      if (p.onChange) p.onChange(e);
+    }
+    var src = p.image || preview;
+    return h('label', { className: cx('au', 'au-upload', p.invalid && 'au-upload-invalid', p.disabled && 'au-upload-disabled', p.className) },
+      h('input', Object.assign({ type: 'file', accept: 'image/*', className: 'au-sr-only', onChange: change,
+        'aria-label': name + ' 사진 ' + (src ? '다시 고르기' : '올리기'), 'aria-invalid': p.invalid || undefined }, rest)),
+      src ? h('img', { className: 'au-upload-img', src: src, alt: name + ' 사진' })
         : h('span', { className: 'au-upload-inner' },
             h(Icon, { name: 'img_shoe_' + d }),
-            h('span', { className: 'head03' }, p.label || names[d])));
+            h('span', { className: 'head03' }, name)));
   }
 
   function StepHeader(p) {
@@ -300,11 +363,12 @@
         h('button', { className: 'au-product-fav', 'aria-label': '관심 상품', 'aria-pressed': !!p.favorited, onClick: p.onFavorite },
           h(Icon, { name: 'Favorite', style: p.favorited ? 'fill' : 'line', color: 'error1' }))),
       h('div', { className: 'au-product-info' },
-        h('p', { className: 'body03' }, p.brand),
-        h('p', { className: 'body04' }, p.name),
+        h('p', { className: 'au-product-brand body03' }, p.brand),
+        h('p', { className: 'au-product-name body04' }, p.name),
         h('p', { className: 'au-product-price' },
           h('span', { className: 'au-product-price-label body04' }, p.priceLabel || (live ? '최고가' : '시작가')),
-          h('span', { className: 'body03' }, p.price)),
+          /* 숫자는 body03, 끝의 '원'만 body04(Figma 그대로) */
+          h('span', { className: 'body03' }, /원$/.test(p.price) ? [p.price.slice(0, -1), h('span', { key: 'won', className: 'body04' }, '원')] : p.price)),
         p.meta ? h('p', { className: 'au-product-meta caption02' }, p.meta) : null));
   }
 
