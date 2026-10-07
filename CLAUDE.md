@@ -73,9 +73,20 @@ There is no test runner configured yet.
 ## Data & API
 
 - Read env vars only through `import.meta.env.VITE_*`; never hardcode API URLs.
-- Put API calls in `src/api/<domain>.ts`, with query hooks next to them (`useProductsQuery`). Keep query keys in one factory per domain (e.g. `productKeys.all`, `productKeys.detail(id)`).
-- Define Zod schemas once and derive types with `z.infer`; reuse the same schema for forms and API response parsing.
-- Server data lives in TanStack Query only — don't copy it into Zustand. Zustand is for UI/client state (e.g. auth token, bottom-sheet open state).
+- Source of truth for the API: the Notion spec "API 명세서 - GROWTH" (https://app.notion.com/p/mmaybei/API-GROWTH-3c2dbc84169a80588fa4eed4ce37110c, read via Notion MCP). Use its endpoints, request/response shapes and field names exactly as written — don't rename, re-case or reshape them.
+- API types are defined only in `src/api/schemas/` as Zod schemas. Everywhere else, use the types derived there with `z.infer`; never redeclare a response type in screen code. Reuse the same schema for forms and response parsing.
+- Anything not in the spec (endpoint, field, query param, enum value, error-code name) must carry a `// [ASSUMED] 이유` comment where it is defined. Mock handlers for assumed endpoints go in `src/mocks/handlers/assumed/`.
+- Every endpoint is registered once in `src/api/endpoints.ts` (method, spec path with `{param}`, request/response schema, auth, idempotency). API functions, mocks and passthrough all use this registry.
+- Call the server only through `request()` in `src/api/client.ts`: it uses `VITE_API_BASE_URL`, sends `Authorization: Bearer` from the auth store (refreshes once on 401), adds `Idempotency-Key` where the spec requires it, times out, unwraps `{ success, data, error }` to `data`, parses it with the schema (logging endpoint + field path on mismatch) and throws `ApiError` (`kind`, `status`, spec `code`) on any failure.
+- Put API functions in `src/api/<domain>.ts`, with query hooks next to them (`useAuctionDetailQuery`). Keep query keys in one factory per domain (e.g. `auctionKeys.all`, `auctionKeys.detail(id)`).
+- Server data lives in TanStack Query only — don't copy it into Zustand. Zustand is for UI/client state (e.g. auth token in `src/stores/auth-store.ts`, bottom-sheet open state).
+
+### Mocks (MSW, dev only)
+
+- Handlers in `src/mocks/handlers/` (one file per domain, built with `mockEndpoint()`), data in `src/mocks/data/`. Mock responses pass through the same response schema as the real API.
+- On/off per "method + path": `src/mocks/config.ts` `passthrough` lists endpoints sent to the real server (e.g. `'POST /api/products'`). **When switching an endpoint to the real API, add it to `passthrough`** — don't delete its mock.
+- `VITE_MOCK=off` in `.env.local` turns MSW off entirely. Append `?mock=empty` or `?mock=error` to the page URL to get empty lists or each endpoint's spec error.
+- The "MOCK · 실서버 N" badge in the corner shows that mocks are on and how many endpoints are passed through.
 
 ## Capacitor compatibility
 
