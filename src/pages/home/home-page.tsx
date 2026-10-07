@@ -23,6 +23,7 @@ import {
 import { useInfiniteScroll } from '@/hooks/use-infinite-scroll'
 import { Screen } from '@/layouts/screen'
 import { AuctionGrid } from '@/components/auction-grid'
+import promotionImage from '@/assets/illustrations/img_promotion.png'
 
 /** '지금 인기 있는 경매' 한 번에 불러올 개수(2열 × 4줄) */
 const POPULAR_PAGE_SIZE = 8
@@ -139,11 +140,11 @@ export function HomePage() {
   )
 }
 
-/** 상단 배너. 배너 API가 명세에 없어 이미지 자리와 위치 표시만 둡니다. */
+/** 상단 배너. 배너 API가 명세에 없어 고정 프로모션 이미지와 위치 표시만 둡니다. */
 function HomeBanner() {
   return (
     <div className="-mx-layout-gutter relative">
-      <ImagePlaceholder ratio={1} alt="이벤트 배너" />
+      <ImagePlaceholder ratio={1} src={promotionImage} alt="프로모션 배너" />
       <PageIndicator
         count={4}
         current={0}

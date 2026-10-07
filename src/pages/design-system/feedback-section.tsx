@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ds'
 import {
+  CompleteIllustration,
   EmptyState,
   ErrorState,
   LoadingIllustration,
@@ -17,6 +18,7 @@ export function FeedbackSection() {
   return (
     <Section id="feedback" title="Feedback">
       <LoadingIllustrationDemo />
+      <CompleteIllustrationDemo />
       <SkeletonDemo />
       <EmptyStateDemo />
       <ErrorStateDemo />
@@ -52,6 +54,27 @@ function LoadingIllustrationDemo() {
         </div>
       </div>
       <Caption>AI 상품 분석 로딩 (1)~(4) 화면 구성. 단계를 바꾸면 글자만 페이드로 바뀌고 일러스트 움직임은 이어집니다.</Caption>
+    </Demo>
+  )
+}
+
+function CompleteIllustrationDemo() {
+  return (
+    <Demo
+      title="CompleteIllustration"
+      description="등록 완료 일러스트(Figma CompleteImg). 120×120 상자에서 보내기 아이콘(80)이 왼쪽 아래 → 오른쪽 위(+40 · -40)로: 0.2초 대기 → 0.8초 ease-out → 0.2초 대기 → 즉시 제자리, 1.2초 무한 반복. 상자 밖으로 나간 부분은 잘립니다. '동작 줄이기'가 켜져 있으면 왼쪽 아래에 멈춥니다."
+    >
+      <div className="border-gray2 py-layout-step gap-layout-section flex flex-col items-center rounded-md border">
+        <CompleteIllustration />
+        <div className="gap-space-8 flex flex-col items-center text-center">
+          <p className="text-head01 text-black0">경매가 성공적으로 등록되었어요!</p>
+          <p className="text-body06 text-gray6">
+            <span className="block">내 경매 페이지에서</span>
+            <span className="block">등록된 상품을 관리할 수 있어요</span>
+          </p>
+        </div>
+      </div>
+      <Caption>등록 완료 화면 구성(일러스트 → 24 → 제목 · 설명)</Caption>
     </Demo>
   )
 }

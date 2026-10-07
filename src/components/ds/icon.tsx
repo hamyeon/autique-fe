@@ -50,6 +50,7 @@ type ArtName =
   | 'img_shoe_outsole'
   | 'img_shoe_defect'
   | 'img_loading_magnifier'
+  | 'img_complete_send'
   | 'autique-logo'
 
 /* 색 토큰 → 클래스. Tailwind가 클래스를 찾을 수 있도록 문자열을 그대로 적어둡니다. */

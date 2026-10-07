@@ -120,6 +120,24 @@
      막대를 감싼 칸(높이 = 상자 - 막대)을 자기 높이(100%)만큼 내려 막대가 상자 맨 아래에 닿습니다. */
   --animate-loading-scan: loading-scan 1.6s infinite;
 
+  /* 모션 → animate-complete-send
+     Figma CompleteImg(프로토타입): position=down(왼쪽 아래)에서 0.2초 뒤 0.8초 EASE_OUT(Smart Animate)으로
+     오른쪽 위(position=top, +40 · -40)로, position=top에서 0.2초 뒤 전환 없이 제자리로 → 한 바퀴 1.2초, 무한 반복.
+     아이콘(80) 크기의 50%만큼 움직입니다. */
+  --animate-complete-send: complete-send 1.2s infinite;
+
+  @keyframes complete-send {
+    0%,
+    16.667% {
+      transform: translate(0, 0);
+      animation-timing-function: ease-out;
+    }
+    83.333%,
+    100% {
+      transform: translate(50%, -50%);
+    }
+  }
+
   @keyframes loading-scan {
     0%,
     12.5% {
