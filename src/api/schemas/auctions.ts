@@ -204,6 +204,8 @@ export const similarAuctionSchema = z.object({
   price: z.number().int(),
   likeCount: z.number().int(),
   isLiked: z.boolean(),
+  status: auctionStatusSchema, // [ASSUMED] 비슷한 상품 카드(Figma)의 경매 예정 / LIVE 칩. 명세 항목에 없음
+  grade: conditionGradeSchema, // [ASSUMED] 비슷한 상품 카드(Figma)의 등급 칩. 명세 항목에 없음
 })
 export type SimilarAuction = z.infer<typeof similarAuctionSchema>
 
@@ -287,10 +289,8 @@ export const auctionListQuerySchema = pageQuerySchema.extend({
 })
 export type AuctionListQuery = z.infer<typeof auctionListQuerySchema>
 
-// [ASSUMED] 항목 필드는 '비슷한 상품 목록'(similar) 항목을 기준으로 하고, ProductCard에 필요한 값만 더했습니다.
+// [ASSUMED] 항목 필드는 '비슷한 상품 목록'(similar) 항목(status · grade 포함)을 기준으로 하고, 시각만 더했습니다.
 export const auctionListItemSchema = similarAuctionSchema.extend({
-  status: auctionStatusSchema, // [ASSUMED] ProductCard의 경매 예정 / LIVE 칩
-  grade: conditionGradeSchema, // [ASSUMED] ProductCard의 등급 칩
   startsAt: dateTimeSchema, // [ASSUMED] 경매 예정 카드의 시작까지 남은 시간
   endsAt: dateTimeSchema, // [ASSUMED] LIVE 카드의 마감까지 남은 시간
 })

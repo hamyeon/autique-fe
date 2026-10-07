@@ -211,3 +211,11 @@
 @utility pr-safe {
   padding-right: env(safe-area-inset-right);
 }
+
+/* 가로 스와이프 영역(상품 이미지 등)의 스크롤바를 숨깁니다. */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

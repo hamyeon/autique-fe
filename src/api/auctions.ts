@@ -9,6 +9,7 @@ import type {
   BidListQuery,
   PlaceBidRequest,
   RelistAuctionRequest,
+  SimilarAuction,
   SimilarAuctions,
   UpdateStartPriceRequest,
 } from '@/api/schemas/auctions'
@@ -115,10 +116,67 @@ export function useAuctionsInfiniteQuery(query: Omit<AuctionListQuery, 'page'> =
   })
 }
 
-export function useAuctionDetailQuery(auctionId: number) {
-  return useQuery({
+/** 목록 · 비슷한 상품 캐시에서 이 경매의 카드 정보를 찾습니다(상세를 열 때 먼저 그릴 값). */
+export function findAuctionPreview(queryClient: QueryClient, auctionId: number) {
+  const cached = queryClient.getQueriesData<
+    AuctionList | InfiniteData<AuctionList> | SimilarAuctions
+  >({
+    predicate: ({ queryKey }) =>
+      queryKey[0] === 'auctions' && ['list', 'similar'].includes(queryKey[1] as string),
+  })
+  for (const [, data] of cached) {
+    if (!data) continue
+    const items = 'pages' in data ? data.pages.flatMap((p) => p.items) : data.items
+    const found = items.find((item) => item.auctionId === auctionId)
+    if (found) return found
+  }
+  return undefined
+}
+
+/**
+ * 카드 정보로 만든 임시 상세. isPlaceholderData일 때 화면은 상단(이미지 · 칩 · 상품명)만 이 값으로 그리고
+ * 나머지는 스켈레톤으로 둡니다. 카드에 없는 필드는 빈 값이라 화면에서 읽지 않습니다.
+ */
+function previewToDetail(preview: SimilarAuction): AuctionDetail {
+  return {
+    auctionId: preview.auctionId,
+    status: preview.status,
+    product: {
+      productId: preview.productId,
+      name: preview.name,
+      brand: preview.brand,
+      subName: '',
+      grade: preview.grade,
+      imageUrls: [preview.thumbnailUrl],
+    },
+    seller: { sellerId: 0, nickname: '', profileImageUrl: null, completedSalesCount: 0 },
+    description: '',
+    startPrice: 0,
+    currentPrice: preview.price,
+    bidIncrement: 0,
+    minNextBidAmount: 0,
+    minCapAmount: 0,
+    startsAt: '',
+    endsAt: '',
+    serverTime: '',
+    bidCount: 0,
+    isLiked: preview.isLiked,
+    likeCount: preview.likeCount,
+    myState: { isSeller: false, isHighestBidder: false, canBid: false },
+  }
+}
+
+/** 홈 목록 · 비슷한 상품에서 들어오면 그 카드 정보로 먼저 그리고(placeholderData), 응답이 오면 채웁니다. */
+export function useAuctionDetailQuery(auctionId: number, { enabled = true } = {}) {
+  const queryClient = useQueryClient()
+  return useQuery<AuctionDetail, Error, AuctionDetail, ReturnType<typeof auctionKeys.detail>>({
     queryKey: auctionKeys.detail(auctionId),
     queryFn: ({ signal }) => getAuctionDetail(auctionId, signal),
+    enabled,
+    placeholderData: () => {
+      const preview = findAuctionPreview(queryClient, auctionId)
+      return preview ? previewToDetail(preview) : undefined
+    },
   })
 }
 

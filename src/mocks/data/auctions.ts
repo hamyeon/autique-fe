@@ -25,6 +25,7 @@ import {
   fromNow,
   kst,
 } from '@/mocks/data/common'
+import { formatNumber } from '@/lib/format'
 import { isBidRestricted, penaltyState } from '@/mocks/data/me'
 
 /* 경매 목 데이터. 시각은 페이지를 연 시점 기준이라 LIVE 경매는 항상 진행 중입니다. */
@@ -105,13 +106,13 @@ function auction(
   > &
     Partial<MockAuction>,
 ): MockAuction {
-  return {
+  const merged: MockAuction = {
     productId: partial.auctionId,
     description: '상품 상태가 완전히 좋습니다.',
     bidIncrement: BID_INCREMENT,
     canceled: false,
     aiEstimatedPrice: Math.round((partial.startPrice * 2) / BID_INCREMENT) * BID_INCREMENT,
-    aiPriceReason: '유사 거래 데이터를 기반으로 산정했습니다.',
+    aiPriceReason: null,
     likeCount: 0,
     isLiked: false,
     bids: [],
@@ -119,6 +120,44 @@ function auction(
     myAutoBid: null,
     ...partial,
   }
+  merged.aiPriceReason ??= priceReason(merged)
+  return merged
+}
+
+/** 등급별 시세 반영률(목 전용) */
+const GRADE_RATE: Record<ConditionGrade, number> = {
+  DS: 1,
+  S: 0.98,
+  A: 0.95,
+  B: 0.85,
+  C: 0.7,
+  UNKNOWN: 0.9,
+}
+
+const roundTo1000 = (n: number) => Math.round(n / 1000) * 1000
+
+/**
+ * AI 가격 산정 근거. 상품 상세 Figma(661:3429)의 문장 구조에 상품의 모델명 · 등급 · AI 적정 시세를 넣어 만듭니다.
+ * 추천 판매가 = aiEstimatedPrice(상세 SummaryCard의 'AI 적정 시세'와 같은 값)
+ */
+function priceReason({ auctionId, product, aiEstimatedPrice }: MockAuction) {
+  if (aiEstimatedPrice == null) return null
+  const rate = GRADE_RATE[product.grade]
+  const median = roundTo1000(aiEstimatedPrice / rate)
+  const low = roundTo1000(median * 0.7)
+  const high = roundTo1000(median * 1.4)
+  const count = 40 + ((auctionId * 37) % 120)
+  const won = (n: number) => `${formatNumber(n)}원`
+  const grade =
+    product.grade === 'DS'
+      ? '새상품'
+      : product.grade === 'UNKNOWN'
+        ? '판정 불가'
+        : `${product.grade}급`
+  return [
+    `당근마켓과 후르츠패밀리의 ${product.subName} 중고 매물 ${count}건을 분석했어요. 비슷한 상품의 실거래가 중앙값은 ${won(median)}이며, 절반 정도가 ${won(low)}~${won(high)} 사이에서 거래되고 있어요.`,
+    `상품 상태가 ${grade}인 점을 반영해 시세의 ${Math.round(rate * 100)}% 수준으로 조정했고, 구성품이 모두 포함되어 있어 추가 감가는 적용하지 않았어요. 추천 판매가는 ${won(aiEstimatedPrice)}, 판매 권장 범위는 ${won(low)}~${won(high)}입니다.`,
+  ].join('\n')
 }
 
 /** 홈 목록 상품. index번째 목 이미지를 대표 이미지로 씁니다. */
@@ -128,7 +167,15 @@ function homeProduct(
   name: string,
   subName: string,
 ): MockAuction['product'] {
-  return { name, brand, subName, grade: 'A', imageUrls: [PRODUCT_IMAGES[index]] }
+  // 상세 이미지 스와이프를 확인할 수 있게 같은 사진을 4장 둡니다.
+  return { name, brand, subName, grade: 'A', imageUrls: Array(4).fill(PRODUCT_IMAGES[index]) }
+}
+
+/** 홈 상품의 상세 화면 값. 판매자 설명은 상품 상세 Figma(661:3429) 문구 그대로, AI 가격 산정 근거는 priceReason이 만듭니다. */
+const HOME_DETAIL: Pick<MockAuction, 'description' | 'aiEstimatedPrice'> = {
+  description:
+    '안녕하세요 이 신발은 어쩌구 저쩌구\n안녕하세요 이 신발은 어쩌구 저쩌구\n어쩌구저쩌구 상태가 완전히 좋습니다 놓치면 후회하실 듯',
+  aiEstimatedPrice: 250000,
 }
 
 /** 홈에 나오지 않는 경매(상세 · 결과 · 판매자 흐름 테스트용)는 목 이미지 4장을 모두 씁니다. */
@@ -370,6 +417,7 @@ export const auctions: MockAuction[] = [
     startsAt: fromNow(2 * HOUR),
     endsAt: fromNow(4 * HOUR),
     likeCount: 556,
+    ...HOME_DETAIL,
   }),
   // 2. LIVE · 최고가 234,000원
   auction({
@@ -380,6 +428,7 @@ export const auctions: MockAuction[] = [
     startsAt: fromNow(-30 * MINUTE),
     endsAt: fromNow(90 * MINUTE),
     likeCount: 556,
+    ...HOME_DETAIL,
     bids: makeBids(
       [{ amount: 234000 }, { amount: 229000, bidder: 'sne****' }],
       fromNow(-4 * MINUTE),
@@ -399,6 +448,7 @@ export const auctions: MockAuction[] = [
     startsAt: fromNow(5 * HOUR),
     endsAt: fromNow(7 * HOUR),
     likeCount: 556,
+    ...HOME_DETAIL,
   }),
   // 4. 경매 종료 · 최종가 234,000원
   auction({
@@ -414,6 +464,7 @@ export const auctions: MockAuction[] = [
     startsAt: fromNow(-1 * DAY - 2 * HOUR),
     endsAt: fromNow(-1 * DAY),
     likeCount: 556,
+    ...HOME_DETAIL,
     bids: makeBids(
       [{ amount: 234000 }, { amount: 229000, bidder: 'sne****' }],
       fromNow(-1 * DAY - 5 * MINUTE),
@@ -569,6 +620,8 @@ export function toSimilar(a: MockAuction): SimilarAuction {
     price: currentPriceOf(a),
     likeCount: a.likeCount,
     isLiked: a.isLiked,
+    status: statusOf(a), // [ASSUMED]
+    grade: a.product.grade, // [ASSUMED]
   }
 }
 
@@ -576,8 +629,6 @@ export function toSimilar(a: MockAuction): SimilarAuction {
 export function toListItem(a: MockAuction): AuctionListItem {
   return {
     ...toSimilar(a),
-    status: statusOf(a),
-    grade: a.product.grade,
     startsAt: kst(a.startsAt),
     endsAt: kst(a.endsAt),
   }

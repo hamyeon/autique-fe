@@ -5,7 +5,7 @@ import {
   useAuctionsQuery,
   useToggleAuctionLikeMutation,
 } from '@/api/auctions'
-import type { AuctionListItem } from '@/api/schemas/auctions'
+import type { SimilarAuction } from '@/api/schemas/auctions'
 import {
   FloatingActionButton,
   HomeHeader,
@@ -22,7 +22,7 @@ import {
 } from '@/components/feedback'
 import { useInfiniteScroll } from '@/hooks/use-infinite-scroll'
 import { Screen } from '@/layouts/screen'
-import { AuctionGrid } from '@/pages/home/auction-grid'
+import { AuctionGrid } from '@/components/auction-grid'
 
 /** '지금 인기 있는 경매' 한 번에 불러올 개수(2열 × 4줄) */
 const POPULAR_PAGE_SIZE = 8
@@ -34,7 +34,7 @@ export function HomePage() {
   const popular = useAuctionsInfiniteQuery({ sort: 'popular', size: POPULAR_PAGE_SIZE })
   const toggleLike = useToggleAuctionLikeMutation()
 
-  const onToggleLike = (item: AuctionListItem) =>
+  const onToggleLike = (item: SimilarAuction) =>
     toggleLike.mutate({ auctionId: item.auctionId, liked: !item.isLiked })
 
   const loadMoreRef = useInfiniteScroll<HTMLDivElement>({

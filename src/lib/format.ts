@@ -22,3 +22,23 @@ export function formatGrade(grade: string) {
   if (grade === 'DS') return '새상품'
   return `${grade}등급`
 }
+
+/**
+ * 날짜·시각 표기.
+ * - relative(기본): 오늘/내일/어제는 '오늘 오후 8시', 그 밖은 '2026년 9월 30일 오후 8시'
+ * - relative=false: 항상 '2026년 9월 30일 오후 8시' (종료된 경매)
+ * 분이 있으면 '오후 8시 30분'
+ */
+export function formatDateTime(date: Date, { relative = true, now = new Date() } = {}) {
+  const hours = date.getHours()
+  const minutes = date.getMinutes()
+  const time = `${hours < 12 ? '오전' : '오후'} ${hours % 12 || 12}시${minutes ? ` ${minutes}분` : ''}`
+
+  if (relative) {
+    const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+    const dayDiff = Math.round((startOfDay(date) - startOfDay(now)) / (24 * 60 * 60 * 1000))
+    const word = { [-1]: '어제', 0: '오늘', 1: '내일' }[dayDiff]
+    if (word) return `${word} ${time}`
+  }
+  return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일 ${time}`
+}

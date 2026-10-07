@@ -33,8 +33,9 @@ const CANNOT_BID_ERROR: Record<NonNullable<ReturnType<typeof cannotBidReasonOf>>
 }
 
 export const auctionHandlers = [
+  /** ?mock=error는 명세의 다른 오류(401)로 돌려줘, 없는 id(404)와 구분해 확인할 수 있게 합니다. */
   mockEndpoint(endpoints.getAuctionDetail, {
-    error: mockErrors.AUCTION_NOT_FOUND,
+    error: mockErrors.UNAUTHORIZED,
     resolve: ({ params, ok, fail }) => {
       const a = findAuction(idParam(params, 'auctionId'))
       return a ? ok(toDetail(a)) : fail(mockErrors.AUCTION_NOT_FOUND)
@@ -151,9 +152,16 @@ export const auctionHandlers = [
     resolve: ({ params, ok, fail }) => {
       const auctionId = idParam(params, 'auctionId')
       if (!findAuction(auctionId)) return fail(mockErrors.AUCTION_NOT_FOUND)
-      const items = auctions
-        .filter((a) => a.auctionId !== auctionId && ['SCHEDULED', 'LIVE'].includes(statusOf(a)))
-        .slice(0, 6)
+      // Figma처럼 4장. 홈 상품(1~4)을 먼저, 모자라면 다른 예정 · 진행 중 경매로 채웁니다.
+      const candidates = auctions.filter(
+        (a) => a.auctionId !== auctionId && ['SCHEDULED', 'LIVE', 'ENDED'].includes(statusOf(a)),
+      )
+      const isHome = (id: number) => id >= 1 && id <= 4
+      const items = [
+        ...candidates.filter((a) => isHome(a.auctionId)),
+        ...candidates.filter((a) => !isHome(a.auctionId) && statusOf(a) !== 'ENDED'),
+      ]
+        .slice(0, 4)
         .map(toSimilar)
       return ok({ items })
     },

@@ -3,10 +3,16 @@ import { createBrowserRouter } from 'react-router'
 import { MobileLayout } from '@/layouts/mobile-layout'
 import { HomePage } from '@/pages/home/home-page'
 import { NotFoundPage } from '@/pages/not-found-page'
+import { ProductDetailPage } from '@/pages/product-detail/product-detail-page'
 
 /* 개발 모드에서만 등록합니다. 빌드 시 import.meta.env.DEV가 false로 바뀌어 페이지 코드가 번들에서 빠집니다. */
 const devRoutes: RouteObject[] = import.meta.env.DEV
   ? [
+      {
+        path: '/dev/routes',
+        lazy: () =>
+          import('@/pages/dev/dev-routes-page').then((m) => ({ Component: m.DevRoutesPage })),
+      },
       {
         path: '/design-system',
         lazy: () =>
@@ -29,6 +35,7 @@ export const router = createBrowserRouter([
     element: <MobileLayout />,
     children: [
       { path: '/', element: <HomePage /> },
+      { path: '/products/:id', element: <ProductDetailPage /> },
       ...devRoutes,
       { path: '*', element: <NotFoundPage /> },
     ],
