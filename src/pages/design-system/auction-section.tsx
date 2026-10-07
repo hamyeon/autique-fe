@@ -213,6 +213,8 @@ function InfoRowDemo() {
 }
 
 function SummaryCardDemo() {
+  const [tapped, setTapped] = useState<string | null>(null)
+
   return (
     <Demo
       title="SummaryCard"
@@ -244,6 +246,18 @@ function SummaryCardDemo() {
         ]}
       />
       <Caption>위에서부터: 기본 + 구분선 · primary + 구분선 · 4행 구분선 없음</Caption>
+      <SummaryCard
+        rows={[
+          { label: '경매 시작', value: '2026.09.21 오후 4시', emphasis: 'regular', onClick: () => setTapped('경매 시작') },
+          { label: '경매 종료', value: '2026.09.21 오후 8시', emphasis: 'regular', onClick: () => setTapped('경매 종료') },
+          { label: '시작가', value: formatPrice(220000), emphasis: 'primary', onClick: () => setTapped('시작가') },
+          { label: '최소 입찰 단위', value: formatPrice(5000) },
+        ]}
+      />
+      <Caption>
+        행 onClick(DS 확장): 위 3행은 눌러짐(눌린 동안 흐려짐), 마지막 행은 표시만. 마지막으로 누른 행:{' '}
+        {tapped ?? '없음'}
+      </Caption>
     </Demo>
   )
 }

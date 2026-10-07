@@ -52,10 +52,20 @@ const GROUPS: { title: string; links: RouteLink[] }[] = [
     ],
   },
   {
+    title: '경매 등록(뼈대: 입력 UI 없음)',
+    links: [
+      { to: '/register', label: '처음부터(첫 미완료 단계로)' },
+      { to: '/register/1', label: '1/6 상품 이미지 업로드' },
+      { to: '/register/analyzing', label: 'AI 분석 자리' },
+      { to: '/register/4', label: '4/6 바로 가기(앞 단계 미완료면 되돌아감)' },
+      { to: '/register/6', label: '6/6 바로 가기(앞 단계 미완료면 되돌아감)' },
+      { to: '/register/complete', label: '등록 완료 바로 가기(등록 전이면 되돌아감)' },
+    ],
+  },
+  {
     title: '아직 없는 화면',
     links: [
       { to: '/auctions/2/live', label: '실시간 경매', pending: true },
-      { to: '/register', label: '상품 등록', pending: true },
       { to: '/products', label: '상품 찾기', pending: true },
       { to: '/mypage', label: '마이페이지', pending: true },
     ],

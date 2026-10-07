@@ -1,31 +1,12 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { request } from '@/api/client'
 import { endpoints } from '@/api/endpoints'
-import { auctionKeys } from '@/api/auctions'
-import type {
-  AnalysisStatus,
-  CalculatePriceRequest,
-  CreateProductRequest,
-} from '@/api/schemas/products'
+import type { CalculatePriceRequest, CreateProductRequest } from '@/api/schemas/products'
 
 export const productKeys = {
   all: ['products'] as const,
   analysis: (taskId: number) => [...productKeys.all, 'analysis', taskId] as const,
 }
-
-/** 분석 상태 폴링 간격 */
-const ANALYSIS_POLL_MS = 1500
-
-/** Vision 단계 폴링을 멈추는 상태: 사용자 확인 단계 이후이거나 실패 */
-const ANALYSIS_POLL_STOP: ReadonlySet<AnalysisStatus> = new Set([
-  'AWAITING_USER_CONFIRMATION',
-  'PRICING_PROCESSING',
-  'COMPLETED',
-  'IMAGE_UPLOAD_FAILED',
-  'QUEUE_FAILED',
-  'VISION_FAILED',
-  'PRICING_FAILED',
-])
 
 /* ───────── API 함수 ───────── */
 
@@ -51,23 +32,10 @@ export function createProduct(body: CreateProductRequest) {
 
 /* ───────── 훅 ───────── */
 
-export function useAnalyzeProductMutation() {
-  return useMutation({ mutationFn: analyzeProduct })
-}
-
-/** AWAITING_USER_CONFIRMATION 또는 *_FAILED가 될 때까지 폴링합니다. */
-export function useProductAnalysisQuery(taskId: number | null) {
-  return useQuery({
-    queryKey: productKeys.analysis(taskId ?? -1),
-    queryFn: ({ signal }) => getProductAnalysis(taskId!, signal),
-    enabled: taskId !== null,
-    staleTime: 0,
-    refetchInterval: (query) => {
-      const status = query.state.data?.status
-      return status && ANALYSIS_POLL_STOP.has(status) ? false : ANALYSIS_POLL_MS
-    },
-  })
-}
+/*
+ * 분석 접수 · 폴링 · 등록 제출은 경매 등록 화면이 직접 다룹니다
+ * (src/pages/register/register-analyzing-page.tsx, src/features/register/submit.ts).
+ */
 
 /** 분석 세션당 1회만 가능합니다(이후 40003). */
 export function useCalculatePriceMutation() {
@@ -76,14 +44,5 @@ export function useCalculatePriceMutation() {
     mutationFn: calculatePrice,
     onSuccess: (_, { analysisId }) =>
       queryClient.invalidateQueries({ queryKey: productKeys.analysis(analysisId) }),
-  })
-}
-
-/** 상품 등록 + 첫 경매(SCHEDULED) 생성 */
-export function useCreateProductMutation() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: createProduct,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: auctionKeys.lists() }),
   })
 }

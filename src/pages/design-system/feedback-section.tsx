@@ -3,20 +3,56 @@ import { Button } from '@/components/ds'
 import {
   EmptyState,
   ErrorState,
+  LoadingIllustration,
   ProductCardSkeleton,
   ProductGridSkeleton,
   Skeleton,
 } from '@/components/feedback'
+import type { AnalysisStage } from '@/features/register/analysis'
+import { ANALYSIS_STAGE_COPY } from '@/features/register/analysis'
 import { Caption, Demo, OptionGroup, Section } from './showcase'
 
 /** src/components/feedback: 화면 상태(로딩 · 비어 있음 · 에러) 공용 컴포넌트 */
 export function FeedbackSection() {
   return (
     <Section id="feedback" title="Feedback">
+      <LoadingIllustrationDemo />
       <SkeletonDemo />
       <EmptyStateDemo />
       <ErrorStateDemo />
     </Section>
+  )
+}
+
+const STAGES = ['1', '2', '3', '4'] as const
+
+function LoadingIllustrationDemo() {
+  const [stage, setStage] = useState<(typeof STAGES)[number]>('1')
+  const copy = ANALYSIS_STAGE_COPY[Number(stage) as AnalysisStage]
+
+  return (
+    <Demo
+      title="LoadingIllustration"
+      description="AI 분석 · 가격 로딩 일러스트(Figma LoadingImg). 120×120 상자에서 primary1 막대만 위→아래로 훑습니다: 0.2초 대기 → 1.2초 ease-out → 0.2초 대기 → 즉시 위로, 1.6초 무한 반복. 휴대폰 '동작 줄이기'가 켜져 있으면 막대가 위에 멈춥니다."
+    >
+      <div className="border-gray2 py-layout-step flex justify-center rounded-md border">
+        <LoadingIllustration />
+      </div>
+      <Caption>단독</Caption>
+
+      <OptionGroup label="로딩 단계" options={STAGES} value={stage} onChange={setStage} />
+      <div className="border-gray2 py-layout-step gap-space-24 flex flex-col items-center rounded-md border">
+        <LoadingIllustration />
+        <div
+          key={stage}
+          className="gap-stack-tight animate-in fade-in flex flex-col items-center text-center duration-300 motion-reduce:animate-none"
+        >
+          <p className="text-body01 text-black0">{copy.title}</p>
+          <p className="text-body04 text-gray5">{copy.description}</p>
+        </div>
+      </div>
+      <Caption>AI 상품 분석 로딩 (1)~(4) 화면 구성. 단계를 바꾸면 글자만 페이드로 바뀌고 일러스트 움직임은 이어집니다.</Caption>
+    </Demo>
   )
 }
 

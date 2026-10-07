@@ -72,21 +72,21 @@ export const endpoints = {
     path: '/api/products/analyze',
     multipart: true,
     response: products.analyzeProductResponseSchema,
-    auth: 'optional', // [ASSUMED] 명세에 Authorization 헤더 표기가 없어 로그인 상태면 토큰만 실어 보냄
+    auth: 'required',
     timeoutMs: SLOW_TIMEOUT_MS,
   }),
   getProductAnalysis: endpoint({
     method: 'GET',
     path: '/api/products/analyze/{taskId}',
     response: products.productAnalysisSchema,
-    auth: 'optional', // [ASSUMED] 명세에 Authorization 헤더 표기가 없음
+    auth: 'required',
   }),
   calculatePrice: endpoint({
     method: 'POST',
     path: '/api/products/calculate-price',
     request: products.calculatePriceRequestSchema,
     response: products.calculatePriceResponseSchema,
-    auth: 'optional', // [ASSUMED] 명세에 Authorization 헤더 표기가 없음
+    auth: 'required',
     timeoutMs: SLOW_TIMEOUT_MS,
   }),
   createProduct: endpoint({

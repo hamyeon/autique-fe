@@ -3,18 +3,42 @@ import type { z } from 'zod'
 import { describeIssues } from '@/api/client'
 import type { EndpointDef } from '@/api/endpoints'
 import { endpointKey } from '@/api/endpoints'
+import { sessionAppStorage } from '@/lib/storage'
 import { passthrough } from '@/mocks/config'
 import type { MockError } from '@/mocks/errors'
 import { mockErrors } from '@/mocks/errors'
 
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '')
 
-/** 화면 주소에 ?mock=empty / ?mock=error 를 붙이면 모든 목이 빈 응답 / 명세 오류를 돌려줍니다. */
-type MockScenario = 'empty' | 'error' | null
+/*
+ * 화면 주소의 ?mock= 시나리오.
+ * - empty / error: 그 페이지에서만. 목으로 처리하는 엔드포인트가 빈 응답 / 명세 오류를 돌려줍니다.
+ * - slow / analysis-fail / submit-fail: 경매 등록 흐름 확인용. 여러 화면을 거쳐야 해서 탭을 닫거나
+ *   ?mock=off 를 붙일 때까지 유지됩니다. 이 시나리오일 때만 해당 요청을 목으로 처리하고(passthrough여도),
+ *   평소에는 실제 서버로 보냅니다(각 핸들러의 mockIn).
+ *   slow: AI 분석 30초 · analysis-fail: AI 분석 실패(VISION_FAILED) · submit-fail: 등록 제출 500
+ */
+export type MockScenario = 'empty' | 'error' | 'slow' | 'analysis-fail' | 'submit-fail'
 
-function currentScenario(): MockScenario {
+const STICKY_SCENARIOS = ['slow', 'analysis-fail', 'submit-fail'] as const
+const SCENARIO_KEY = 'autique-mock-scenario'
+
+const isSticky = (value: string | null): value is (typeof STICKY_SCENARIOS)[number] =>
+  (STICKY_SCENARIOS as readonly (string | null)[]).includes(value)
+
+export function currentScenario(): MockScenario | null {
   const value = new URLSearchParams(window.location.search).get('mock')
-  return value === 'empty' || value === 'error' ? value : null
+  if (value === 'off') {
+    sessionAppStorage.removeItem(SCENARIO_KEY)
+    return null
+  }
+  if (isSticky(value)) {
+    sessionAppStorage.setItem(SCENARIO_KEY, value)
+    return value
+  }
+  if (value === 'empty' || value === 'error') return value
+  const saved = sessionAppStorage.getItem(SCENARIO_KEY)
+  return isSticky(saved) ? saved : null
 }
 
 type MockReply<E extends EndpointDef> =
@@ -32,6 +56,7 @@ export interface MockContext<E extends EndpointDef> {
   /** request 스키마를 통과한 body (multipart면 FormData) */
   body: MockBody<E>
   request: Request
+  scenario: MockScenario | null
   ok: (data: z.input<E['response']>, status?: number) => MockReply<E>
   fail: (error: MockError) => MockReply<E>
 }
@@ -44,6 +69,8 @@ interface MockDef<E extends EndpointDef> {
   error: MockError
   /** 요청 body가 스키마를 통과하지 못했을 때의 명세 오류. 기본 40001 */
   invalid?: (error: z.ZodError) => MockError
+  /** passthrough 엔드포인트라도 이 시나리오일 때는 목으로 처리합니다. */
+  mockIn?: readonly MockScenario[]
 }
 
 /** Idempotency-Key → 처음 처리한 요청과 응답. 같은 키 + 같은 요청이면 같은 응답을 다시 돌려줍니다. */
@@ -64,10 +91,11 @@ export function mockEndpoint<E extends EndpointDef>(def: E, mock: MockDef<E>) {
   const method = def.method.toLowerCase() as Lowercase<EndpointDef['method']>
 
   return http[method](url, async ({ request, params }) => {
-    if (passthrough.includes(key)) return sendToNetwork()
+    const scenario = currentScenario()
+    const forced = scenario !== null && (mock.mockIn?.includes(scenario) ?? false)
+    if (passthrough.includes(key) && !forced) return sendToNetwork()
 
     await delay()
-    const scenario = currentScenario()
     if (scenario === 'error') return errorResponse(mock.error)
 
     const idempotencyKey = def.idempotent ? request.headers.get('Idempotency-Key') : null
@@ -102,6 +130,7 @@ export function mockEndpoint<E extends EndpointDef>(def: E, mock: MockDef<E>) {
       query: new URL(request.url).searchParams,
       body: body as MockBody<E>,
       request,
+      scenario,
       ok: (data, status = 200) => ({ kind: 'ok', status, data }),
       fail: (error) => ({ kind: 'error', error }),
     }

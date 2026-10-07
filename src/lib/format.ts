@@ -42,3 +42,23 @@ export function formatDateTime(date: Date, { relative = true, now = new Date() }
   }
   return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일 ${time}`
 }
+
+const pad2 = (n: number) => String(n).padStart(2, '0')
+
+/** Date → '2026.09.21' (경매 일정 입력 · 확인) */
+export function formatDotDate(date: Date) {
+  return `${date.getFullYear()}.${pad2(date.getMonth() + 1)}.${pad2(date.getDate())}`
+}
+
+/** Date → '오후 4:00' (경매 일정 입력) */
+export function formatMeridiemClock(date: Date) {
+  const hours = date.getHours()
+  return `${hours < 12 ? '오전' : '오후'} ${hours % 12 || 12}:${pad2(date.getMinutes())}`
+}
+
+/** Date → '2026.09.21 오후 4시', 분이 있으면 '오후 4시 30분' (경매 정보 확인) */
+export function formatDotDateTime(date: Date) {
+  const hours = date.getHours()
+  const minutes = date.getMinutes()
+  return `${formatDotDate(date)} ${hours < 12 ? '오전' : '오후'} ${hours % 12 || 12}시${minutes ? ` ${minutes}분` : ''}`
+}

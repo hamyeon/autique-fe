@@ -15,7 +15,14 @@ async function enableMocking() {
   await worker.start({ onUnhandledFrame: 'bypass' })
 }
 
-enableMocking().then(() => {
+/** 개발 모드에서만 .env.local 의 개발용 토큰으로 로그인 상태를 채웁니다. 빌드에서는 이 import가 통째로 빠집니다. */
+async function seedDevAuth() {
+  if (!import.meta.env.DEV) return
+  const { seedDevTokens } = await import('@/app/dev-auth')
+  seedDevTokens()
+}
+
+Promise.all([seedDevAuth(), enableMocking()]).then(() => {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <AppProviders />

@@ -52,7 +52,7 @@ export function BottomSheet({
   footer,
   className,
 }: BottomSheetProps) {
-  const titleClass = 'text-head03 text-black0'
+  const titleClass = 'text-head02 text-black0'
 
   if (inline) {
     return (

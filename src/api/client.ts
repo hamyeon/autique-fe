@@ -156,7 +156,7 @@ async function send({ label, url, def, body, signal, idempotencyKey }: SendInput
       body: payload,
       signal: controller.signal,
     })
-    return { response, sentToken: accessToken !== null }
+    return { response }
   } catch (error) {
     // 화면 이탈 등으로 호출 측이 취소한 경우는 그대로 넘겨 TanStack Query가 처리하게 합니다.
     if (signal?.aborted) throw error
@@ -274,7 +274,8 @@ export async function request<E extends EndpointDef>(
   }
 
   const first = await send(input)
-  if (first.response.status === 401 && first.sentToken && (await refreshAccessToken())) {
+  /* 토큰이 만료됐거나 refresh 토큰만 있는 경우(개발용 토큰 등) 한 번 재발급하고 다시 보냅니다. */
+  if (first.response.status === 401 && def.auth !== 'none' && (await refreshAccessToken())) {
     return unwrap(def, label, (await send(input)).response)
   }
   return unwrap(def, label, first.response)

@@ -77,6 +77,7 @@ There is no test runner configured yet.
 - Source of truth for the API: the Notion spec "API 명세서 - GROWTH" (https://app.notion.com/p/mmaybei/API-GROWTH-3c2dbc84169a80588fa4eed4ce37110c, read via Notion MCP). Use its endpoints, request/response shapes and field names exactly as written — don't rename, re-case or reshape them.
 - API types are defined only in `src/api/schemas/` as Zod schemas. Everywhere else, use the types derived there with `z.infer`; never redeclare a response type in screen code. Reuse the same schema for forms and response parsing.
 - Anything not in the spec (endpoint, field, query param, enum value, error-code name) must carry a `// [ASSUMED] 이유` comment where it is defined. Mock handlers for assumed endpoints go in `src/mocks/handlers/assumed/`.
+- Where the real server behaves differently from the spec (checked with real calls), follow the real server and mark it with `// [MISMATCH] 명세는 xxx` where the schema field is defined; ask the backend to fix the spec (Notion comment).
 - Every endpoint is registered once in `src/api/endpoints.ts` (method, spec path with `{param}`, request/response schema, auth, idempotency). API functions, mocks and passthrough all use this registry.
 - Call the server only through `request()` in `src/api/client.ts`: it uses `VITE_API_BASE_URL`, sends `Authorization: Bearer` from the auth store (refreshes once on 401), adds `Idempotency-Key` where the spec requires it, times out, unwraps `{ success, data, error }` to `data`, parses it with the schema (logging endpoint + field path on mismatch) and throws `ApiError` (`kind`, `status`, spec `code`) on any failure.
 - Put API functions in `src/api/<domain>.ts`, with query hooks next to them (`useAuctionDetailQuery`). Keep query keys in one factory per domain (e.g. `auctionKeys.all`, `auctionKeys.detail(id)`).
@@ -87,7 +88,14 @@ There is no test runner configured yet.
 - Handlers in `src/mocks/handlers/` (one file per domain, built with `mockEndpoint()`), data in `src/mocks/data/`. Mock responses pass through the same response schema as the real API.
 - On/off per "method + path": `src/mocks/config.ts` `passthrough` lists endpoints sent to the real server (e.g. `'POST /api/products'`). **When switching an endpoint to the real API, add it to `passthrough`** — don't delete its mock.
 - `VITE_MOCK=off` in `.env.local` turns MSW off entirely. Append `?mock=empty` or `?mock=error` to the page URL to get empty lists or each endpoint's spec error.
+- Registration flow scenarios: `?mock=slow` (AI analysis takes 30s), `?mock=analysis-fail` (VISION_FAILED), `?mock=submit-fail` (POST /api/products 500). Only in these scenarios are those passthrough endpoints mocked (`mockIn` in the handler); they stick for the tab until `?mock=off`, and the badge shows the active one.
 - The "MOCK · 실서버 N" badge in the corner shows that mocks are on and how many endpoints are passed through.
+- Whenever any endpoint uses the real server, keep `POST /api/auth/refresh` and `POST /api/auth/logout` in `passthrough` too (the mock only accepts mock tokens).
+
+### Real server in development
+
+- The server has no CORS allowance (any request with an `Origin` header gets 403), so dev uses the Vite proxy in `vite.config.ts`: set `API_PROXY_TARGET` in `.env.local` and leave `VITE_API_BASE_URL` empty so requests go to `/api` on the dev server; the proxy strips `Origin`. Deploy and Capacitor builds need backend CORS instead.
+- Dev login: `VITE_DEV_ACCESS_TOKEN` / `VITE_DEV_REFRESH_TOKEN` in `.env.local` seed the auth store in dev only (`src/app/dev-auth.ts`, dynamically imported so it never reaches the build); expired access tokens refresh automatically on 401. Never put tokens anywhere except `.env.local` (git-ignored), and don't print them.
 
 ## Capacitor compatibility
 

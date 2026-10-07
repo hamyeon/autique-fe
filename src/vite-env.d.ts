@@ -4,6 +4,9 @@ interface ImportMetaEnv {
   readonly VITE_API_BASE_URL: string
   /** 'off'면 개발 모드에서도 MSW 목을 끄고 실제 서버로 보냅니다. */
   readonly VITE_MOCK?: 'on' | 'off'
+  /** 개발 모드 전용 로그인 상태. 빌드 번들에는 들어가지 않습니다(src/app/dev-auth.ts). */
+  readonly VITE_DEV_ACCESS_TOKEN?: string
+  readonly VITE_DEV_REFRESH_TOKEN?: string
 }
 
 interface ImportMeta {

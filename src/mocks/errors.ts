@@ -58,7 +58,11 @@ export const mockErrors = {
   AUCTION_NOT_FOUND: error(404, 'AUCTION_NOT_FOUND', '존재하지 않는 경매입니다.'),
   ORDER_NOT_FOUND: error(404, 'ORDER_NOT_FOUND', '존재하지 않는 주문입니다.'),
   ANALYSIS_NOT_FOUND: (analysisId: string) =>
-    error(404, 'ORDER_NOT_FOUND', `분석 세션을 찾을 수 없습니다. analysisId: ${analysisId}`), // 명세상 40402
+    error(
+      404,
+      'ANALYSIS_SESSION_NOT_FOUND',
+      `분석 세션을 찾을 수 없습니다. analysisId: ${analysisId}`,
+    ),
   BACKUP_OFFER_NOT_FOUND: error(404, 'BACKUP_OFFER_NOT_FOUND', '존재하지 않는 차순위 제안입니다.'),
   AUTO_BID_NOT_FOUND: error(404, 'AUTO_BID_NOT_FOUND', '등록된 자동입찰이 없습니다.'),
   NOTIFICATION_NOT_FOUND: error(404, 'NOTIFICATION_NOT_FOUND', '존재하지 않는 알림입니다.'),
@@ -118,6 +122,7 @@ export const mockErrors = {
       `경매 시작 1시간 전까지만 시작가를 수정할 수 있습니다. auctionId: ${auctionId}`,
     ),
 
+  INTERNAL_SERVER_ERROR: error(500, 'INTERNAL_SERVER_ERROR', '서버 내부 오류: ...'),
   S3_UPLOAD_FAILED: error(500, 'S3_UPLOAD_FAILED', 'S3 이미지 업로드 중 문제가 발생했습니다.'),
   KAKAO_API_FAILED: error(502, 'KAKAO_API_FAILED', 'Kakao 사용자 정보 조회에 실패했습니다.'),
 }

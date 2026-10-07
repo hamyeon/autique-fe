@@ -6,7 +6,7 @@ import { z } from 'zod'
  */
 
 /** 시각 문자열. 명세 예시는 ISO-8601이지만 오프셋이 없는 값(products createdAt)도 있어 문자열로만 검증합니다. */
-export const dateTimeSchema = z.string()
+export const dateTimeSchema = z.string() // [MISMATCH] 명세 예시는 초 단위('…T17:30:00+09:00'), 실서버 serverTime은 나노초까지('…T15:08:13.216709001+09:00'). Date.parse는 정상 처리
 
 /** 공통 응답의 error 객체 */
 export const apiErrorBodySchema = z.object({
@@ -110,6 +110,8 @@ export const API_ERROR_CODE = {
 
   // [ASSUMED] 아래 이름은 각 엔드포인트 페이지에 코드·메시지만 있고 symbolic 이름이 없어 메시지를 보고 붙였습니다.
   IMAGE_FILE_MISSING: 40002,
+  ANALYSIS_SESSION_NOT_FOUND: 40408, // 공통 오류 코드표 변경 사항(2026-10-07): 분석 세션 없음 40402 → 40408
+  INTERNAL_SERVER_ERROR: 50001, // 가격 계산 중 서버 오류(분석 세션은 PRICING_FAILED)
   ANALYSIS_STATUS_INVALID: 40003,
   AUCTION_TIME_INVALID: 40006,
   KAKAO_TOKEN_INVALID: 40102,
