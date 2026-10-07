@@ -1,3 +1,5 @@
+<img width="1920" height="1080" alt="01" src="https://github.com/user-attachments/assets/77e352d9-7872-4e9e-8f67-e248bfd08854" />
+
 # Autique FE
 
 Autique 모바일 웹 프론트엔드입니다. 추후 Capacitor로 앱 래핑을 고려해 Vite 기반 SPA로 구성했습니다.
