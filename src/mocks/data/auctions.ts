@@ -24,8 +24,10 @@ import {
   SELLERS,
   fromNow,
   kst,
+  mockResetRequested,
 } from '@/mocks/data/common'
 import { formatNumber } from '@/lib/format'
+import { sessionAppStorage } from '@/lib/storage'
 import { isBidRestricted, penaltyState } from '@/mocks/data/me'
 
 /* 경매 목 데이터. 시각은 페이지를 연 시점 기준이라 LIVE 경매는 항상 진행 중입니다. */
@@ -202,7 +204,7 @@ export const auctions: MockAuction[] = [
       fromNow(-2 * MINUTE),
     ),
   }),
-  // 12. SCHEDULED · 명세 예시
+  // 12. SCHEDULED · 명세 예시 · 자동입찰 예약 중(RESERVED)
   auction({
     auctionId: 12,
     sellerId: 2,
@@ -218,6 +220,8 @@ export const auctions: MockAuction[] = [
     endsAt: fromNow(4.5 * HOUR),
     aiEstimatedPrice: 100000,
     likeCount: 132,
+    // 자동 입찰 예약 완료 Figma(661:3580)의 내 상한가 120,000원
+    myAutoBid: { autoBidSettingId: 14, status: 'RESERVED', maxAmount: 120000 },
   }),
   // 13. ENDED · 내가 낙찰 (주문 50, 결제 대기)
   auction({
@@ -472,6 +476,49 @@ export const auctions: MockAuction[] = [
   }),
 ]
 
+/* ───────── 탭 세션 동안 유지 ─────────
+ * 자동입찰 · 입찰 · 시작가는 바뀔 때마다 sessionStorage에 저장해, 다른 화면에 갔다 오거나 새로고침해도 남깁니다.
+ * 주소에 ?mock=reset 을 붙여 페이지를 열면 저장한 값을 지우고 처음 목 데이터로 시작합니다.
+ * 시각(startsAt · endsAt)은 페이지를 연 시점 기준이라 저장하지 않습니다.
+ */
+
+const STATE_KEY = 'autique-mock-auctions'
+
+type SavedAuction = Pick<MockAuction, 'myAutoBid' | 'bids' | 'startPrice'>
+
+export function saveAuctionState() {
+  const saved: Record<number, SavedAuction> = {}
+  for (const { auctionId, myAutoBid, bids, startPrice } of auctions) {
+    saved[auctionId] = { myAutoBid, bids, startPrice }
+  }
+  sessionAppStorage.setItem(STATE_KEY, JSON.stringify(saved))
+}
+
+function restoreAuctionState() {
+  if (mockResetRequested) {
+    sessionAppStorage.removeItem(STATE_KEY)
+    return
+  }
+  let saved: Record<string, SavedAuction> | null
+  try {
+    saved = JSON.parse(sessionAppStorage.getItem(STATE_KEY) ?? 'null')
+  } catch {
+    return
+  }
+  if (!saved) return
+  for (const a of auctions) {
+    const s = saved[a.auctionId]
+    if (s) Object.assign(a, s)
+  }
+  // 저장된 id와 겹치지 않게 다음 id를 올립니다.
+  const bidIds = auctions.flatMap((a) => a.bids.map((b) => b.bidId))
+  const settingIds = auctions.flatMap((a) => (a.myAutoBid ? [a.myAutoBid.autoBidSettingId] : []))
+  nextBidId = Math.max(nextBidId, ...bidIds) + 1
+  nextAutoBidSettingId = Math.max(nextAutoBidSettingId, ...settingIds) + 1
+}
+
+restoreAuctionState()
+
 /* ───────── 조회 · 계산 ───────── */
 
 export function findAuction(auctionId: number) {
@@ -480,6 +527,7 @@ export function findAuction(auctionId: number) {
   if (a && statusOf(a) === 'LIVE' && a.myAutoBid?.status === 'RESERVED') {
     a.myAutoBid.status = 'ACTIVE'
     runProxyBidding(a)
+    saveAuctionState()
   }
   return a
 }
@@ -658,6 +706,11 @@ function pushBid(a: MockAuction, amount: number, mine: boolean, bidType: BidType
 /** 사용자가 직접 입찰합니다. */
 export function placeManualBid(a: MockAuction, amount: number) {
   return pushBid(a, amount, true, 'MANUAL')
+}
+
+/** 다른 사람(ham****)이 직접 입찰합니다(?mock=autobid-outbid). */
+export function placeRivalBid(a: MockAuction, amount: number) {
+  return pushBid(a, amount, false, 'MANUAL')
 }
 
 /**

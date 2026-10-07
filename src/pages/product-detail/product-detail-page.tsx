@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import {
   useAuctionDetailQuery,
@@ -24,6 +24,10 @@ import {
   SummaryCard,
 } from '@/components/ds'
 import { EmptyState, ErrorState, ProductGridSkeleton } from '@/components/feedback'
+import type { MyAutoBid } from '@/features/auction/auto-bid'
+import { toMyAutoBid } from '@/features/auction/auto-bid'
+import { AutoBidCancelSheet } from '@/features/auction/auto-bid-cancel-sheet'
+import { AutoBidSheet } from '@/features/auction/auto-bid-sheet'
 import { useNow } from '@/hooks/use-now'
 import { Screen } from '@/layouts/screen'
 import { formatDateTime, formatGrade, formatPrice } from '@/lib/format'
@@ -38,7 +42,14 @@ const STATUS_CHIP: Record<AuctionStatus, { kind: ChipKind; label: string }> = {
   CANCELED: { kind: 'finish', label: '경매 취소' },
 }
 
-/** 상품 상세 (/products/:id, id = auctionId). Figma 경매 예정 661:3429 · 경매 중 661:3742 · 경매 종료 661:4446 */
+/** 내 자동 입찰(명세 myState.autoBidStatus · autoBidCap). 취소했거나 없으면 null */
+const myAutoBidOf = (detail: AuctionDetail) =>
+  toMyAutoBid(detail.myState.autoBidStatus, detail.myState.autoBidCap)
+
+/**
+ * 상품 상세 (/products/:id, id = auctionId).
+ * Figma 경매 예정 661:3429 · 자동 입찰 예약 완료 661:3580 · 경매 중 661:3742 · 경매 종료 661:4446
+ */
 export function ProductDetailPage() {
   const { id } = useParams()
   const auctionId = Number(id)
@@ -182,6 +193,23 @@ function DetailBody({ detail, onRefetch }: { detail: AuctionDetail; onRefetch: (
           }
         : { label: '현재 최고 입찰가', value: '입찰 없음', emphasis: 'regular' },
     )
+    /* 경매 중 자동 입찰 설정 후 프레임은 Figma에 없어 정보 행으로 내 상한가를 보여줍니다(DESIGN-CHANGES.md). */
+    const myAutoBid = myAutoBidOf(detail)
+    if (myAutoBid) {
+      rows.push(
+        myAutoBid.status === 'CAP_REACHED'
+          ? {
+              label: '내 자동 입찰 상한가',
+              value: `${formatPrice(myAutoBid.maxAmount)} 도달`,
+              emphasis: 'danger',
+            }
+          : {
+              label: '내 자동 입찰 상한가',
+              value: formatPrice(myAutoBid.maxAmount),
+              emphasis: 'primary',
+            },
+      )
+    }
   }
   if (status === 'ENDED') {
     rows.push(
@@ -255,10 +283,29 @@ function ScheduledSummary({
     if (started) onStarted()
   }, [started, onStarted])
 
-  const { myState } = detail
-  let state = '자동 입찰 예약 전'
-  if (myState.isSeller) state = '내가 등록한 경매'
-  else if (myState.autoBidStatus === 'RESERVED') state = '자동 입찰 예약 완료'
+  const myAutoBid = myAutoBidOf(detail)
+  const startRow: InfoRowData = {
+    label: '경매 시작까지',
+    value: formatRemaining(remaining, 'duration', '곧 시작'),
+  }
+
+  /* 자동 입찰 예약 완료(661:3580): 상태 '자동 입찰 예약 중'(primary) · 내 상한가(hero) · 수정 · 취소 안내 */
+  if (myAutoBid) {
+    return (
+      <div className="gap-stack-related flex flex-col">
+        <SummaryCard
+          tone="primary"
+          dividerAfter={2}
+          rows={[
+            { label: '상태', value: '자동 입찰 예약 중', emphasis: 'primary' },
+            { label: '내 상한가', value: formatPrice(myAutoBid.maxAmount), emphasis: 'hero' },
+            startRow,
+          ]}
+        />
+        <InfoBanner>경매 시작 전까지 상한가 수정과 예약 취소가 가능해요.</InfoBanner>
+      </div>
+    )
+  }
 
   return (
     <div className="gap-stack-related flex flex-col">
@@ -266,14 +313,18 @@ function ScheduledSummary({
         tone="primary"
         dividerAfter={2}
         rows={[
-          { label: '상태', value: state, emphasis: 'regular' },
+          {
+            label: '상태',
+            value: detail.myState.isSeller ? '내가 등록한 경매' : '자동 입찰 예약 전',
+            emphasis: 'regular',
+          },
           {
             label: 'AI 적정 시세',
             value:
               detail.aiEstimatedPrice != null ? formatPrice(detail.aiEstimatedPrice) : '산정 전',
             emphasis: 'hero',
           },
-          { label: '경매 시작까지', value: formatRemaining(remaining, 'duration', '곧 시작') },
+          startRow,
         ]}
       />
       <InfoBanner>경매 시작 전에도 자유롭게 자동 입찰을 예약할 수 있어요.</InfoBanner>
@@ -339,15 +390,60 @@ function hasBottomAction(detail: AuctionDetail) {
 }
 
 /**
- * 하단 버튼. 경매 예정 · 경매 중은 Figma대로 '자동 입찰 예약'(바텀시트는 입찰 작업에서 연결),
- * 판매자 본인이면 잠급니다.
+ * 하단 버튼 + 자동 입찰 시트.
+ * - 설정 전: '자동 입찰 예약'(Figma) → 상한가 설정 시트. 판매자 본인이면 잠급니다.
+ * - 예약 중(661:3580): '상한가 수정' / '입찰 예약 취소'
+ * - 경매 중 설정 후(Figma 없음): '상한가 수정' / '자동 입찰 중단'
  */
 function DetailBottom({ detail }: { detail: AuctionDetail }) {
+  const myAutoBid = myAutoBidOf(detail)
+  const [sheetOpen, setSheetOpen] = useState(false)
+  /* 취소에 성공하면 myAutoBid가 먼저 사라지므로, 닫히는 동안 연 시점의 설정으로 문구를 유지합니다. */
+  const [cancelTarget, setCancelTarget] = useState<MyAutoBid | null>(null)
+  const [cancelOpen, setCancelOpen] = useState(false)
+
+  const openCancel = () => {
+    setCancelTarget(myAutoBid)
+    setCancelOpen(true)
+  }
+
   return (
-    <BottomButtonBar
-      layout="single"
-      primaryLabel="자동 입찰 예약"
-      primaryDisabled={detail.myState.isSeller}
-    />
+    <>
+      {myAutoBid ? (
+        <BottomButtonBar
+          layout="double"
+          primaryLabel="상한가 수정"
+          onPrimary={() => setSheetOpen(true)}
+          secondaryLabel={myAutoBid.status === 'RESERVED' ? '입찰 예약 취소' : '자동 입찰 중단'}
+          onSecondary={openCancel}
+        />
+      ) : (
+        <BottomButtonBar
+          layout="single"
+          primaryLabel="자동 입찰 예약"
+          primaryDisabled={detail.myState.isSeller}
+          onPrimary={() => setSheetOpen(true)}
+        />
+      )}
+
+      <AutoBidSheet
+        open={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        auctionId={detail.auctionId}
+        currentPrice={detail.currentPrice}
+        bidIncrement={detail.bidIncrement}
+        myAutoBid={myAutoBid}
+        aiEstimatedPrice={detail.aiEstimatedPrice}
+        recommendedCap={detail.aiRecommendedAutoBidCap}
+      />
+      {cancelTarget && (
+        <AutoBidCancelSheet
+          open={cancelOpen}
+          onClose={() => setCancelOpen(false)}
+          auctionId={detail.auctionId}
+          myAutoBid={cancelTarget}
+        />
+      )}
+    </>
   )
 }

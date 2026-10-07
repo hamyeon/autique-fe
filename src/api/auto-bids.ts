@@ -48,7 +48,7 @@ export function useMyAutoBidQuery(auctionId: number) {
 }
 
 /** 자동입찰 변경 후 내 설정 · 실시간 상태 · 상세 · 입찰 이력을 다시 불러옵니다. */
-function useInvalidateAutoBid(auctionId: number) {
+export function useInvalidateAutoBid(auctionId: number) {
   const queryClient = useQueryClient()
   return () =>
     Promise.all([

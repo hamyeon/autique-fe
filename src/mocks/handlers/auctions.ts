@@ -10,6 +10,7 @@ import {
   minNextBidOf,
   placeManualBid,
   runProxyBidding,
+  saveAuctionState,
   statusOf,
   toBid,
   toDetail,
@@ -75,6 +76,7 @@ export const auctionHandlers = [
       const bid = placeManualBid(a, body.amount)
       extendIfClosing(a) // 연장은 사용자 요청 1회 기준
       const { rivalResponded } = runProxyBidding(a)
+      saveAuctionState()
 
       return ok(
         {

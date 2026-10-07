@@ -17,8 +17,29 @@ const BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '')
  *   ?mock=off 를 붙일 때까지 유지됩니다. 이 시나리오일 때만 해당 요청을 목으로 처리하고(passthrough여도),
  *   평소에는 실제 서버로 보냅니다(각 핸들러의 mockIn).
  *   slow: AI 분석 30초 · analysis-fail: AI 분석 실패(VISION_FAILED) · submit-fail: 등록 제출 500
+ * - autobid-outbid / autobid-ended / autobid-error: 자동 입찰 시트 확인용. 그 페이지에서만, 자동입찰 등록 · 수정 · 취소에만 적용됩니다.
+ *   autobid-outbid: 제출하는 순간 현재가가 상한가 위로 올라감(CAP_TOO_LOW, 경매마다 한 번)
+ *   autobid-ended: 제출하는 순간 경매가 끝남(AUCTION_CLOSED)
+ *   autobid-error: 첫 제출이 서버 오류(500), 다시 시도하면 성공. ?mock=error는 상세 조회부터 실패해 시트를 열 수 없어 따로 둡니다.
+ * - reset: 시나리오가 아니라 세션에 저장한 목 상태를 지우는 표시입니다(src/mocks/data/common.ts mockResetRequested).
  */
-export type MockScenario = 'empty' | 'error' | 'slow' | 'analysis-fail' | 'submit-fail'
+export type MockScenario =
+  | 'empty'
+  | 'error'
+  | 'slow'
+  | 'analysis-fail'
+  | 'submit-fail'
+  | 'autobid-outbid'
+  | 'autobid-ended'
+  | 'autobid-error'
+
+const PAGE_SCENARIOS = [
+  'empty',
+  'error',
+  'autobid-outbid',
+  'autobid-ended',
+  'autobid-error',
+] as const
 
 const STICKY_SCENARIOS = ['slow', 'analysis-fail', 'submit-fail'] as const
 const SCENARIO_KEY = 'autique-mock-scenario'
@@ -36,7 +57,9 @@ export function currentScenario(): MockScenario | null {
     sessionAppStorage.setItem(SCENARIO_KEY, value)
     return value
   }
-  if (value === 'empty' || value === 'error') return value
+  if ((PAGE_SCENARIOS as readonly (string | null)[]).includes(value)) {
+    return value as (typeof PAGE_SCENARIOS)[number]
+  }
   const saved = sessionAppStorage.getItem(SCENARIO_KEY)
   return isSticky(saved) ? saved : null
 }

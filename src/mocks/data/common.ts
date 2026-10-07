@@ -15,6 +15,10 @@ export function kst(time: number | Date) {
   return shifted.toISOString().replace(/\.\d{3}Z$/, '+09:00')
 }
 
+/** 주소에 ?mock=reset 을 붙여 페이지를 열었는지. 이때 세션에 저장한 목 상태를 지우고 처음 데이터로 시작합니다. */
+export const mockResetRequested =
+  new URLSearchParams(window.location.search).get('mock') === 'reset'
+
 /** 지금으로부터 ms 뒤의 시각(ms). 목 데이터는 페이지를 열 때 기준으로 만들어집니다. */
 export function fromNow(ms: number) {
   return Date.now() + ms

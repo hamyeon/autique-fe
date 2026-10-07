@@ -9,6 +9,8 @@ interface RouteLink {
   label: string
   /** 아직 화면이 없는 경로 */
   pending?: boolean
+  /** 페이지를 새로 엽니다(?mock=reset 처럼 페이지를 열 때 읽는 값) */
+  reload?: boolean
 }
 
 const GROUPS: { title: string; links: RouteLink[] }[] = [
@@ -41,6 +43,20 @@ const GROUPS: { title: string; links: RouteLink[] }[] = [
     links: [
       { to: '/products/4', label: '나이키 덩크 로우 레트로 블랙 화이트' },
       { to: '/products/19', label: '유찰(입찰 0건)' },
+    ],
+  },
+  {
+    title: '자동 입찰',
+    links: [
+      { to: '/products/1', label: '설정 전 · 경매 예정' },
+      { to: '/products/2', label: '설정 전 · 경매 중' },
+      { to: '/products/12', label: '설정 후 · 경매 예정(예약 중 120,000원)' },
+      { to: '/products/20', label: '설정 후 · 경매 중(자동 입찰 중 150,000원)' },
+      { to: '/products/2?mock=autobid-outbid', label: '제출 시 현재가가 올라감(한 번)' },
+      { to: '/products/1?mock=autobid-ended', label: '제출 시 경매 종료' },
+      { to: '/products/1?mock=autobid-error', label: '제출 시 서버 오류(다시 시도하면 성공)' },
+      { to: '/products/1?mock=error', label: '모든 API 에러(상세부터 실패)' },
+      { to: '/dev/routes?mock=reset', label: '목 상태 초기화', reload: true },
     ],
   },
   {
@@ -91,6 +107,7 @@ export function DevRoutesPage() {
                 <li key={link.to}>
                   <Link
                     to={link.to}
+                    reloadDocument={link.reload}
                     className="px-space-12 gap-space-8 focus-visible:outline-primary1 flex min-h-11 items-center justify-between focus-visible:outline-2"
                   >
                     <span className="text-body04 text-black0">
