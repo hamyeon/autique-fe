@@ -113,6 +113,39 @@
   --radius-md: 8px;
   --radius-lg: 20px;
   --radius-full: 100px;
+
+  /* 모션 → animate-loading-scan
+     Figma LoadingImg(프로토타입): position=top에서 0.2초 뒤 1.2초 EASE_OUT(Smart Animate)으로 막대가 아래로,
+     position=down에서 0.2초 뒤 전환 없이 위로 → 한 바퀴 1.6초, 무한 반복.
+     막대를 감싼 칸(높이 = 상자 - 막대)을 자기 높이(100%)만큼 내려 막대가 상자 맨 아래에 닿습니다. */
+  --animate-loading-scan: loading-scan 1.6s infinite;
+
+  @keyframes loading-scan {
+    0%,
+    12.5% {
+      transform: translateY(0);
+      animation-timing-function: ease-out;
+    }
+    87.5%,
+    100% {
+      transform: translateY(100%);
+    }
+  }
+
+  /* 모션 → animate-bid-row-in
+     실시간 입찰 내역에 새 입찰이 들어올 때 위에서 살짝 내려오며 나타납니다. 높이는 바뀌지 않아 스크롤 보정에 영향이 없습니다. */
+  --animate-bid-row-in: bid-row-in 0.3s ease-out;
+
+  @keyframes bid-row-in {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
 
 /* ───────────── shadcn/ui 테마 변수 → DS 색 매핑 ───────────── */
@@ -210,4 +243,12 @@
 }
 @utility pr-safe {
   padding-right: env(safe-area-inset-right);
+}
+
+/* 가로 스와이프 영역(상품 이미지 등)의 스크롤바를 숨깁니다. */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }

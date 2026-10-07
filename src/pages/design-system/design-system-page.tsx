@@ -1,6 +1,7 @@
 import { Screen } from '@/layouts/screen'
 import { ActionsSection } from './actions-section'
 import { AuctionSection } from './auction-section'
+import { FeedbackSection } from './feedback-section'
 import { FormsSection } from './forms-section'
 import { FoundationsSection } from './foundations-section'
 import { NavigationSection } from './navigation-section'
@@ -15,6 +16,7 @@ const GROUPS = [
   { id: 'navigation', title: 'Navigation' },
   { id: 'auction', title: 'Auction' },
   { id: 'overlay', title: 'Overlay' },
+  { id: 'feedback', title: 'Feedback' },
 ] as const
 
 /** 개발 모드 전용 DS 컴포넌트 확인 페이지 (/design-system) */
@@ -54,6 +56,7 @@ export function DesignSystemPage() {
         <NavigationSection />
         <AuctionSection />
         <OverlaySection />
+        <FeedbackSection />
       </div>
     </Screen>
   )

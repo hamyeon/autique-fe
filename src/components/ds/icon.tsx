@@ -38,12 +38,19 @@ export const ICON_SIZES = {
   Home: [24],
   Product: [24],
   User: [24],
+  /** 회색 원 + 흰 X(색 고정). 사진 지우기 */
+  Close: [36],
 } as const satisfies Record<string, readonly IconSize[]>
 
 export type IconName = keyof typeof ICON_SIZES
 export type IconSize = 16 | 18 | 20 | 24 | 36
 type ArtName =
-  'img_shoe_front' | 'img_shoe_side' | 'img_shoe_outsole' | 'img_shoe_defect' | 'autique-logo'
+  | 'img_shoe_front'
+  | 'img_shoe_side'
+  | 'img_shoe_outsole'
+  | 'img_shoe_defect'
+  | 'img_loading_magnifier'
+  | 'autique-logo'
 
 /* 색 토큰 → 클래스. Tailwind가 클래스를 찾을 수 있도록 문자열을 그대로 적어둡니다. */
 const COLOR_CLASS = {

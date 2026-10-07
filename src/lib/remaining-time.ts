@@ -15,10 +15,21 @@ export type RemainingStyle =
   | 'clock'
   /** 시작·마감까지 대략: '2일', '3시간', '45분', '1분 미만' */
   | 'short'
+  /** 상품 상세 '경매 시작까지': '3시간 00분', '45분', 하루 이상이면 '2일 3시간' */
+  | 'duration'
 
 /** 남은 ms를 표기로. 0이면 endedLabel(기본 '종료') */
 export function formatRemaining(ms: number, style: RemainingStyle = 'clock', endedLabel = '종료') {
   if (ms <= 0) return endedLabel
+
+  if (style === 'duration') {
+    const days = Math.floor(ms / DAY)
+    const hours = Math.floor((ms % DAY) / HOUR)
+    const minutes = Math.floor((ms % HOUR) / MINUTE)
+    if (days > 0) return `${days}일 ${hours}시간`
+    if (hours > 0) return `${hours}시간 ${String(minutes).padStart(2, '0')}분`
+    return minutes > 0 ? `${minutes}분` : '1분 미만'
+  }
 
   if (style === 'short') {
     if (ms >= DAY) return `${Math.floor(ms / DAY)}일`

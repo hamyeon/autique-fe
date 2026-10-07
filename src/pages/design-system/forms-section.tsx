@@ -138,8 +138,13 @@ function StepHeaderDemo() {
 }
 
 function InfoFieldDemo() {
+  const [tapped, setTapped] = useState<string | null>(null)
+
   return (
-    <Demo title="InfoField" description="라벨 body03 + 4 + 값 body02. 흰 카드 안에 16 간격으로 쌓습니다.">
+    <Demo
+      title="InfoField"
+      description="라벨 body03 + 4 + 값 body02. 흰 카드 안에 16 간격으로 쌓습니다. onClick을 넘기면 항목 전체가 버튼이 되고(눌린 동안 흐려짐), 터치 영역은 위아래 8씩 넓어집니다."
+    >
       <div className="border-gray2 gap-form-field p-card-padding flex flex-col rounded-sm border">
         <InfoField label="브랜드" value="나이키" />
         <InfoField label="모델명" value="Dunk Low Retro White Black" />
@@ -151,6 +156,11 @@ function InfoFieldDemo() {
           }
         />
       </div>
+      <div className="border-gray2 gap-form-field p-card-padding flex flex-col rounded-sm border">
+        <InfoField label="브랜드 (onClick)" value="나이키" onClick={() => setTapped('브랜드')} />
+        <InfoField label="구성품 여부 (onClick)" value="일부 있음" onClick={() => setTapped('구성품 여부')} />
+      </div>
+      <Caption>마지막으로 누른 항목: {tapped ?? '없음'}</Caption>
     </Demo>
   )
 }
@@ -308,18 +318,20 @@ function RadioListDemo() {
 
 function ImageUploadButtonDemo() {
   const [resetKey, setResetKey] = useState(0)
+  const [removed, setRemoved] = useState(0)
 
   return (
     <Demo
       title="ImageUploadButton"
-      description="정사각 칸 가운데 일러스트(100×48) + head03 라벨. 칸을 누르면 사진 선택 창이 열리고, 고르면 미리보기로 채워집니다. 2×2, 간격 8."
+      description="정사각 칸 가운데 일러스트(100×48) + head03 라벨. 칸을 누르면 사진 선택 창이 열리고, 고르면 미리보기로 채워집니다. 채워진 칸을 다시 누르면 다른 사진으로 바꿉니다. onRemove를 넘기면 사진 오른쪽 위에 Close(36, 터치 44) 버튼이 생겨 누르면 칸이 비워집니다. 2×2, 간격 8."
     >
       <div key={resetKey} className="gap-space-8 grid grid-cols-2">
-        <ImageUploadButton direction="front" />
-        <ImageUploadButton direction="side" />
-        <ImageUploadButton direction="outsole" />
-        <ImageUploadButton direction="defect" />
+        <ImageUploadButton direction="front" onRemove={() => setRemoved((c) => c + 1)} />
+        <ImageUploadButton direction="side" onRemove={() => setRemoved((c) => c + 1)} />
+        <ImageUploadButton direction="outsole" onRemove={() => setRemoved((c) => c + 1)} />
+        <ImageUploadButton direction="defect" onRemove={() => setRemoved((c) => c + 1)} />
       </div>
+      <Caption>onRemove 호출 {removed}회</Caption>
       <Button variant="outline" block={false} className="self-start" onClick={() => setResetKey((k) => k + 1)}>
         사진 모두 지우기
       </Button>
@@ -327,6 +339,15 @@ function ImageUploadButtonDemo() {
         <div className="gap-stack-tight flex flex-col">
           <ImageUploadButton direction="front" image={shoeFront} label="image 있음" />
           <Caption>image prop(이미 올라간 사진)</Caption>
+        </div>
+        <div className="gap-stack-tight flex flex-col">
+          <ImageUploadButton
+            direction="side"
+            image={shoeSide}
+            label="onRemove"
+            onRemove={() => setRemoved((c) => c + 1)}
+          />
+          <Caption>image + onRemove(오른쪽 위 X)</Caption>
         </div>
         <div className="gap-stack-tight flex flex-col">
           <ImageUploadButton direction="side" invalid />
