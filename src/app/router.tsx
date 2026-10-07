@@ -1,7 +1,7 @@
 import type { RouteObject } from 'react-router'
 import { createBrowserRouter } from 'react-router'
 import { MobileLayout } from '@/layouts/mobile-layout'
-import { HomePage } from '@/pages/home-page'
+import { HomePage } from '@/pages/home/home-page'
 import { NotFoundPage } from '@/pages/not-found-page'
 
 /* 개발 모드에서만 등록합니다. 빌드 시 import.meta.env.DEV가 false로 바뀌어 페이지 코드가 번들에서 빠집니다. */

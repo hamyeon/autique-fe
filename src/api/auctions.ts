@@ -1,12 +1,15 @@
+import type { InfiniteData, QueryClient } from '@tanstack/react-query'
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { request } from '@/api/client'
 import { endpoints } from '@/api/endpoints'
 import type {
   AuctionDetail,
+  AuctionList,
   AuctionListQuery,
   BidListQuery,
   PlaceBidRequest,
   RelistAuctionRequest,
+  SimilarAuctions,
   UpdateStartPriceRequest,
 } from '@/api/schemas/auctions'
 import { meKeys } from '@/api/me'
@@ -14,7 +17,11 @@ import { meKeys } from '@/api/me'
 export const auctionKeys = {
   all: ['auctions'] as const,
   lists: () => [...auctionKeys.all, 'list'] as const,
-  list: (query: Omit<AuctionListQuery, 'page'>) => [...auctionKeys.lists(), query] as const,
+  /** 한 페이지만 (홈 '나에게 딱 맞는 상품') */
+  list: (query: AuctionListQuery) => [...auctionKeys.lists(), 'page', query] as const,
+  /** 무한 스크롤 (홈 '지금 인기 있는 경매') */
+  infiniteList: (query: Omit<AuctionListQuery, 'page'>) =>
+    [...auctionKeys.lists(), 'infinite', query] as const,
   detail: (auctionId: number) => [...auctionKeys.all, 'detail', auctionId] as const,
   live: (auctionId: number) => [...auctionKeys.all, 'live', auctionId] as const,
   bidLists: (auctionId: number) => [...auctionKeys.all, 'bids', auctionId] as const,
@@ -91,9 +98,17 @@ export function updateStartPrice(auctionId: number, body: UpdateStartPriceReques
 /* ───────── 조회 훅 ───────── */
 
 /** [ASSUMED] 명세에 없는 경매 목록 API (홈). page는 0부터 */
+export function useAuctionsQuery(query: AuctionListQuery = {}) {
+  return useQuery({
+    queryKey: auctionKeys.list(query),
+    queryFn: ({ signal }) => getAuctions(query, signal),
+  })
+}
+
+/** [ASSUMED] 명세에 없는 경매 목록 API (홈). page는 0부터, 페이지 방식은 입찰 이력과 같음 */
 export function useAuctionsInfiniteQuery(query: Omit<AuctionListQuery, 'page'> = {}) {
   return useInfiniteQuery({
-    queryKey: auctionKeys.list(query),
+    queryKey: auctionKeys.infiniteList(query),
     queryFn: ({ pageParam, signal }) => getAuctions({ ...query, page: pageParam }, signal),
     initialPageParam: 0,
     getNextPageParam: (last) => (last.hasNext ? last.page + 1 : undefined),
@@ -175,19 +190,67 @@ export function usePlaceBidMutation(auctionId: number) {
   })
 }
 
-/** 관심 등록/해제. 상세 캐시의 isLiked·likeCount를 응답 값으로 바꾸고 목록은 다시 불러옵니다. */
-export function useToggleAuctionLikeMutation(auctionId: number) {
+interface LikeState {
+  isLiked: boolean
+  likeCount: number
+}
+
+/** 목록(한 페이지 · 무한) · 비슷한 상품 · 상세 캐시에서 해당 경매의 관심 상태를 바꿉니다. 바꾸기 전 값을 돌려줍니다. */
+function setLikeInCaches(
+  queryClient: QueryClient,
+  auctionId: number,
+  next: (prev: LikeState) => LikeState,
+) {
+  let before: LikeState | undefined
+  const update = <T extends { auctionId: number } & LikeState>(item: T): T => {
+    if (item.auctionId !== auctionId) return item
+    before ??= { isLiked: item.isLiked, likeCount: item.likeCount }
+    return { ...item, ...next(item) }
+  }
+
+  queryClient.setQueriesData<AuctionList | InfiniteData<AuctionList>>(
+    { queryKey: auctionKeys.lists() },
+    (data) => {
+      if (!data) return data
+      if ('pages' in data) {
+        return { ...data, pages: data.pages.map((p) => ({ ...p, items: p.items.map(update) })) }
+      }
+      return { ...data, items: data.items.map(update) }
+    },
+  )
+  queryClient.setQueriesData<SimilarAuctions>(
+    { queryKey: [...auctionKeys.all, 'similar'] },
+    (data) => (data ? { ...data, items: data.items.map(update) } : data),
+  )
+  queryClient.setQueryData<AuctionDetail>(auctionKeys.detail(auctionId), (data) =>
+    data ? update(data) : data,
+  )
+  return before
+}
+
+/**
+ * 관심 등록/해제. 누르는 즉시 모든 캐시에 반영하고(낙관적 업데이트),
+ * 성공하면 서버의 likeCount로 맞추고, 실패하면 누르기 전 값으로 되돌립니다.
+ */
+export function useToggleAuctionLikeMutation() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (liked: boolean) => (liked ? likeAuction(auctionId) : unlikeAuction(auctionId)),
-    onSuccess: ({ liked, likeCount }) => {
-      queryClient.setQueryData<AuctionDetail>(auctionKeys.detail(auctionId), (prev) =>
-        prev ? { ...prev, isLiked: liked, likeCount } : prev,
-      )
-      return Promise.all([
-        queryClient.invalidateQueries({ queryKey: auctionKeys.lists() }),
-        queryClient.invalidateQueries({ queryKey: [...auctionKeys.all, 'similar'] }),
-      ])
+    mutationFn: ({ auctionId, liked }: { auctionId: number; liked: boolean }) =>
+      liked ? likeAuction(auctionId) : unlikeAuction(auctionId),
+    onMutate: async ({ auctionId, liked }) => {
+      await queryClient.cancelQueries({ queryKey: auctionKeys.all })
+      const before = setLikeInCaches(queryClient, auctionId, (prev) => ({
+        isLiked: liked,
+        likeCount: prev.isLiked === liked ? prev.likeCount : prev.likeCount + (liked ? 1 : -1),
+      }))
+      return { before }
+    },
+    onSuccess: ({ liked, likeCount }, { auctionId }) => {
+      setLikeInCaches(queryClient, auctionId, () => ({ isLiked: liked, likeCount }))
+    },
+    onError: (_error, { auctionId }, context) => {
+      const before = context?.before
+      if (before) setLikeInCaches(queryClient, auctionId, () => before)
     },
   })
 }

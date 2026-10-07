@@ -3,7 +3,7 @@ import type {
   CalculatePriceResponse,
   ProductAnalysis,
 } from '@/api/schemas/products'
-import { SHOE_IMAGES } from '@/mocks/data/common'
+import { PRODUCT_IMAGES } from '@/mocks/data/common'
 
 /* AI 분석 세션. 접수 후 시간이 지나면 QUEUED → VISION_PROCESSING → AWAITING_USER_CONFIRMATION 으로 넘어갑니다. */
 
@@ -27,7 +27,10 @@ export function createAnalysis(imageCount: number) {
     analysisId: nextAnalysisId++,
     createdAt: Date.now(),
     // 업로드한 파일 대신 예시 이미지 URL을 돌려줍니다.
-    imageUrls: Array.from({ length: imageCount }, (_, i) => SHOE_IMAGES[i % SHOE_IMAGES.length]),
+    imageUrls: Array.from(
+      { length: imageCount },
+      (_, i) => PRODUCT_IMAGES[i % PRODUCT_IMAGES.length],
+    ),
     priced: false,
   }
   analyses.push(analysis)

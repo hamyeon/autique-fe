@@ -91,6 +91,26 @@ const PRODUCTS: (Omit<ProductCardProps, 'favorited' | 'onFavorite'> & { id: stri
     price: formatPrice(189000),
     meta: '관심 42',
   },
+  {
+    id: 'f',
+    note: 'ended (경매 종료 · 최종가, DS 원본에 없음)',
+    status: 'ended',
+    grade: 'A등급',
+    brand: 'ASICS',
+    name: '아식스 노바블라스트 6 블랙 - 2E 와이드',
+    price: formatPrice(105000),
+    meta: '관심 64',
+  },
+  {
+    id: 'g',
+    note: 'href: 카드 아무 곳이나 누르면 이동, 하트는 따로 (데모는 이 페이지로)',
+    href: '/design-system#auction',
+    grade: 'A등급',
+    brand: 'BAPE',
+    name: '베이프 슬라이드 #1 블랙',
+    price: formatPrice(234000),
+    meta: '관심 556',
+  },
 ]
 
 function ProductCardDemo() {

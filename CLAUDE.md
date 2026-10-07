@@ -69,6 +69,7 @@ There is no test runner configured yet.
 
 - Page-specific components go in `src/pages/<page>/` or next to the page; move to `src/components/` only when reused.
 - Every screen needs loading, empty, and error states.
+- Screen states are handled with the shared components in `src/components/feedback/` (`ProductGridSkeleton`/`Skeleton`, `EmptyState`, `ErrorState`); don't build one-off loading/empty/error UIs per screen. Record any state or layout not in Figma in `DESIGN-CHANGES.md`.
 
 ## Data & API
 

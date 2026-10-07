@@ -18,19 +18,19 @@ interface MockOrder {
 }
 
 export const orders: MockOrder[] = [
-  // 경매 3 낙찰 · 결제 대기
+  // 경매 13 낙찰 · 결제 대기
   {
     orderId: 50,
-    auctionId: 3,
+    auctionId: 13,
     status: 'PAYMENT_PENDING',
     purchasePrice: 105000,
     paymentDeadline: fromNow(21 * HOUR),
     paidAt: null,
   },
-  // 경매 6 낙찰 · 결제 기한 만료
+  // 경매 16 낙찰 · 결제 기한 만료
   {
     orderId: 51,
-    auctionId: 6,
+    auctionId: 16,
     status: 'PAYMENT_EXPIRED',
     purchasePrice: 85000,
     paymentDeadline: fromNow(-2 * DAY),
@@ -86,7 +86,7 @@ interface MockBackupOffer {
 export const backupOffers: MockBackupOffer[] = [
   {
     backupOfferId: 90,
-    auctionId: 5,
+    auctionId: 15,
     status: 'WAITING',
     purchasePrice: 100000,
     deadline: fromNow(20 * HOUR),
@@ -117,8 +117,8 @@ export function toBackupOffer(o: MockBackupOffer): BackupOffer {
 
 /** 낙찰 포기 등으로 바뀐 내 결과 */
 export const resultOverrides: Record<number, AuctionResultType> = {
-  5: 'BACKUP_WAITING',
-  6: 'PAYMENT_EXPIRED',
+  15: 'BACKUP_WAITING',
+  16: 'PAYMENT_EXPIRED',
 }
 
 export function toResult(auctionId: number): AuctionResult | null {

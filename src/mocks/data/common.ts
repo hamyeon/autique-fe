@@ -1,7 +1,7 @@
-import shoeDefect from '@/assets/illustrations/img_shoe_defect.svg'
-import shoeFront from '@/assets/illustrations/img_shoe_front.svg'
-import shoeOutsole from '@/assets/illustrations/img_shoe_outsole.svg'
-import shoeSide from '@/assets/illustrations/img_shoe_side.svg'
+import mockProduct01 from '@/assets/illustrations/img_mock_product_01.jpg'
+import mockProduct02 from '@/assets/illustrations/img_mock_product_02.JPG'
+import mockProduct03 from '@/assets/illustrations/img_mock_product_03.JPG'
+import mockProduct04 from '@/assets/illustrations/img_mock_product_04.jpg'
 
 /* 목 데이터 공통: 시각, 이미지, 사용자 */
 
@@ -20,7 +20,8 @@ export function fromNow(ms: number) {
   return Date.now() + ms
 }
 
-export const SHOE_IMAGES = [shoeFront, shoeSide, shoeOutsole, shoeDefect]
+/** 목 상품 이미지 4장. 홈 목록 상품은 순서대로 한 장씩 씁니다. */
+export const PRODUCT_IMAGES = [mockProduct01, mockProduct02, mockProduct03, mockProduct04]
 
 /** 로그인한 나 */
 export const ME = { userId: 1, nickname: 'mmaybeii', masked: 'mma****' }

@@ -27,9 +27,9 @@ const COPY: Record<NotificationType, { title: string; body: string }> = {
 }
 
 const SEED: Pick<MockNotification, 'type' | 'auctionId' | 'resourceId'>[] = [
-  { type: 'AUCTION_WON', auctionId: 3, resourceId: 50 },
-  { type: 'BACKUP_OFFER_CREATED', auctionId: 5, resourceId: 90 },
-  { type: 'PAYMENT_EXPIRED', auctionId: 6, resourceId: 51 },
+  { type: 'AUCTION_WON', auctionId: 13, resourceId: 50 },
+  { type: 'BACKUP_OFFER_CREATED', auctionId: 15, resourceId: 90 },
+  { type: 'PAYMENT_EXPIRED', auctionId: 16, resourceId: 51 },
 ]
 
 export const notifications: MockNotification[] = Array.from({ length: 24 }, (_, i) => {

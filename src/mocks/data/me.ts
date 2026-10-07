@@ -14,7 +14,7 @@ export const penaltyState = {
   noShowCount: 1,
   bidRestrictedUntil: null as number | null,
   penalties: [
-    { penaltyId: 3, type: 'PAYMENT_EXPIRED', auctionId: 6, createdAt: fromNow(-2 * DAY) },
+    { penaltyId: 3, type: 'PAYMENT_EXPIRED', auctionId: 16, createdAt: fromNow(-2 * DAY) },
   ] as MockPenalty[],
 }
 

@@ -274,7 +274,11 @@ export type UpdateStartPriceResponse = z.infer<typeof updateStartPriceResponseSc
 /* ───────── GET /api/auctions (경매 목록) ───────── */
 
 // [ASSUMED] 명세에 경매 목록 API가 없습니다. 홈 '인기순 · 최신순' 상품 목록에 필요해 만들었습니다.
-export const auctionSortSchema = z.enum(['popular', 'latest']) // [ASSUMED] 정렬 값 이름. 홈 SortTabs(인기순 · 최신순)에 맞춤
+export const auctionSortSchema = z.enum([
+  'popular', // [ASSUMED] 정렬 값 이름. 홈 '지금 인기 있는 경매' · SortTabs 인기순
+  'latest', // [ASSUMED] SortTabs 최신순
+  'recommended', // [ASSUMED] 홈 '나에게 딱 맞는 상품'. 개인화 추천 API가 명세에 없어 정렬 값으로 둠
+])
 export type AuctionSort = z.infer<typeof auctionSortSchema>
 
 // [ASSUMED] 쿼리 형태. 입찰 이력의 page/size 규칙을 따름

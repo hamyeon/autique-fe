@@ -20,8 +20,8 @@ import {
   MAX_EXTENSIONS,
   ME,
   MINUTE,
+  PRODUCT_IMAGES,
   SELLERS,
-  SHOE_IMAGES,
   fromNow,
   kst,
 } from '@/mocks/data/common'
@@ -106,7 +106,7 @@ function auction(
     Partial<MockAuction>,
 ): MockAuction {
   return {
-    productId: partial.auctionId + 10,
+    productId: partial.auctionId,
     description: '상품 상태가 완전히 좋습니다.',
     bidIncrement: BID_INCREMENT,
     canceled: false,
@@ -121,39 +121,50 @@ function auction(
   }
 }
 
-const images = (offset = 0) => [0, 1, 2].map((i) => SHOE_IMAGES[(i + offset) % SHOE_IMAGES.length])
+/** 홈 목록 상품. index번째 목 이미지를 대표 이미지로 씁니다. */
+function homeProduct(
+  index: number,
+  brand: string,
+  name: string,
+  subName: string,
+): MockAuction['product'] {
+  return { name, brand, subName, grade: 'A', imageUrls: [PRODUCT_IMAGES[index]] }
+}
+
+/** 홈에 나오지 않는 경매(상세 · 결과 · 판매자 흐름 테스트용)는 목 이미지 4장을 모두 씁니다. */
+const images = () => [...PRODUCT_IMAGES]
 
 export const auctions: MockAuction[] = [
-  // 1. LIVE · 다른 사람이 최고가 · 나도 입찰함
+  // 11. LIVE · 다른 사람이 최고가 · 나도 입찰함
   auction({
-    auctionId: 1,
+    auctionId: 11,
     sellerId: 2,
     product: {
       name: '나이키 덩크 로우 레트로 블랙 화이트',
       brand: 'Nike',
       subName: 'Nike Dunk Low Retro Black White',
       grade: 'B',
-      imageUrls: images(0),
+      imageUrls: images(),
     },
     startPrice: 50000,
     startsAt: fromNow(-1 * HOUR),
     endsAt: fromNow(40 * MINUTE),
-    likeCount: 556,
+    likeCount: 312,
     bids: makeBids(
       [{ amount: 105000, auto: true }, { amount: 100000, mine: true }, { amount: 95000 }],
       fromNow(-2 * MINUTE),
     ),
   }),
-  // 2. SCHEDULED · 명세 예시
+  // 12. SCHEDULED · 명세 예시
   auction({
-    auctionId: 2,
+    auctionId: 12,
     sellerId: 2,
     product: {
       name: '아식스 노바블라스트 6 블랙 - 2E 와이드',
       brand: 'ASICS',
       subName: 'Asics Novablast 6 Black - 2E Wide',
       grade: 'A',
-      imageUrls: images(1),
+      imageUrls: images(),
     },
     startPrice: 50000,
     startsAt: fromNow(2.5 * HOUR),
@@ -161,16 +172,16 @@ export const auctions: MockAuction[] = [
     aiEstimatedPrice: 100000,
     likeCount: 132,
   }),
-  // 3. ENDED · 내가 낙찰 (주문 50, 결제 대기)
+  // 13. ENDED · 내가 낙찰 (주문 50, 결제 대기)
   auction({
-    auctionId: 3,
+    auctionId: 13,
     sellerId: 3,
     product: {
       name: '뉴발란스 993 그레이',
       brand: 'New Balance',
       subName: 'New Balance 993 Grey',
       grade: 'A',
-      imageUrls: images(2),
+      imageUrls: images(),
     },
     startPrice: 80000,
     startsAt: fromNow(-5 * HOUR),
@@ -178,16 +189,16 @@ export const auctions: MockAuction[] = [
     likeCount: 87,
     bids: makeBids([{ amount: 105000, mine: true }, { amount: 100000 }], fromNow(-3.1 * HOUR)),
   }),
-  // 4. ENDED · 패찰(2위) · 차순위 후보
+  // 14. ENDED · 패찰(2위) · 차순위 후보
   auction({
-    auctionId: 4,
+    auctionId: 14,
     sellerId: 3,
     product: {
       name: '아디다스 삼바 OG 화이트',
       brand: 'adidas',
       subName: 'adidas Samba OG White',
       grade: 'B',
-      imageUrls: images(3),
+      imageUrls: images(),
     },
     startPrice: 70000,
     startsAt: fromNow(-6 * HOUR),
@@ -195,16 +206,16 @@ export const auctions: MockAuction[] = [
     likeCount: 45,
     bids: makeBids([{ amount: 105000 }, { amount: 100000, mine: true }], fromNow(-4.1 * HOUR)),
   }),
-  // 5. ENDED · 차순위 제안 생성됨 (제안 90)
+  // 15. ENDED · 차순위 제안 생성됨 (제안 90)
   auction({
-    auctionId: 5,
+    auctionId: 15,
     sellerId: 2,
     product: {
       name: '살로몬 XT-6 블랙',
       brand: 'Salomon',
       subName: 'Salomon XT-6 Black',
       grade: 'A',
-      imageUrls: images(0),
+      imageUrls: images(),
     },
     startPrice: 80000,
     startsAt: fromNow(-1 * DAY - 2 * HOUR),
@@ -215,16 +226,16 @@ export const auctions: MockAuction[] = [
       fromNow(-1 * DAY - 5 * MINUTE),
     ),
   }),
-  // 6. ENDED · 내가 낙찰했지만 결제 기한 만료 (주문 51)
+  // 16. ENDED · 내가 낙찰했지만 결제 기한 만료 (주문 51)
   auction({
-    auctionId: 6,
+    auctionId: 16,
     sellerId: 3,
     product: {
       name: '아식스 젤 카야노 14 실버',
       brand: 'ASICS',
       subName: 'Asics Gel-Kayano 14 Silver',
       grade: 'C',
-      imageUrls: images(1),
+      imageUrls: images(),
     },
     startPrice: 60000,
     startsAt: fromNow(-3 * DAY - 2 * HOUR),
@@ -235,16 +246,16 @@ export const auctions: MockAuction[] = [
       fromNow(-3 * DAY - 5 * MINUTE),
     ),
   }),
-  // 7. LIVE · 내가 판매자
+  // 17. LIVE · 내가 판매자
   auction({
-    auctionId: 7,
+    auctionId: 17,
     sellerId: ME.userId,
     product: {
       name: '컨버스 척 70 하이 블랙',
       brand: 'Converse',
       subName: 'Converse Chuck 70 Hi Black',
       grade: 'A',
-      imageUrls: images(2),
+      imageUrls: images(),
     },
     startPrice: 40000,
     startsAt: fromNow(-30 * MINUTE),
@@ -252,48 +263,48 @@ export const auctions: MockAuction[] = [
     likeCount: 23,
     bids: makeBids([{ amount: 50000 }, { amount: 45000, bidder: 'sne****' }], fromNow(-5 * MINUTE)),
   }),
-  // 8. SCHEDULED · 내가 판매자 (취소 · 시작가 수정 가능)
+  // 18. SCHEDULED · 내가 판매자 (취소 · 시작가 수정 가능)
   auction({
-    auctionId: 8,
+    auctionId: 18,
     sellerId: ME.userId,
     product: {
       name: '반스 올드스쿨 블랙',
       brand: 'Vans',
       subName: 'Vans Old Skool Black',
       grade: 'S',
-      imageUrls: images(3),
+      imageUrls: images(),
     },
     startPrice: 30000,
     startsAt: fromNow(3 * HOUR),
     endsAt: fromNow(5 * HOUR),
     likeCount: 8,
   }),
-  // 9. ENDED · 내가 판매자 · 입찰 0건(유찰) → 재경매 가능
+  // 19. ENDED · 내가 판매자 · 입찰 0건(유찰) → 재경매 가능
   auction({
-    auctionId: 9,
+    auctionId: 19,
     sellerId: ME.userId,
     product: {
       name: '오니츠카 타이거 멕시코 66 옐로우',
       brand: 'Onitsuka Tiger',
       subName: 'Onitsuka Tiger Mexico 66 Yellow',
       grade: 'A',
-      imageUrls: images(0),
+      imageUrls: images(),
     },
     startPrice: 90000,
     startsAt: fromNow(-2 * DAY - 2 * HOUR),
     endsAt: fromNow(-2 * DAY),
     likeCount: 4,
   }),
-  // 10. LIVE · 내가 최고 입찰자 · 자동입찰 ACTIVE
+  // 20. LIVE · 내가 최고 입찰자 · 자동입찰 ACTIVE
   auction({
-    auctionId: 10,
+    auctionId: 20,
     sellerId: 3,
     product: {
       name: '나이키 에어포스 1 로우 화이트',
       brand: 'Nike',
       subName: "Nike Air Force 1 '07 Low White",
       grade: 'DS',
-      imageUrls: images(1),
+      imageUrls: images(),
     },
     startPrice: 60000,
     startsAt: fromNow(-50 * MINUTE),
@@ -309,39 +320,104 @@ export const auctions: MockAuction[] = [
     ),
     myAutoBid: { autoBidSettingId: 15, status: 'ACTIVE', maxAmount: 150000 },
   }),
-  // 11. SCHEDULED · 비슷한 상품 예시
+  // 21. SCHEDULED · 비슷한 상품 예시
   auction({
-    auctionId: 11,
+    auctionId: 21,
     sellerId: 2,
     product: {
       name: '베이프 슬라이드 #1 블랙',
       brand: 'BAPE',
       subName: 'BAPE Slide #1 Black',
       grade: 'A',
-      imageUrls: images(2),
+      imageUrls: images(),
     },
     startPrice: 234000,
     startsAt: fromNow(1 * DAY),
     endsAt: fromNow(1 * DAY + 2 * HOUR),
-    likeCount: 556,
-    isLiked: true,
+    likeCount: 200,
+    isLiked: false,
   }),
-  // 12. LIVE
+  // 22. LIVE
   auction({
-    auctionId: 12,
+    auctionId: 22,
     sellerId: 3,
     product: {
       name: '조던 1 로우 OG 시카고',
       brand: 'Jordan',
       subName: 'Jordan 1 Low OG Chicago',
       grade: 'B',
-      imageUrls: images(3),
+      imageUrls: images(),
     },
     startPrice: 120000,
     startsAt: fromNow(-20 * MINUTE),
     endsAt: fromNow(2 * HOUR),
     likeCount: 98,
     bids: makeBids([{ amount: 125000, bidder: 'sne****' }], fromNow(-10 * MINUTE)),
+  }),
+  /* ───────── 홈 목록 상품(나에게 딱 맞는 상품 · 지금 인기 있는 경매 모두 이 4개) ─────────
+   * 금액 · 관심 수 · 등급은 홈 Figma(572:7790) 카드 값(234,000원 · 관심 556 · A등급)을 따릅니다. */
+  // 1. 경매 예정
+  auction({
+    auctionId: 1,
+    sellerId: 2,
+    product: homeProduct(
+      0,
+      'Nike',
+      '나이키 에어포스 1 로우 화이트',
+      "Nike Air Force 1 '07 Low White",
+    ),
+    startPrice: 234000,
+    startsAt: fromNow(2 * HOUR),
+    endsAt: fromNow(4 * HOUR),
+    likeCount: 556,
+  }),
+  // 2. LIVE · 최고가 234,000원
+  auction({
+    auctionId: 2,
+    sellerId: 3,
+    product: homeProduct(1, 'Salomon', '살로몬 XT-6 ADV 블랙', 'Salomon XT-6 ADV Black'),
+    startPrice: 224000,
+    startsAt: fromNow(-30 * MINUTE),
+    endsAt: fromNow(90 * MINUTE),
+    likeCount: 556,
+    bids: makeBids(
+      [{ amount: 234000 }, { amount: 229000, bidder: 'sne****' }],
+      fromNow(-4 * MINUTE),
+    ),
+  }),
+  // 3. 경매 예정
+  auction({
+    auctionId: 3,
+    sellerId: 2,
+    product: homeProduct(
+      2,
+      'Vans',
+      '반스 x 베이프 프리미엄 뉴스쿨 카모 그린',
+      'Vans x BAPE Premium Old Skool Camo Green',
+    ),
+    startPrice: 234000,
+    startsAt: fromNow(5 * HOUR),
+    endsAt: fromNow(7 * HOUR),
+    likeCount: 556,
+  }),
+  // 4. 경매 종료 · 최종가 234,000원
+  auction({
+    auctionId: 4,
+    sellerId: 3,
+    product: homeProduct(
+      3,
+      'Nike',
+      '나이키 덩크 로우 레트로 블랙 화이트',
+      'Nike Dunk Low Retro Black White',
+    ),
+    startPrice: 224000,
+    startsAt: fromNow(-1 * DAY - 2 * HOUR),
+    endsAt: fromNow(-1 * DAY),
+    likeCount: 556,
+    bids: makeBids(
+      [{ amount: 234000 }, { amount: 229000, bidder: 'sne****' }],
+      fromNow(-1 * DAY - 5 * MINUTE),
+    ),
   }),
 ]
 
@@ -511,7 +587,7 @@ export function toListItem(a: MockAuction): AuctionListItem {
 
 /** 다른 사람(ham****)의 자동입찰 상한. 내가 입찰하면 이 금액까지 즉시 반격합니다. */
 export const rivalAutoBidCap: Record<number, number> = {
-  1: 120000,
+  11: 120000,
 }
 const RIVAL = 'ham****'
 

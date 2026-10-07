@@ -9,3 +9,9 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv
 }
+
+/** 대문자 확장자 이미지(목 상품 사진 등). vite/client는 소문자 *.jpg만 선언합니다. */
+declare module '*.JPG' {
+  const src: string
+  export default src
+}

@@ -15,3 +15,10 @@ export function formatClock(date: Date) {
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
+
+/** 'A' → 'A등급', 'DS' → '새상품'. 판정 불가(UNKNOWN)는 칩을 숨기도록 undefined */
+export function formatGrade(grade: string) {
+  if (grade === 'UNKNOWN') return undefined
+  if (grade === 'DS') return '새상품'
+  return `${grade}등급`
+}
