@@ -1,7 +1,9 @@
 import type { RouteObject } from 'react-router'
 import { createBrowserRouter } from 'react-router'
 import { MobileLayout } from '@/layouts/mobile-layout'
+import { AuctionResultPage } from '@/pages/auction-result/auction-result-page'
 import { HomePage } from '@/pages/home/home-page'
+import { LiveAuctionPage } from '@/pages/live-auction/live-auction-page'
 import { NotFoundPage } from '@/pages/not-found-page'
 import { ProductDetailPage } from '@/pages/product-detail/product-detail-page'
 import { RegisterAnalyzingPage } from '@/pages/register/register-analyzing-page'
@@ -45,6 +47,8 @@ export const router = createBrowserRouter([
     children: [
       { path: '/', element: <HomePage /> },
       { path: '/products/:id', element: <ProductDetailPage /> },
+      { path: '/auctions/:id/live', element: <LiveAuctionPage /> },
+      { path: '/auctions/:id/result', element: <AuctionResultPage /> },
       {
         // 경매 등록. /register 와 없는 단계는 RegisterLayout이 첫 미완료 단계로 보냅니다.
         path: '/register',

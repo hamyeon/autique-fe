@@ -1,5 +1,9 @@
 import { endpoints } from '@/api/endpoints'
+import type { MockAuction } from '@/mocks/data/auctions'
 import {
+  BUSY_RIVAL_BID_INTERVAL_MS,
+  ENDING_SCENARIO_MS,
+  RIVAL_BID_INTERVAL_MS,
   auctions,
   cannotBidReasonOf,
   createAuctionId,
@@ -9,9 +13,11 @@ import {
   isSeller,
   minNextBidOf,
   placeManualBid,
+  placeRivalBid,
   runProxyBidding,
   saveAuctionState,
   statusOf,
+  tickRivals,
   toBid,
   toDetail,
   toLive,
@@ -20,6 +26,7 @@ import {
 import { HOUR, kst } from '@/mocks/data/common'
 import { addPenalty } from '@/mocks/data/me'
 import { findOrder, resultOverrides, toResult } from '@/mocks/data/orders'
+import type { MockScenario } from '@/mocks/define'
 import { idParam, mockEndpoint, pageParams, paginate } from '@/mocks/define'
 import type { MockError } from '@/mocks/errors'
 import { invalidAuctionTime, mockErrors } from '@/mocks/errors'
@@ -31,6 +38,22 @@ const CANNOT_BID_ERROR: Record<NonNullable<ReturnType<typeof cannotBidReasonOf>>
   SELLER_CANNOT_BID: mockErrors.SELLER_CANNOT_BID,
   PENALTY_RESTRICTED: mockErrors.PENALTY_RESTRICTED,
   ALREADY_HIGHEST_BIDDER: mockErrors.ALREADY_HIGHEST_BIDDER,
+}
+
+/* ───────── 실시간 흉내 (?mock=ending · busy · quiet · bid-outbid) ───────── */
+
+/** 페이지를 연 동안 이미 적용한 경매 */
+const endingApplied = new Set<number>()
+const bidOutbidApplied = new Set<number>()
+
+/** 실시간 화면이 폴링할 때마다: ending이면 30초 뒤 종료로 당기고, quiet가 아니면 다른 입찰자를 움직입니다. */
+function simulateLive(a: MockAuction, scenario: MockScenario | null) {
+  if (scenario === 'ending' && !endingApplied.has(a.auctionId) && statusOf(a) === 'LIVE') {
+    endingApplied.add(a.auctionId)
+    a.endsAt = Math.min(a.endsAt, Date.now() + ENDING_SCENARIO_MS)
+  }
+  if (scenario === 'quiet') return
+  tickRivals(a, scenario === 'busy' ? BUSY_RIVAL_BID_INTERVAL_MS : RIVAL_BID_INTERVAL_MS)
 }
 
 export const auctionHandlers = [
@@ -46,9 +69,10 @@ export const auctionHandlers = [
   mockEndpoint(endpoints.getAuctionBids, {
     error: mockErrors.AUCTION_NOT_FOUND,
     empty: ({ query, ok }) => ok({ bids: [], ...pageParams(query), hasNext: false }),
-    resolve: ({ params, query, ok, fail }) => {
+    resolve: ({ params, query, scenario, ok, fail }) => {
       const a = findAuction(idParam(params, 'auctionId'))
       if (!a) return fail(mockErrors.AUCTION_NOT_FOUND)
+      simulateLive(a, scenario)
       const bids = a.bids.map(toBid)
       if (query.get('order') === 'oldest') bids.reverse()
       const { page, size } = pageParams(query)
@@ -60,11 +84,18 @@ export const auctionHandlers = [
   /** 명세의 Validation 순서대로 검사하고, 다른 사람 자동입찰이 있으면 즉시 반격합니다. */
   mockEndpoint(endpoints.placeBid, {
     error: mockErrors.BID_AMOUNT_TOO_LOW,
-    resolve: ({ params, body, ok, fail }) => {
+    resolve: ({ params, body, scenario, ok, fail }) => {
       const a = findAuction(idParam(params, 'auctionId'))
       if (!a) return fail(mockErrors.AUCTION_NOT_FOUND)
       const reason = cannotBidReasonOf(a)
       if (reason) return fail(CANNOT_BID_ERROR[reason])
+      // ?mock=bid-outbid: 제출 직전에 다른 사람이 제출 금액 이상으로 입찰(경매마다 한 번)
+      if (scenario === 'bid-outbid' && !bidOutbidApplied.has(a.auctionId)) {
+        bidOutbidApplied.add(a.auctionId)
+        const steps = Math.max(1, Math.ceil((body.amount - currentPriceOf(a)) / a.bidIncrement))
+        placeRivalBid(a, currentPriceOf(a) + steps * a.bidIncrement)
+        saveAuctionState()
+      }
       if (body.amount < minNextBidOf(a)) return fail(mockErrors.BID_AMOUNT_TOO_LOW)
       if ((body.amount - currentPriceOf(a)) % a.bidIncrement !== 0)
         return fail(mockErrors.BID_NOT_ALIGNED)
@@ -96,11 +127,14 @@ export const auctionHandlers = [
     },
   }),
 
+  /** ?mock=error는 서버 오류(공통 오류 코드표 50001)로, 없는 id(404 '경매를 찾을 수 없어요')와 구분해 확인합니다. */
   mockEndpoint(endpoints.getAuctionLive, {
-    error: mockErrors.AUCTION_NOT_FOUND,
-    resolve: ({ params, ok, fail }) => {
+    error: mockErrors.INTERNAL_SERVER_ERROR,
+    resolve: ({ params, scenario, ok, fail }) => {
       const a = findAuction(idParam(params, 'auctionId'))
-      return a ? ok(toLive(a)) : fail(mockErrors.AUCTION_NOT_FOUND)
+      if (!a) return fail(mockErrors.AUCTION_NOT_FOUND)
+      simulateLive(a, scenario)
+      return ok(toLive(a))
     },
   }),
 

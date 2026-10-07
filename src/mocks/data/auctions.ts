@@ -690,10 +690,16 @@ export const rivalAutoBidCap: Record<number, number> = {
 }
 const RIVAL = 'ham****'
 
-function pushBid(a: MockAuction, amount: number, mine: boolean, bidType: BidType) {
+function pushBid(
+  a: MockAuction,
+  amount: number,
+  mine: boolean,
+  bidType: BidType,
+  bidder: string = RIVAL,
+) {
   const bid: MockBid = {
     bidId: createBidId(),
-    bidderMasked: mine ? ME.masked : RIVAL,
+    bidderMasked: mine ? ME.masked : bidder,
     isMine: mine,
     amount,
     bidType,
@@ -752,4 +758,58 @@ export function extendIfClosing(a: MockAuction) {
     a.endsAt += EXTEND_WINDOW
     a.extensionCount += 1
   }
+}
+
+/* ───────── 실시간 흉내 ─────────
+ * 실시간 화면이 폴링(GET /live · /bids)할 때마다 지난 시간만큼 다른 입찰자가 입찰합니다.
+ * 다른 사람이 입찰하면 내 자동입찰이 상한가 안에서 한 단위씩 다시 입찰하고(runProxyBidding), 넘으면 CAP_REACHED가 됩니다.
+ * 상품 상세와 같은 auctions 배열을 쓰므로 상태를 공유합니다.
+ */
+
+/** 다른 입찰자가 입찰하는 간격 */
+export const RIVAL_BID_INTERVAL_MS = 10_000
+/** ?mock=busy 일 때 간격 */
+export const BUSY_RIVAL_BID_INTERVAL_MS = 1000
+/** 다른 입찰자가 한 번에 올리는 입찰 단위 수(× bidIncrement) */
+export const RIVAL_BID_STEPS = 1
+/** 다른 입찰자들의 예산: 시작가 × 이 값을 넘으면 더 입찰하지 않습니다. */
+const RIVAL_BUDGET_RATIO = 3
+/** 다른 화면 · 백그라운드에 있다 돌아와도 밀린 입찰을 몰아서 넣지 않고 한 번만 입찰합니다. */
+const MAX_RIVAL_BIDS_PER_TICK = 1
+/** ?mock=ending: 페이지를 연 뒤 이 시간 후 종료 */
+export const ENDING_SCENARIO_MS = 30_000
+
+const RIVALS = ['ham****', 'sne****', 'suy***']
+
+/** 경매별 마지막으로 다른 입찰자를 계산한 시각 */
+const lastRivalTick: Record<number, number> = {}
+
+/** 다른 입찰자가 한 번 입찰합니다. 방금 최고가를 낸 사람은 빼고 고릅니다. 입찰했으면 true */
+export function rivalBidOnce(a: MockAuction) {
+  if (statusOf(a) !== 'LIVE') return false
+  const amount = minNextBidOf(a) + (RIVAL_BID_STEPS - 1) * a.bidIncrement
+  if (amount > a.startPrice * RIVAL_BUDGET_RATIO) return false
+  const top = a.bids[0]
+  const bidder = RIVALS.find((name) => top?.isMine || name !== top?.bidderMasked) ?? RIVAL
+  pushBid(a, amount, false, 'MANUAL', bidder)
+  // 다른 사람의 직접 입찰이지만, 목에서는 종료 연장을 하지 않습니다(?mock=ending 확인이 끝없이 밀리지 않게).
+  runProxyBidding(a)
+  return true
+}
+
+/** 지난번 계산 이후 intervalMs가 지날 때마다 다른 입찰자가 한 번씩 입찰합니다. */
+export function tickRivals(a: MockAuction, intervalMs: number) {
+  const now = Date.now()
+  const last = lastRivalTick[a.auctionId]
+  if (last === undefined || statusOf(a) !== 'LIVE') {
+    lastRivalTick[a.auctionId] = now
+    return
+  }
+  const due = Math.floor((now - last) / intervalMs)
+  if (due === 0) return
+  lastRivalTick[a.auctionId] = due > MAX_RIVAL_BIDS_PER_TICK ? now : last + due * intervalMs
+  let changed = false
+  for (let i = 0; i < Math.min(due, MAX_RIVAL_BIDS_PER_TICK); i++)
+    changed = rivalBidOnce(a) || changed
+  if (changed) saveAuctionState()
 }

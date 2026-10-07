@@ -6,6 +6,8 @@ import type {
   AuctionDetail,
   AuctionList,
   AuctionListQuery,
+  AuctionLive,
+  BidList,
   BidListQuery,
   PlaceBidRequest,
   RelistAuctionRequest,
@@ -28,6 +30,8 @@ export const auctionKeys = {
   bidLists: (auctionId: number) => [...auctionKeys.all, 'bids', auctionId] as const,
   bids: (auctionId: number, query: Omit<BidListQuery, 'page'> = {}) =>
     [...auctionKeys.bidLists(auctionId), query] as const,
+  /** 실시간 화면의 최신 입찰 한 페이지(폴링) */
+  latestBids: (auctionId: number) => [...auctionKeys.bidLists(auctionId), 'latest'] as const,
   recommendation: (auctionId: number) => [...auctionKeys.all, 'recommendation', auctionId] as const,
   result: (auctionId: number) => [...auctionKeys.all, 'result', auctionId] as const,
   similar: (auctionId: number) => [...auctionKeys.all, 'similar', auctionId] as const,
@@ -233,15 +237,71 @@ export function useSimilarAuctionsQuery(auctionId: number) {
 
 /* ───────── 변경 훅 ───────── */
 
-/** 40904(BID_AMOUNT_TOO_LOW)를 받으면 live를 다시 불러 최신 금액을 반영합니다. 여기서는 성공·실패 모두 다시 불러옵니다. */
+export const placeBidMutationKey = (auctionId: number) => ['place-bid', auctionId] as const
+
+/**
+ * 직접 입찰. 응답을 기다리는 동안 최신 입찰 목록 맨 위에 내 입찰을 먼저 넣고(낙관적), 실패하면 되돌립니다.
+ * 성공하면 응답 값으로 실시간 상태를 바로 고친 뒤 실시간 · 입찰 이력 · 상세를 다시 불러옵니다.
+ * 40904(BID_AMOUNT_TOO_LOW)도 live를 다시 불러 최신 금액을 반영합니다(명세).
+ */
 export function usePlaceBidMutation(auctionId: number) {
   const queryClient = useQueryClient()
+  const latestKey = auctionKeys.latestBids(auctionId)
+  const liveKey = auctionKeys.live(auctionId)
   return useMutation({
+    mutationKey: placeBidMutationKey(auctionId),
     mutationFn: ({ body, idempotencyKey }: { body: PlaceBidRequest; idempotencyKey?: string }) =>
       placeBid(auctionId, body, idempotencyKey),
+    onMutate: async ({ body }) => {
+      // 진행 중인 폴링 응답이 낙관적 행을 덮어쓰지 않게 먼저 취소합니다.
+      await queryClient.cancelQueries({ queryKey: latestKey })
+      const before = queryClient.getQueryData<BidList>(latestKey)
+      if (before) {
+        queryClient.setQueryData<BidList>(latestKey, {
+          ...before,
+          bids: [
+            {
+              bidId: -Date.now(), // 응답 전 임시 id. 다시 불러오면 서버 입찰로 바뀝니다.
+              bidderMasked: '',
+              isMine: true,
+              amount: body.amount,
+              bidType: 'MANUAL',
+              bidAt: new Date().toISOString(),
+              isHighest: true,
+            },
+            ...before.bids.map((bid) => ({ ...bid, isHighest: false })),
+          ],
+        })
+      }
+      return { before }
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.before) queryClient.setQueryData(latestKey, context.before)
+    },
+    onSuccess: (result) => {
+      // serverTime은 그대로라, 받은 시각(updatedAt)도 그대로 둬야 서버 시각 기준 카운트다운이 어긋나지 않습니다.
+      const receivedAt = queryClient.getQueryState(liveKey)?.dataUpdatedAt
+      queryClient.setQueryData<AuctionLive>(
+        liveKey,
+        (live) =>
+          live
+            ? {
+                ...live,
+                currentPrice: result.currentPrice,
+                minNextBidAmount: result.minNextBidAmount,
+                highestBidderMasked: result.highestBidderMasked,
+                isMine: result.isHighestBidder,
+                endsAt: result.endsAt,
+                extensionCount: result.extensionCount,
+                ...(result.autoBidCanceled && { myAutoBidStatus: null, myCap: null }),
+              }
+            : live,
+        { updatedAt: receivedAt },
+      )
+    },
     onSettled: () =>
       Promise.all([
-        queryClient.invalidateQueries({ queryKey: auctionKeys.live(auctionId) }),
+        queryClient.invalidateQueries({ queryKey: liveKey }),
         queryClient.invalidateQueries({ queryKey: auctionKeys.bidLists(auctionId) }),
         queryClient.invalidateQueries({ queryKey: auctionKeys.detail(auctionId) }),
       ]),

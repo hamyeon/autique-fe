@@ -21,6 +21,9 @@ const BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '')
  *   autobid-outbid: 제출하는 순간 현재가가 상한가 위로 올라감(CAP_TOO_LOW, 경매마다 한 번)
  *   autobid-ended: 제출하는 순간 경매가 끝남(AUCTION_CLOSED)
  *   autobid-error: 첫 제출이 서버 오류(500), 다시 시도하면 성공. ?mock=error는 상세 조회부터 실패해 시트를 열 수 없어 따로 둡니다.
+ * - ending / busy / quiet / bid-outbid: 실시간 경매 확인용. 그 페이지에서만 적용됩니다.
+ *   ending: 페이지를 연 뒤 30초 후 종료 · busy: 다른 입찰이 1초마다 · quiet: 다른 입찰 없음
+ *   bid-outbid: 직접 입찰을 제출하는 순간 이미 더 높은 입찰이 있음(BID_AMOUNT_TOO_LOW, 경매마다 한 번)
  * - reset: 시나리오가 아니라 세션에 저장한 목 상태를 지우는 표시입니다(src/mocks/data/common.ts mockResetRequested).
  */
 export type MockScenario =
@@ -32,6 +35,10 @@ export type MockScenario =
   | 'autobid-outbid'
   | 'autobid-ended'
   | 'autobid-error'
+  | 'ending'
+  | 'busy'
+  | 'quiet'
+  | 'bid-outbid'
 
 const PAGE_SCENARIOS = [
   'empty',
@@ -39,6 +46,10 @@ const PAGE_SCENARIOS = [
   'autobid-outbid',
   'autobid-ended',
   'autobid-error',
+  'ending',
+  'busy',
+  'quiet',
+  'bid-outbid',
 ] as const
 
 const STICKY_SCENARIOS = ['slow', 'analysis-fail', 'submit-fail'] as const

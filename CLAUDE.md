@@ -88,8 +88,7 @@ There is no test runner configured yet.
 - Handlers in `src/mocks/handlers/` (one file per domain, built with `mockEndpoint()`), data in `src/mocks/data/`. Mock responses pass through the same response schema as the real API.
 - On/off per "method + path": `src/mocks/config.ts` `passthrough` lists endpoints sent to the real server (e.g. `'POST /api/products'`). **When switching an endpoint to the real API, add it to `passthrough`** — don't delete its mock.
 - `VITE_MOCK=off` in `.env.local` turns MSW off entirely. Append `?mock=empty` or `?mock=error` to the page URL to get empty lists or each endpoint's spec error.
-- Registration flow scenarios: `?mock=slow` (AI analysis takes 30s), `?mock=analysis-fail` (VISION_FAILED), `?mock=submit-fail` (POST /api/products 500). Only in these scenarios are those passthrough endpoints mocked (`mockIn` in the handler); they stick for the tab until `?mock=off`, and the badge shows the active one.
-- The "MOCK · 실서버 N" badge in the corner shows that mocks are on and how many endpoints are passed through.
+- Registration flow scenarios: `?mock=slow` (AI analysis takes 30s), `?mock=analysis-fail` (VISION_FAILED), `?mock=submit-fail` (POST /api/products 500). Only in these scenarios are those passthrough endpoints mocked (`mockIn` in the handler); they stick for the tab until `?mock=off`.
 - Whenever any endpoint uses the real server, keep `POST /api/auth/refresh` and `POST /api/auth/logout` in `passthrough` too (the mock only accepts mock tokens).
 
 ### Real server in development

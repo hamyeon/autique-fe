@@ -60,6 +60,25 @@ const GROUPS: { title: string; links: RouteLink[] }[] = [
     ],
   },
   {
+    title: '실시간 경매',
+    links: [
+      { to: '/auctions/2/live', label: '참여 전(watching)' },
+      { to: '/auctions/20/live', label: '자동 입찰 중 · 최고가(leading)' },
+      { to: '/auctions/11/live', label: '내가 밀림 · 상대 자동 입찰 있음(exceeded)' },
+      { to: '/auctions/17/live', label: '내가 판매자(버튼 잠김)' },
+      { to: '/auctions/2/live?mock=ending', label: '30초 후 종료 → 결과 화면' },
+      { to: '/auctions/2/live?mock=busy', label: '다른 입찰이 1초마다' },
+      { to: '/auctions/2/live?mock=quiet', label: '다른 입찰 없음' },
+      { to: '/auctions/2/live?mock=bid-outbid', label: '직접 입찰 제출 시 이미 더 높은 입찰' },
+      { to: '/auctions/2/live?mock=error', label: '에러' },
+      { to: '/auctions/2/live?mock=empty', label: '입찰 내역 없음' },
+      { to: '/auctions/12/live', label: '시작 전 경매' },
+      { to: '/auctions/999/live', label: '없는 경매' },
+      { to: '/auctions/2/result', label: '결과(준비 중 자리)' },
+      { to: '/dev/routes?mock=reset', label: '목 상태 초기화', reload: true },
+    ],
+  },
+  {
     title: '상품 상세 · 상태',
     links: [
       { to: '/products/999', label: '없는 상품(찾을 수 없어요)' },
@@ -81,7 +100,6 @@ const GROUPS: { title: string; links: RouteLink[] }[] = [
   {
     title: '아직 없는 화면',
     links: [
-      { to: '/auctions/2/live', label: '실시간 경매', pending: true },
       { to: '/products', label: '상품 찾기', pending: true },
       { to: '/mypage', label: '마이페이지', pending: true },
     ],

@@ -5,7 +5,6 @@ import {
   useUpdateMyAutoBidMutation,
 } from '@/api/auto-bids'
 import { isApiError } from '@/api/client'
-import { AmountStepper, BottomButtonBar, BottomSheet, InfoBanner, InfoRow } from '@/components/ds'
 import type { MyAutoBid } from '@/features/auction/auto-bid'
 import {
   DEFAULT_BID_INCREMENT,
@@ -13,6 +12,7 @@ import {
   hasErrorCode,
   isRetryableError,
 } from '@/features/auction/auto-bid'
+import { BidAmountSheet } from '@/features/auction/bid-amount-sheet'
 import { formatNumber, formatPrice } from '@/lib/format'
 import { createUuid } from '@/lib/uuid'
 
@@ -42,8 +42,8 @@ type SheetError =
   | { target: 'request'; message: string; retry: boolean }
 
 /**
- * 자동 입찰 상한가 설정 · 수정 바텀시트(Figma 572:5760 · 572:5902).
- * InfoBanner → InfoRow → AmountStepper → 캡션 → BottomButtonBar. 상품 상세와 실시간 경매 화면에서 함께 씁니다.
+ * 자동 입찰 상한가 설정 · 수정 바텀시트(Figma 572:5760 · 572:5902). 골격은 BidAmountSheet(직접 입찰 시트와 같이 씀).
+ * 상품 상세와 실시간 경매 화면에서 함께 씁니다.
  * 성공하면 자동입찰 · 상세 · 실시간 · 입찰 이력 쿼리를 다시 불러온 뒤 닫힙니다.
  */
 export function AutoBidSheet({
@@ -171,70 +171,45 @@ export function AutoBidSheet({
     onClose()
   }
 
-  if (ended) {
-    return (
-      <BottomSheet
-        open={open}
-        onClose={close}
-        title="경매가 종료됐어요"
-        footer={<BottomButtonBar layout="single" primaryLabel="확인" onPrimary={close} />}
-      >
-        <p className="text-body05 text-gray6">
-          자동 입찰을 설정하는 사이에 경매가 끝나서 최신 경매 정보를 다시 불러올게요.
-        </p>
-      </BottomSheet>
-    )
-  }
-
   const unit = `${formatNumber(increment)}원`
   let primaryLabel = '자동 입찰 승인'
   if (pending) primaryLabel = '설정하는 중이에요'
   else if (error?.target === 'request' && error.retry) primaryLabel = '다시 시도'
 
   return (
-    <BottomSheet
+    <BidAmountSheet
       open={open}
       onClose={close}
       title="자동 입찰 상한가 설정"
-      footer={
-        <BottomButtonBar
-          layout="single"
-          primaryLabel={primaryLabel}
-          primaryDisabled={pending || unchanged}
-          onPrimary={submit}
-        />
+      notice={
+        ended
+          ? {
+              title: '경매가 종료됐어요',
+              message:
+                '자동 입찰을 설정하는 사이에 경매가 끝나서 최신 경매 정보를 다시 불러올게요.',
+            }
+          : null
       }
-    >
-      <InfoBanner>
-        설정한 금액은 실제 결제 금액이 아니에요. 다른 입찰자가 나타나면 {unit}씩 자동으로 입찰하고,
-        이때 설정한 상한가를 넘지 않아요.
-      </InfoBanner>
-      {aiEstimatedPrice != null ? (
-        <InfoRow label="AI 적정 시세" value={formatPrice(aiEstimatedPrice)} emphasis="primary" />
-      ) : (
-        <InfoRow label="현재가" value={formatPrice(currentPrice)} />
-      )}
-      <AmountStepper
-        label="내 자동 입찰 상한가"
-        value={amount}
-        onChange={(next) => {
-          setDraft(next)
-          if (error?.target === 'amount') setError(null)
-        }}
-        min={min}
-        step={increment}
-        error={error?.target === 'amount' ? error.message : undefined}
-      />
-      <p className="text-caption02 text-gray5">
-        상한가는 현재가보다 {unit} 이상 높게 정할 수 있어요. 입찰은 {unit}씩 올라가고, 실제 결제
-        금액은 경쟁 상황에 따라 달라져요.
-        {raiseOnly && ' 경매가 진행 중이라 지금 상한가보다 높게만 바꿀 수 있어요.'}
-      </p>
-      {error?.target === 'request' && (
-        <p role="alert" className="text-caption01 text-error1">
-          {error.message}
-        </p>
-      )}
-    </BottomSheet>
+      banner={`설정한 금액은 실제 결제 금액이 아니에요. 다른 입찰자가 나타나면 ${unit}씩 자동으로 입찰하고, 이때 설정한 상한가를 넘지 않아요.`}
+      infoRow={
+        aiEstimatedPrice != null
+          ? { label: 'AI 적정 시세', value: formatPrice(aiEstimatedPrice), emphasis: 'primary' }
+          : { label: '현재가', value: formatPrice(currentPrice) }
+      }
+      stepperLabel="내 자동 입찰 상한가"
+      value={amount}
+      onChange={(next) => {
+        setDraft(next)
+        if (error?.target === 'amount') setError(null)
+      }}
+      min={min}
+      step={increment}
+      amountError={error?.target === 'amount' ? error.message : null}
+      caption={`상한가는 현재가보다 ${unit} 이상 높게 정할 수 있어요. 입찰은 ${unit}씩 올라가고, 실제 결제 금액은 경쟁 상황에 따라 달라져요.${raiseOnly ? ' 경매가 진행 중이라 지금 상한가보다 높게만 바꿀 수 있어요.' : ''}`}
+      requestError={error?.target === 'request' ? error.message : null}
+      primaryLabel={primaryLabel}
+      primaryDisabled={pending || unchanged}
+      onSubmit={submit}
+    />
   )
 }
