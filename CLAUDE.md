@@ -90,6 +90,7 @@ There is no test runner configured yet.
 - `VITE_MOCK=off` in `.env.local` turns MSW off entirely. Append `?mock=empty` or `?mock=error` to the page URL to get empty lists or each endpoint's spec error.
 - Registration flow scenarios: `?mock=slow` (AI analysis takes 30s), `?mock=analysis-fail` (VISION_FAILED), `?mock=submit-fail` (POST /api/products 500). Only in these scenarios are those passthrough endpoints mocked (`mockIn` in the handler); they stick for the tab until `?mock=off`.
 - Whenever any endpoint uses the real server, keep `POST /api/auth/refresh` and `POST /api/auth/logout` in `passthrough` too (the mock only accepts mock tokens).
+- The browser can terminate the idle MSW service worker (e.g. while the phone is in the camera app), and the restarted worker forgets which pages to mock and passes everything to the real server. `src/mocks/keep-active.ts` re-registers the page before requests and on app foreground (hooked into `request()` via `setBeforeRequest` in `src/main.tsx`); keep it when changing the MSW setup.
 
 ### Real server in development
 

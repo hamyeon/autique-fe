@@ -245,6 +245,15 @@ function refreshAccessToken() {
   return refreshing
 }
 
+/* ───────── 요청 전 준비 ───────── */
+
+let beforeRequest: (() => Promise<void>) | null = null
+
+/** 모든 요청 직전에 기다릴 작업을 정합니다(목이 켜진 빌드에서 MSW 워커 재등록, src/main.tsx). */
+export function setBeforeRequest(hook: (() => Promise<void>) | null) {
+  beforeRequest = hook
+}
+
 /* ───────── 공개 함수 ───────── */
 
 /**
@@ -262,6 +271,7 @@ export async function request<E extends EndpointDef>(
     signal?: AbortSignal
     idempotencyKey?: string
   }
+  if (beforeRequest) await beforeRequest()
   const label = endpointKey(def)
   const input: SendInput = {
     label,

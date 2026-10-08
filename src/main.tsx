@@ -15,9 +15,17 @@ async function enableMocking() {
     import.meta.env.DEV ? import.meta.env.VITE_MOCK === 'off' : import.meta.env.VITE_MOCK !== 'on'
   )
     return
-  const { worker } = await import('@/mocks/browser')
+  const [{ worker }, { ensureMockingActive, keepMockingActive }, { setBeforeRequest }] =
+    await Promise.all([
+      import('@/mocks/browser'),
+      import('@/mocks/keep-active'),
+      import('@/api/client'),
+    ])
   // 목 핸들러가 없는 요청(이미지 · 폰트 등)은 그대로 네트워크로 보냅니다.
   await worker.start({ onUnhandledFrame: 'bypass' })
+  // 브라우저가 쉬는 워커를 종료했다 다시 깨워도 이 화면에 목이 계속 적용되게(src/mocks/keep-active.ts)
+  keepMockingActive()
+  setBeforeRequest(ensureMockingActive)
 }
 
 /**

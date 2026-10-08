@@ -12,6 +12,16 @@ export const queryClient = new QueryClient({
       },
       // 모바일에서 앱 전환 후 돌아올 때마다 재요청하는 것을 막음
       refetchOnWindowFocus: false,
+      /*
+       * 브라우저의 온라인 표시와 상관없이 요청합니다. 기본값(online)은 offline 이벤트 뒤 online 이벤트를 놓치면
+       * (카메라 · 사진 선택 앱 전환, 와이파이 ↔ LTE 전환 중 모바일에서 종종 생김) 새 요청을 계속 멈춰 두어
+       * 화면이 스켈레톤에서 넘어가지 않습니다. 정말 끊겼으면 request()가 network 오류로 바꿔 에러 · 다시 시도 화면이 나옵니다.
+       */
+      networkMode: 'always',
+    },
+    mutations: {
+      // 제출 등도 같은 이유로 멈추지 않게(끊겼으면 '연결이 불안정해요' 안내)
+      networkMode: 'always',
     },
   },
 })
