@@ -287,3 +287,59 @@ Figma와 다르게 구현했거나 Figma에 없어서 새로 정한 부분을 �
   - ErrorState + 아래 버튼. 입력값은 그대로
   - 연결 끊김: "연결이 불안정해요" · 서버 오류: "AI 기준가를 계산하지 못했어요" · 새 세션이 늦음: "분석이 오래 걸리고 있어요" → 다시 시도 / 닫기
   - 상품 정보 문제(40001): "상품 정보를 확인해 주세요" → 수정하러 가기(2/6) / 닫기
+
+## DS 컴포넌트 동기화 (2026-10-15 · Figma 새 화면: 로그인 948:6123 · 마이페이지 957:1951 · 현재 경매 중인 상품 957:3014 · 과거 경매했던 상품 957:3180 · 관심 목록 957:3328, 수정 화면: 홈 572:7790 · 경매 리스트 551:3556)
+
+화면은 아직 반영하지 않았고, 컴포넌트와 `/design-system` 확인 페이지만 바꿨습니다.
+
+### 추가
+
+- **HeaderActions** (Figma 973:2389) · `header.tsx`
+  - 검색 · 알림 · 장바구니(24, 사이 16). 터치 영역은 겉모양을 바꾸지 않고 40×44로 넓힘
+  - HomeHeader와 Header `trailing="actions"`가 함께 씀
+- **PromoBanner** (Figma 977:2424) · `promo-banner.tsx`
+  - 패딩 20, 줄 사이 4, `caption` body04 + `title` head02, 글자 white0, 단어 단위 줄바꿈
+  - 배경: Figma 스타일 `grad/primary`(방사형, #3662FF → #9747FF). **"평면, 그라데이션 없음" 규칙의 승인된 예외**
+    - Figma 그라데이션이 기울어진 타원이라 CSS `radial-gradient`로는 같게 못 그려, Figma가 내보낸 SVG를 `bg-promo` 유틸리티(index.css)로 늘려 씀
+    - 끝 색 #9747FF는 팔레트 밖 값(Figma에도 색 변수 없음)
+  - `href`면 링크, `onClick`이면 버튼, 둘 다 없으면 누를 수 없는 배너(Figma에 인터랙션 정의 없음)
+- **KakaoLoginButton** (Figma 948:6233) · `kakao-login-button.tsx`
+  - **카카오 브랜드 가이드 값을 DS 예외로 그대로 씀**: 높이 45, 반경 6, #FEE500, 문구 15px SemiBold rgba(0,0,0,.85)
+    - index.css에 예외 토큰 `kakao-bg` · `kakao-label`(색), `kakao`(글자), `kakao`(반경)을 둠
+  - 로고 18(`src/assets/logos/kakao-symbol.svg`, Figma에서 받음)은 왼쪽 14 고정, 문구는 버튼 가운데
+  - 폭은 부모를 채움(Figma 320은 로그인 화면이 정함)
+  - Figma에 없어 정한 것: 눌림(조금 어둡게, `brightness-95`), 비활성(반투명), `label` 변경
+- **MyPageListButton** (Figma 207:749) · `my-page-menu.tsx`
+  - 높이 52, 왼쪽 20 · 오른쪽 8 · 위아래 8, head03 black0(한 줄 말줄임), 오른쪽 ArrowRight 36, 배경 white0
+  - `href`면 링크, 아니면 버튼
+  - Figma에 없어 정한 것: 누르는 동안 gray1 바탕
+- **MyPageMenuSection** (Figma 977:2446, 제목 MyPageMenuSectionTitle 977:2430) · `my-page-menu.tsx`
+  - 제목(body03 gray4, 좌우 20 · 위아래 8, 높이 38) 아래 메뉴 행을 간격 없이 쌓음
+  - 그룹 사이 12는 화면이 맡음
+
+### 수정
+
+- **Header** (Figma 646:2461) · `header.tsx`
+  - `trailing="actions"` 추가(Figma `trailing=actions` 957:1930): HeaderActions, 아이콘 핸들러는 `actions` prop
+  - Figma `trailing=sort`(957:2827)는 `title`에 `<SortTabs />`를 넣고 `trailing="actions"`로 그림
+    - 이를 위해 `title`이 문자열이면 h1, 요소면 h1 없이 그대로 그리게 바꿈
+  - 기존 props·변형은 그대로(기존 화면 영향 없음). 오른쪽 18은 기존 예외 그대로
+- **HomeHeader** (Figma 239:754) · `header.tsx`
+  - 오른쪽 여백 20 → **16**(`pr-space-16`, Figma 값). 아이콘 묶음은 HeaderActions로 바꿈
+- **SortTabs** (Figma 676:56 · 칸 `_SortTab` 674:6224) · `sort-tabs.tsx`
+  - 글자: 선택 body03 / 나머지 body05 → **둘 다 head02**(색은 그대로 black0 / gray4, 사이 8)
+  - 예전 작은 크기는 쓰는 곳이 없어 Figma·코드 모두에서 없앰
+  - 터치 영역 위아래 10(높이 45)
+- **SellerProfile** (Figma 971:3808, 예전 단일 컴포넌트 646:2549) · `seller-profile.tsx`
+  - `size` 추가: `md`(기본, 48px) · `lg`(60px, 마이페이지 프로필)
+  - lg: 이름 head03 black0, 보조 caption01 gray4, 사이 12
+  - **md의 보조 정보 label01 gray4 → caption01 gray5**(Figma md 변형 값)
+  - 두 크기 모두 이름·보조 정보 한 줄 말줄임
+- **Divider** (Figma 674:6225) · `divider.tsx`
+  - `size` 추가: `line`(1px, 기본) · `section`(8px, Figma `tone=default, size=section` 975:2406)
+
+### 바꾸지 않은 것
+
+- **ProductCard**(572:6531): Figma에서 이미지 fill, 브랜드 1줄 · 상품명 2줄 말줄임을 코드와 같게 맞춤. 코드 변경 없음
+- **FloatingActionButton**: Figma 오른쪽 12 대신 코드 20 유지(사용자 결정)
+- **SearchHeader**(Figma ProductSearchHeader 207:470): 경매 리스트에서 빠졌지만 컴포넌트는 남겨 둠

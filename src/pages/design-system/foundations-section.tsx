@@ -240,14 +240,21 @@ function IconLegacyArtDemo() {
 
 function DividerDemo() {
   return (
-    <Demo title="Divider" description="1px, 부모 폭을 채웁니다. 카드 안에서는 위아래 card-row(8) 간격.">
+    <Demo
+      title="Divider"
+      description="부모 폭을 채웁니다(Figma 674:6225). size=line 1px(기본, 카드 안에서는 위아래 card-row 8), size=section 8px gray1 띠(마이페이지 프로필 아래)."
+    >
       <div className="gap-space-16 flex flex-col">
         {(['default', 'primary', 'error'] as const).map((tone) => (
           <div key={tone} className="gap-space-8 flex flex-col">
-            <Caption>tone="{tone}"</Caption>
+            <Caption>size="line" · tone="{tone}"</Caption>
             <Divider tone={tone} />
           </div>
         ))}
+      </div>
+      <div className="gap-space-8 flex flex-col">
+        <Caption>size="section" · 화면 폭(-mx-layout-gutter로 꺼냄)</Caption>
+        <Divider size="section" className="-mx-layout-gutter w-auto" />
       </div>
       <div className="gap-space-8 flex flex-col">
         <DividerCard tone="default" className="border-gray2 bg-white0" />

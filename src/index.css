@@ -114,6 +114,15 @@
   --radius-lg: 20px;
   --radius-full: 100px;
 
+  /* 카카오 브랜드 가이드 값(DS 예외, Figma KakaoLogin 948:6233). KakaoLoginButton에서만 씁니다.
+     → bg-kakao-bg, text-kakao-label, text-kakao, rounded-kakao */
+  --color-kakao-bg: #fee500;
+  --color-kakao-label: rgb(0 0 0 / 0.85);
+  --text-kakao: 15px;
+  --text-kakao--line-height: 1.5;
+  --text-kakao--font-weight: 600;
+  --radius-kakao: 6px;
+
   /* 모션 → animate-loading-scan
      Figma LoadingImg(프로토타입): position=top에서 0.2초 뒤 1.2초 EASE_OUT(Smart Animate)으로 막대가 아래로,
      position=down에서 0.2초 뒤 전환 없이 위로 → 한 바퀴 1.6초, 무한 반복.
@@ -261,6 +270,14 @@
 }
 @utility pr-safe {
   padding-right: env(safe-area-inset-right);
+}
+
+/* 홈 AI 추천 배너 그라데이션(DS "평면" 규칙의 승인된 예외, Figma 스타일 grad/primary · PromoBanner 977:2424).
+   Figma 방사형 그라데이션은 기울어진 타원이라 CSS radial-gradient로는 같게 못 그려, Figma가 내보낸 SVG를
+   배경으로 늘려 씁니다. 시작 #3662ff = primary1, 끝 #9747ff는 팔레트 밖 값입니다. */
+@utility bg-promo {
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 375 116' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect width='100%' height='100%' fill='url(%23g)'/><defs><radialGradient id='g' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-29.95 -25.83 4.3917 -9.2645 308 164.56)'><stop stop-color='%233662ff'/><stop offset='1' stop-color='%239747ff'/></radialGradient></defs></svg>");
+  background-size: 100% 100%;
 }
 
 /* 가로 스와이프 영역(상품 이미지 등)의 스크롤바를 숨깁니다. */

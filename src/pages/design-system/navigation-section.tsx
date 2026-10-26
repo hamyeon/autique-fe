@@ -1,17 +1,29 @@
 import type { FormEvent, ReactNode } from 'react'
 import { useState } from 'react'
 import type { TabKey } from '@/components/ds'
-import { Header, HomeHeader, SearchHeader, SortTabs, TabBar } from '@/components/ds'
+import {
+  Header,
+  HeaderActions,
+  HomeHeader,
+  MyPageListButton,
+  MyPageMenuSection,
+  SearchHeader,
+  SortTabs,
+  TabBar,
+} from '@/components/ds'
 import { Caption, Demo, Section } from './showcase'
 
 export function NavigationSection() {
   return (
     <Section id="navigation" title="Navigation">
       <HeaderDemo />
+      <HeaderActionsDemo />
       <HomeHeaderDemo />
       <SearchHeaderDemo />
       <TabBarDemo />
       <SortTabsDemo />
+      <MyPageListButtonDemo />
+      <MyPageMenuSectionDemo />
     </Section>
   )
 }
@@ -29,6 +41,13 @@ function FullBleed({ label, children }: { label: ReactNode; children: ReactNode 
 function HeaderDemo() {
   const [favorited, setFavorited] = useState(false)
   const [backCount, setBackCount] = useState(0)
+  const [sort, setSort] = useState('인기순')
+  const [lastAction, setLastAction] = useState<string | null>(null)
+  const actions = {
+    onSearch: () => setLastAction('검색'),
+    onNotifications: () => setLastAction('알림'),
+    onBag: () => setLastAction('장바구니'),
+  }
 
   return (
     <Demo
@@ -73,7 +92,27 @@ function HeaderDemo() {
       <FullBleed label="showBack={false}">
         <Header title="뒤로 가기 없는 화면" showBack={false} />
       </FullBleed>
+      <FullBleed label='trailing="actions" · showBack={false} (마이페이지 · 하위 목록, Figma 957:1930)'>
+        <Header title="마이페이지" showBack={false} trailing="actions" actions={actions} />
+      </FullBleed>
+      <FullBleed label='trailing="actions" · 긴 제목은 말줄임, 아이콘은 그대로'>
+        <Header
+          title="과거 경매했던 상품이 아주 많아서 제목이 길어요"
+          showBack={false}
+          trailing="actions"
+          actions={actions}
+        />
+      </FullBleed>
+      <FullBleed label={`trailing=sort · title에 SortTabs (경매 리스트, Figma 957:2827) · 선택 "${sort}"`}>
+        <Header
+          title={<SortTabs value={sort} onChange={setSort} />}
+          showBack={false}
+          trailing="actions"
+          actions={actions}
+        />
+      </FullBleed>
       <Caption>위 예시(첫 번째 제외)는 onBack을 넘겨 이동 대신 횟수만 셉니다: {backCount}회</Caption>
+      <Caption>마지막으로 누른 아이콘(actions): {lastAction ?? '없음'}</Caption>
     </Demo>
   )
 }
@@ -84,7 +123,7 @@ function HomeHeaderDemo() {
   return (
     <Demo
       title="HomeHeader"
-      description="로고 108×28 + 검색 · 알림 · 장바구니(16 간격), 좌우 20."
+      description="로고 108×28 + HeaderActions, 왼쪽 20 · 오른쪽 16(Figma 239:754)."
     >
       <FullBleed label="홈 탭 헤더">
         <HomeHeader
@@ -158,7 +197,7 @@ function SortTabsDemo() {
   return (
     <Demo
       title="SortTabs"
-      description="선택 body03 black0, 나머지 body05 gray4, 사이 8. 탭으로 들어와 ←→로 이동, Space·Enter로 선택."
+      description="모두 head02, 선택 black0 · 나머지 gray4, 사이 8. Header 제목 자리에 넣어 씁니다. 탭으로 들어와 ←→로 이동, Space·Enter로 선택."
     >
       <div className="gap-space-8 flex flex-col">
         <SortTabs value={value} onChange={setValue} />
@@ -168,6 +207,84 @@ function SortTabsDemo() {
         <SortTabs options={['인기순', '최신순', '마감 임박순', '낮은 가격순']} defaultValue="최신순" />
         <Caption>비제어형 · 항목 4개, defaultValue="최신순"</Caption>
       </div>
+    </Demo>
+  )
+}
+
+function HeaderActionsDemo() {
+  const [last, setLast] = useState<string | null>(null)
+
+  return (
+    <Demo
+      title="HeaderActions"
+      description="검색 · 알림 · 장바구니 24, 사이 16. 보이는 크기는 그대로 두고 터치 영역만 40×44로 넓혔습니다. HomeHeader와 Header trailing='actions'가 씁니다(Figma 973:2389)."
+    >
+      <div className="flex justify-end">
+        <HeaderActions
+          onSearch={() => setLast('검색')}
+          onNotifications={() => setLast('알림')}
+          onBag={() => setLast('장바구니')}
+        />
+      </div>
+      <Caption>마지막으로 누른 아이콘: {last ?? '없음'} · 탭 키로 이동하면 primary1 포커스 링</Caption>
+    </Demo>
+  )
+}
+
+function MyPageListButtonDemo() {
+  const [count, setCount] = useState(0)
+
+  return (
+    <Demo
+      title="MyPageListButton"
+      description="높이 52, 왼쪽 20 · 오른쪽 8, head03 black0 + 화살표 36(Figma 207:749). 누르는 동안 gray1 바탕(Figma에 없음). href면 링크, 아니면 버튼."
+    >
+      <FullBleed label={`onClick (버튼) · 누른 횟수 ${count}회`}>
+        <MyPageListButton onClick={() => setCount((c) => c + 1)}>현재 경매 중인 상품</MyPageListButton>
+      </FullBleed>
+      <FullBleed label="href (링크) · 누르면 /design-system/screen-demo로 이동">
+        <MyPageListButton href="/design-system/screen-demo">관심 목록</MyPageListButton>
+      </FullBleed>
+      <FullBleed label="긴 문구 · 한 줄 말줄임, 화살표는 그대로">
+        <MyPageListButton onClick={() => setCount((c) => c + 1)}>
+          경매 AI Agent 설정과 자동 입찰 상한가 기본값 관리하기
+        </MyPageListButton>
+      </FullBleed>
+    </Demo>
+  )
+}
+
+function MyPageMenuSectionDemo() {
+  const [last, setLast] = useState<string | null>(null)
+  const item = (label: string) => (
+    <MyPageListButton onClick={() => setLast(label)}>{label}</MyPageListButton>
+  )
+
+  return (
+    <Demo
+      title="MyPageMenuSection"
+      description="제목(body03 gray4, 좌우 20 · 위아래 8) 아래 메뉴 행을 간격 없이 쌓습니다(Figma 977:2446). 그룹 사이 12는 화면이 맡습니다."
+    >
+      <FullBleed label="행 2개 × 2그룹 · 그룹 사이 12 (화면에서 쓰는 모양)">
+        <div className="gap-space-12 flex flex-col">
+          <MyPageMenuSection title="나의 경매">
+            {item('현재 경매 중인 상품')}
+            {item('과거 경매했던 상품')}
+          </MyPageMenuSection>
+          <MyPageMenuSection title="쇼핑">
+            {item('관심 목록')}
+            {item('경매 AI Agent 설정')}
+          </MyPageMenuSection>
+        </div>
+      </FullBleed>
+      <FullBleed label="행 3개">
+        <MyPageMenuSection title="고객 센터">
+          {item('공지사항')}
+          {item('자주 묻는 질문')}
+          {item('약관 및 정책')}
+        </MyPageMenuSection>
+      </FullBleed>
+      <Caption>마지막으로 누른 메뉴: {last ?? '없음'}</Caption>
     </Demo>
   )
 }

@@ -11,16 +11,44 @@ const FOCUS =
 /* 24px 아이콘 버튼. 겉 배치는 아이콘 크기 그대로 두고 음수 여백으로 터치 영역(40×44)만 넓힙니다. */
 const ICON_BUTTON = cn(FOCUS, '-mx-2 -my-2.5 flex h-11 w-10 shrink-0 items-center justify-center')
 
+export interface HeaderActionsProps {
+  onSearch?: () => void
+  onNotifications?: () => void
+  onBag?: () => void
+  className?: string
+}
+
+/** 탭 화면 헤더 오른쪽 아이콘 묶음: 검색 · 알림 · 장바구니(24, 사이 16). Figma HeaderActions 973:2389 */
+export function HeaderActions({ onSearch, onNotifications, onBag, className }: HeaderActionsProps) {
+  return (
+    <div className={cn('gap-space-16 flex shrink-0 items-center', className)}>
+      <button type="button" aria-label="검색" onClick={onSearch} className={ICON_BUTTON}>
+        <Icon name="Search" />
+      </button>
+      <button type="button" aria-label="알림" onClick={onNotifications} className={ICON_BUTTON}>
+        <Icon name="Bell" />
+      </button>
+      <button type="button" aria-label="장바구니" onClick={onBag} className={ICON_BUTTON}>
+        <Icon name="Bag" />
+      </button>
+    </div>
+  )
+}
+
 export interface HeaderProps {
+  /** 문자열이면 h1 제목(head02). 정렬 탭처럼 요소를 넣으면 h1 없이 그대로 그립니다(trailing=sort). */
   title: ReactNode
   /** 기본 true */
   showBack?: boolean
   /** 없으면 React Router로 이전 화면(navigate(-1)). 돌아갈 기록이 없으면 홈으로 갑니다. */
   onBack?: () => void
-  /** 'favorite' 검은 선 하트(상품 상세), 'live' LIVE 칩(실시간 경매), 또는 직접 넣는 요소 */
-  trailing?: 'favorite' | 'live' | ReactNode
+  /** 'favorite' 검은 선 하트(상품 상세), 'live' LIVE 칩(실시간 경매),
+   *  'actions' 검색·알림·장바구니(탭 화면 · 마이페이지 하위 목록), 또는 직접 넣는 요소 */
+  trailing?: 'favorite' | 'live' | 'actions' | ReactNode
   favorited?: boolean
   onFavorite?: () => void
+  /** trailing="actions"일 때 각 아이콘 버튼 */
+  actions?: Omit<HeaderActionsProps, 'className'>
   className?: string
 }
 
@@ -32,6 +60,7 @@ export function Header({
   trailing,
   favorited = false,
   onFavorite,
+  actions,
   className,
 }: HeaderProps) {
   const navigate = useNavigate()
@@ -64,6 +93,8 @@ export function Header({
     )
   } else if (trailing === 'live') {
     right = <Chip kind="live">LIVE</Chip>
+  } else if (trailing === 'actions') {
+    right = <HeaderActions {...actions} />
   }
 
   return (
@@ -73,7 +104,7 @@ export function Header({
         'py-space-12 gap-space-8 justify-between',
         /* 뒤로 가기 버튼은 자체 여백이 있어 왼쪽 8, 없으면 제목이 화면 좌우 여백(20)에 맞춥니다. */
         showBack ? 'pl-space-8' : 'pl-layout-gutter',
-        /* 오른쪽은 Figma 그대로: LIVE 칩만 20, 하트·없음·직접 넣는 요소는 18(4의 배수 밖 값이라 숫자 간격) */
+        /* 오른쪽은 Figma 그대로: LIVE 칩만 20, 하트·아이콘 묶음·없음·직접 넣는 요소는 18(4의 배수 밖 값이라 숫자 간격) */
         trailing === 'live' ? 'pr-layout-gutter' : 'pr-4.5',
         className,
       )}
@@ -90,7 +121,11 @@ export function Header({
             <Icon name="ArrowLeft" size={36} />
           </button>
         )}
-        <h1 className="text-head02 text-black0 truncate">{title}</h1>
+        {typeof title === 'string' || typeof title === 'number' ? (
+          <h1 className="text-head02 text-black0 truncate">{title}</h1>
+        ) : (
+          title
+        )}
       </div>
       {right}
     </header>
@@ -104,22 +139,14 @@ export interface HomeHeaderProps {
   className?: string
 }
 
-/** 홈 탭 헤더: 로고(108×28) + 검색 · 알림 · 장바구니(16 간격) */
+/** 홈 탭 헤더: 로고(108×28) + HeaderActions. 왼쪽 20 · 오른쪽 16(Figma 239:754) */
 export function HomeHeader({ onSearch, onNotifications, onBag, className }: HomeHeaderProps) {
   return (
-    <header className={cn(BAR, 'px-layout-gutter py-space-12 justify-between', className)}>
+    <header
+      className={cn(BAR, 'pl-layout-gutter pr-space-16 py-space-12 justify-between', className)}
+    >
       <Icon name="autique-logo" label="Autique" className="*:h-7 *:w-27" />
-      <div className="gap-space-16 flex items-center">
-        <button type="button" aria-label="검색" onClick={onSearch} className={ICON_BUTTON}>
-          <Icon name="Search" />
-        </button>
-        <button type="button" aria-label="알림" onClick={onNotifications} className={ICON_BUTTON}>
-          <Icon name="Bell" />
-        </button>
-        <button type="button" aria-label="장바구니" onClick={onBag} className={ICON_BUTTON}>
-          <Icon name="Bag" />
-        </button>
-      </div>
+      <HeaderActions onSearch={onSearch} onNotifications={onNotifications} onBag={onBag} />
     </header>
   )
 }
