@@ -1,4 +1,5 @@
 import { assumedAuctionHandlers } from '@/mocks/handlers/assumed/auctions'
+import { assumedMeHandlers } from '@/mocks/handlers/assumed/me'
 import { auctionHandlers } from '@/mocks/handlers/auctions'
 import { authHandlers } from '@/mocks/handlers/auth'
 import { autoBidHandlers } from '@/mocks/handlers/auto-bids'
@@ -19,4 +20,5 @@ export const handlers = [
   ...backupOfferHandlers,
   ...notificationHandlers,
   ...assumedAuctionHandlers,
+  ...assumedMeHandlers,
 ]

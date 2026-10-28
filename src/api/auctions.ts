@@ -9,6 +9,8 @@ import type {
   AuctionLive,
   BidList,
   BidListQuery,
+  LikedAuctionListQuery,
+  MyAuctionListQuery,
   PlaceBidRequest,
   RelistAuctionRequest,
   SimilarAuction,
@@ -25,6 +27,12 @@ export const auctionKeys = {
   /** 무한 스크롤 (홈 '지금 인기 있는 경매') */
   infiniteList: (query: Omit<AuctionListQuery, 'page'>) =>
     [...auctionKeys.lists(), 'infinite', query] as const,
+  /** 내가 올린 경매(마이페이지). 관심 등록이 바로 반영되도록 목록 키 아래에 둡니다. */
+  myList: (query: Omit<MyAuctionListQuery, 'page'>) =>
+    [...auctionKeys.lists(), 'mine', query] as const,
+  /** 관심 목록(마이페이지) */
+  likedList: (query: Omit<LikedAuctionListQuery, 'page'> = {}) =>
+    [...auctionKeys.lists(), 'liked', query] as const,
   detail: (auctionId: number) => [...auctionKeys.all, 'detail', auctionId] as const,
   live: (auctionId: number) => [...auctionKeys.all, 'live', auctionId] as const,
   bidLists: (auctionId: number) => [...auctionKeys.all, 'bids', auctionId] as const,
@@ -45,6 +53,16 @@ const LIVE_POLL_MS = 3000
 /** [ASSUMED] 명세에 없는 경매 목록 API (홈) */
 export function getAuctions(query: AuctionListQuery = {}, signal?: AbortSignal) {
   return request(endpoints.getAuctions, { query, signal })
+}
+
+/** [ASSUMED] 명세에 없는 내 경매 목록 API (마이페이지) */
+export function getMyAuctions(query: MyAuctionListQuery, signal?: AbortSignal) {
+  return request(endpoints.getMyAuctions, { query, signal })
+}
+
+/** [ASSUMED] 명세에 없는 관심 목록 API (마이페이지) */
+export function getLikedAuctions(query: LikedAuctionListQuery = {}, signal?: AbortSignal) {
+  return request(endpoints.getLikedAuctions, { query, signal })
 }
 
 export function getAuctionDetail(auctionId: number, signal?: AbortSignal) {
@@ -115,6 +133,26 @@ export function useAuctionsInfiniteQuery(query: Omit<AuctionListQuery, 'page'> =
   return useInfiniteQuery({
     queryKey: auctionKeys.infiniteList(query),
     queryFn: ({ pageParam, signal }) => getAuctions({ ...query, page: pageParam }, signal),
+    initialPageParam: 0,
+    getNextPageParam: (last) => (last.hasNext ? last.page + 1 : undefined),
+  })
+}
+
+/** [ASSUMED] 명세에 없는 내 경매 목록 API (마이페이지). page는 0부터 */
+export function useMyAuctionsInfiniteQuery(query: Omit<MyAuctionListQuery, 'page'>) {
+  return useInfiniteQuery({
+    queryKey: auctionKeys.myList(query),
+    queryFn: ({ pageParam, signal }) => getMyAuctions({ ...query, page: pageParam }, signal),
+    initialPageParam: 0,
+    getNextPageParam: (last) => (last.hasNext ? last.page + 1 : undefined),
+  })
+}
+
+/** [ASSUMED] 명세에 없는 관심 목록 API (마이페이지). page는 0부터 */
+export function useLikedAuctionsInfiniteQuery(query: Omit<LikedAuctionListQuery, 'page'> = {}) {
+  return useInfiniteQuery({
+    queryKey: auctionKeys.likedList(query),
+    queryFn: ({ pageParam, signal }) => getLikedAuctions({ ...query, page: pageParam }, signal),
     initialPageParam: 0,
     getNextPageParam: (last) => (last.hasNext ? last.page + 1 : undefined),
   })
@@ -365,6 +403,12 @@ export function useToggleAuctionLikeMutation() {
     },
     onSuccess: ({ liked, likeCount }, { auctionId }) => {
       setLikeInCaches(queryClient, auctionId, () => ({ isLiked: liked, likeCount }))
+      /* 관심 목록에 넣거나 빼야 하므로 다시 불러옵니다. 보고 있는 관심 목록은 바로 다시 부르지 않아,
+         하트를 실수로 눌러도 카드가 사라지지 않고 다시 누를 수 있습니다(다음에 열 때 반영). */
+      queryClient.invalidateQueries({
+        queryKey: [...auctionKeys.lists(), 'liked'],
+        refetchType: 'inactive',
+      })
     },
     onError: (_error, { auctionId }, context) => {
       const before = context?.before

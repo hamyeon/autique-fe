@@ -38,8 +38,8 @@ export const ICON_SIZES = {
   Home: [24],
   Product: [24],
   User: [24],
-  /** 회색 원 + 흰 X(색 고정). 사진 지우기 */
-  Close: [36],
+  /** 회색 원 + 흰 X(색 고정). 36 사진 지우기(반투명 원), 24 입력 지우기(HeaderInput) */
+  Close: [36, 24],
 } as const satisfies Record<string, readonly IconSize[]>
 
 export type IconName = keyof typeof ICON_SIZES
@@ -52,6 +52,8 @@ type ArtName =
   | 'img_loading_magnifier'
   | 'img_complete_send'
   | 'autique-logo'
+  /** 카카오 로그인 버튼 말풍선(18, 검정 고정) */
+  | 'kakao-symbol'
 
 /* 색 토큰 → 클래스. Tailwind가 클래스를 찾을 수 있도록 문자열을 그대로 적어둡니다. */
 const COLOR_CLASS = {
@@ -64,6 +66,7 @@ const COLOR_CLASS = {
   error3: 'text-error3',
   error4: 'text-error4',
   white0: 'text-white0',
+  gray0: 'text-gray0',
   gray1: 'text-gray1',
   gray2: 'text-gray2',
   gray3: 'text-gray3',

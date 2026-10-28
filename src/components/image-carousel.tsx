@@ -4,13 +4,13 @@ import { ImagePlaceholder, PageIndicator } from '@/components/ds'
 
 export interface ImageCarouselProps {
   images: string[]
-  /** 이미지 대체 텍스트 앞부분(상품명) */
+  /** 이미지 대체 텍스트 앞부분(상품명, 배너 등) */
   alt: string
 }
 
 /**
- * 상품 이미지: 화면 폭 정사각, 좌우 스와이프(scroll-snap) + 아래 PageIndicator.
- * 화면 좌우 여백을 무시하고 폭을 채우도록 -mx-layout-gutter로 꺼냅니다.
+ * 화면 폭 정사각 이미지: 좌우 스와이프(scroll-snap) + 아래 PageIndicator(2장 이상일 때). 자동 넘김은 없습니다.
+ * 상품 상세 이미지 · 홈 상단 배너가 씁니다. 화면 좌우 여백을 무시하고 폭을 채우도록 -mx-layout-gutter로 꺼냅니다.
  */
 export function ImageCarousel({ images, alt }: ImageCarouselProps) {
   const [current, setCurrent] = useState(0)

@@ -9,10 +9,10 @@ Figma와 다르게 구현했거나 Figma에 없어서 새로 정한 부분을 �
 - **로딩** (`ProductGridSkeleton`)
   - 섹션 제목은 그대로 두고, 그리드 자리에 ProductCard 모양 스켈레톤 4장(gray1, pulse)
 - **비어 있음** (`EmptyState`)
-  - 배너 아래에 Product 아이콘(gray4) → "아직 열린 경매가 없어요"(head03) → "새 경매가 등록되면 여기에서 보여드릴게요."(body05 gray5)
+  - 배너 아래에 "아직 열린 경매가 없어요"(head03) → "새 경매가 등록되면 여기에서 보여드릴게요"(body05 gray5)
   - 가운데 정렬, 위아래 32
 - **에러** (`ErrorState`)
-  - 배너 아래에 Info 아이콘(error1) → "경매 목록을 불러오지 못했어요" → "잠시 후 다시 시도해 주세요." → outline 버튼 "다시 시도"
+  - 배너 아래에 Info 아이콘(error1) → "경매 목록을 불러오지 못했어요" → "잠시 후 다시 시도해 주세요" → outline 버튼 "다시 시도"
 - **다음 페이지 불러오는 중** (`ProductCardSkeleton`)
   - 그리드 끝에 스켈레톤 2장(한 줄)
 - **다음 페이지 실패** (`ErrorState`)
@@ -20,6 +20,8 @@ Figma와 다르게 구현했거나 Figma에 없어서 새로 정한 부분을 �
 
 공통
 
+- **EmptyState(비어 있음)에는 아이콘을 두지 않음**(2026-10-29, 사용자 결정). 제목 → 설명 → 행동만. ErrorState(에러)는 Info 아이콘(error1) 그대로
+- **EmptyState · ErrorState 설명 끝에는 마침표를 찍지 않음**(2026-10-29, 사용자 결정). 두 문장이면 마지막 마침표만 뺌
 - 상태 컴포넌트는 `src/components/feedback/`에 있고 `/design-system`의 Feedback 섹션에서 볼 수 있습니다.
 - 서버 오류 메시지는 개발자용이라 화면에 그대로 보여주지 않고, 위의 고정 문구를 씁니다.
 
@@ -29,10 +31,15 @@ Figma와 다르게 구현했거나 Figma에 없어서 새로 정한 부분을 �
   - Figma: 카드 4장 + LoadMoreButton "더 많은 경매 보러가기"
   - 구현: 8장씩 무한 스크롤. 끝까지 불러오면 같은 LoadMoreButton을 보여주고 `/products`로 이동
   - 이유: 요구사항(목록이 길면 무한 스크롤). Figma 요소는 목록 끝에 유지
-- **상단 배너 PageIndicator**
-  - Figma: 두 번째 점이 현재 위치
-  - 구현: 첫 번째 점이 현재 위치로 고정
-  - 이유: 배너 API·이미지가 없어 넘김 없이 첫 장만 보여줌
+- **상단 배너** (2026-10-29 반영)
+  - Figma: 정사각 이미지 + PageIndicator(점 4개, 두 번째가 현재). 프로토타입 동작 없음
+  - 구현: 로컬 이미지 2장(`img_promotion_01`, `img_promotion_02`)을 좌우 스와이프. 현재 위치는 스와이프에 따라 바뀜(첫 장에서 시작). 자동 넘김 · 링크 없음
+  - 이유: 배너 이미지는 앱 안에서 관리(사용자 결정). 배너 API는 쓰지 않음
+  - 캐러셀은 상품 상세와 같은 `ImageCarousel`(`src/components/`로 옮김)을 씀
+- **AI 추천 배너** (`PromoBanner`, Figma 977:2425, 2026-10-29 반영)
+  - Figma: 상단 배너 바로 아래, 인터랙션 정의 없음
+  - 구현: 같은 문구로 넣되 누를 수 없음
+  - 이유: 이동할 화면(경매 AI Agent 설정)이 아직 없음. 화면이 생기면 `href`만 넘기면 됨
 - **ProductCard 상태**
   - Figma: `planned` · `live` 두 가지
   - 구현: `ended` 추가. Chip `finish` "경매 종료" + 가격 라벨 "최종가"
@@ -54,6 +61,89 @@ Figma와 다르게 구현했거나 Figma에 없어서 새로 정한 부분을 �
   - 구현: 버튼은 있지만 아직 연결하지 않음
   - 이유: 해당 화면은 이번 범위 밖
 
+## 검색 (Figma 검색 1044:2708 · 검색 결과 1044:3235)
+
+경로 `/search?q=`. 헤더 검색 아이콘으로 들어옴. 결과는 경매 리스트와 같은 골격(`AuctionListScreen`)에 검색 헤더만 바꿔 넣음.
+
+### Figma에 없는 상태 · 동작 (DS 톤으로 정함)
+
+- **입력 전**: 헤더(입력)만, 들어오면 바로 입력 포커스(Figma: 키보드가 올라온 상태)
+- **검색**: 키보드 '검색'(Enter)으로 실행. 빈 칸은 실행하지 않음. 실행하면 키보드를 내리고 주소에 `?q=` 남김(뒤로 가기로 이전 검색어)
+- **로딩 · 에러 · 다음 페이지**: 경매 리스트와 같음
+- **결과 없음** (`EmptyState`): "'{검색어}' 검색 결과가 없어요" · "찾는 상품이 있다면 AI 에이전트 기능을 활용해보세요"
+
+### Figma와 다르게 구현했거나 정한 부분
+
+- **데이터**: 명세에 검색 API가 없어 `[ASSUMED] GET /api/auctions?keyword=`. 목은 취소되지 않은 모든 경매에서 브랜드 · 상품명 · 영문명에 검색어가 들어간 것(대소문자 무시), 인기순
+- **결과 개수**: Figma 6장 → 10장씩 무한 스크롤
+
+## 잘못된 주소 · 없는 상품 (Figma에 없음)
+
+- 없는 주소(`/abc`), 없는 상품(`/products/9999`), 없는 경매(`/auctions/9999/live`) 모두 같은 모양: EmptyState + **primary(검정) "홈으로"**
+  - 2026-10-29 전에는 없는 주소만 검정(높이 44), 없는 상품 · 경매는 outline(흰색)이었음
+
+## 마이페이지 (Figma 마이페이지 957:1951)
+
+경로 `/my`(TabBar 마이페이지 탭). 로그인이 필요해 `RequireAuth` 안에 있고, 토큰이 없으면 `/login`으로 보냄(로그인 화면은 아직 없어 "준비 중" 자리 화면).
+
+### Figma에 없는 상태 · 동작 (DS 톤으로 정함)
+
+- **프로필 불러오는 중** (`Skeleton`): 프로필 행 자리에 60px 원 + 두 줄 블록. 높이가 같아 메뉴가 밀리지 않음
+- **프로필 실패** (`ErrorState`): 프로필 행 자리에만 "내 정보를 불러오지 못했어요" + "다시 시도". 메뉴는 그대로 쓸 수 있음
+- **이메일 없음**: 이름 한 줄만(카카오 이메일 동의를 안 한 계정, `?mock=empty`)
+- **준비 중 안내** (`Toast`, 새 공용 컴포넌트 `src/components/feedback/toast.tsx`)
+  - 문구: **"아직 준비 중인 기능이에요"**
+  - 모양: 화면 아래 가운데, gray7 바탕 · white0 body04, 패딩 16×12, radius-md, 그림자 없음, 하단 safe-area 위 96(TabBar 위)
+  - 2초 뒤 사라짐, 다시 누르면 시간이 새로 시작. 스크린리더는 `role="status"`로 읽음
+  - 띄우는 곳: 고객센터 '약관 및 정책', 쇼핑 '경매 AI Agent 설정'(화면 없음), 프로필 행(이동할 화면 없음)
+
+### Figma와 다르게 구현했거나 정한 부분
+
+- **사용자 정보**
+  - 명세에 사용자 API가 없음(카카오 로그인 응답도 토큰만) → `[ASSUMED] GET /api/me`(nickname · email · profileImageUrl)
+  - 이름 줄은 "{닉네임}님 안녕하세요!", 보조 줄은 이메일, 사진이 없으면 gray1 원
+- **로그아웃**
+  - Figma: 고객센터 그룹 마지막 행
+  - 구현: 아직 넣지 않음. 로그인 화면을 만든 뒤 붙임(사용자 결정)
+- **메뉴 연결**
+  - 현재 경매 중인 상품 → `/my/auctions/ongoing`, 과거 경매했던 상품 → `/my/auctions/ended`, 관심 목록 → `/my/likes`
+  - 하위 목록 경로를 `/mypage/…`에서 `/my/…`로 옮김
+
+## 경매 리스트 · 마이페이지 목록 (Figma 경매 리스트 551:3556 · 현재 경매 중인 상품 957:3014 · 과거 경매했던 상품 957:3180 · 관심 목록 957:3328)
+
+네 화면은 같은 골격(`src/pages/auction-list/auction-list-screen.tsx`)에 헤더와 데이터만 바꿔 씁니다. 헤더 아래 첫 콘텐츠 24(`layout-section`, Screen `top="section"`).
+
+### Figma에 없는 상태 화면 (DS 톤으로 정함)
+
+- **로딩** (`ProductGridSkeleton`): 그리드 자리에 카드 스켈레톤 6장(2열 × 3줄, Figma 화면에 보이는 수)
+- **비어 있음** (`EmptyState`)
+  - 경매 리스트: "아직 열린 경매가 없어요" · "새 경매가 등록되면 여기에서 보여드릴게요"
+  - 현재 경매 중인 상품: "경매 중인 상품이 없어요" · "상품을 등록하면 여기에서 볼 수 있어요"
+  - 과거 경매했던 상품: "지난 경매가 없어요" · "경매가 끝난 상품이 여기에 모여요"
+  - 관심 목록: "관심 상품이 없어요" · "하트를 눌러 관심 상품을 모아 보세요"
+- **에러** (`ErrorState`): "…를 불러오지 못했어요" + "다시 시도"
+- **다음 페이지 불러오는 중 · 실패**: 홈과 같음(스켈레톤 2장 / "더 불러오지 못했어요" + "다시 시도")
+
+### Figma와 다르게 구현했거나 정한 부분
+
+- **목록 길이**
+  - Figma: 카드 6장
+  - 구현: 10장씩 무한 스크롤
+- **정렬(경매 리스트)**
+  - 인기순(기본) · 최신순. 주소에 `?sort=latest`로 남겨 상세에 갔다 돌아와도 유지, 바꾸면 맨 위로
+- **데이터** (명세에 없어 `[ASSUMED]`)
+  - 경매 리스트: 기존 `GET /api/auctions`(인기순 · 최신순)
+  - 현재 경매 중인 상품 / 과거 경매했던 상품: `GET /api/me/auctions?status=ONGOING|ENDED`
+    - 내가 판매자로 올린 경매로 정함(Figma 메뉴 행 원본 문구 "현재 판매 중인 상품" 기준). ONGOING = 경매 예정 + 진행 중, ENDED = 종료 + 취소
+  - 관심 목록: `GET /api/me/likes`
+- **관심 목록에서 하트를 끄면**
+  - 보고 있는 동안은 카드를 그대로 두고(빈 하트), 다음에 열 때 빠짐
+  - 이유: 실수로 눌러도 바로 다시 누를 수 있게
+- **마이페이지 하위 목록 헤더 · 하단**
+  - Figma 그대로 Header `trailing=none`(뒤로 가기 + 제목), TabBar 없음
+  - 과거 경매했던 상품: Figma 헤더 문구가 "현재 경매 중인 상품"(복사 실수로 보임) → "과거 경매했던 상품"으로 구현
+  - 관심 목록: 헤더 문구는 Figma대로 "관심 상품"
+
 ## 상품 상세 (Figma 경매 예정 661:3429 · 경매 중 661:3742 · 경매 종료 661:4446)
 
 ### Figma에 없는 상태 화면 (DS 톤으로 정함)
@@ -63,9 +153,9 @@ Figma와 다르게 구현했거나 Figma에 없어서 새로 정한 부분을 �
 - **로딩 · 주소로 바로 들어온 경우** (`Skeleton`)
   - 정사각 이미지 · 칩 · 상품명 · 본문 자리를 모두 스켈레톤으로
 - **에러** (`ErrorState`)
-  - 헤더 아래 가운데에 "상품 정보를 불러오지 못했어요" → "잠시 후 다시 시도해 주세요." → "다시 시도"
+  - 헤더 아래 가운데에 "상품 정보를 불러오지 못했어요" → "잠시 후 다시 시도해 주세요" → "다시 시도"
 - **없는 상품** (`EmptyState`)
-  - 가운데에 "상품을 찾을 수 없어요" → "경매가 삭제되었거나 주소가 잘못되었어요." → outline 버튼 "홈으로"
+  - 가운데에 "상품을 찾을 수 없어요" → "경매가 삭제되었거나 주소가 잘못되었어요" → primary 버튼 "홈으로"
   - 헤더 하트는 숨김
 - **비슷한 상품**
   - 불러오는 중: 카드 스켈레톤 4장(`ProductGridSkeleton`)
@@ -152,7 +242,7 @@ Figma와 다르게 구현했거나 Figma에 없어서 새로 정한 부분을 �
 - **판매자 본인**
   - 참여 전 카드 + 하단 single 비활성 "내가 등록한 경매예요"
 - **입찰 내역**
-  - 불러오는 중: 줄 스켈레톤 4개 / 실패: "입찰 내역을 불러오지 못했어요" + 다시 시도 / 없음: "아직 입찰이 없어요" · "첫 입찰자가 되어 보세요."
+  - 불러오는 중: 줄 스켈레톤 4개 / 실패: "입찰 내역을 불러오지 못했어요" + 다시 시도 / 없음: "아직 입찰이 없어요" · "첫 입찰자가 되어 보세요"
   - 새 입찰은 위에서 0.3초 동안 내려오며 나타남(동작 줄이기 설정이면 없음)
 - **로딩 · 에러 · 없는 경매 · 시작 전 · 취소된 경매**
   - 카드 · 내역 자리 스켈레톤 / "경매 정보를 불러오지 못했어요" + 다시 시도 / "경매를 찾을 수 없어요" + 홈으로 / "아직 경매가 시작되지 않았어요" · "취소된 경매예요" + 상품 상세로
@@ -161,7 +251,7 @@ Figma와 다르게 구현했거나 Figma에 없어서 새로 정한 부분을 �
   - 열려 있는 동안 현재가가 올라 금액이 최솟값보다 낮아지면 최솟값으로 올리고 스테퍼 아래 "현재가가 올라서 최소 입찰가를 X원으로 올렸어요."(3초)
   - 제출 중 "입찰하는 중이에요"(비활성). 실패: 더 높은 입찰 → 스테퍼 에러 "그사이 더 높은 입찰이 들어와서 금액을 더 높게 정해야 해요." / 경매 종료 → "경매가 종료됐어요" 안내 후 결과 화면 / 연결 · 서버 → 캡션 자리 에러 + "다시 시도"
 - **결과 화면 자리** (`/auctions/:id/result`)
-  - "경매가 끝났어요" · "결과 화면은 준비 중이에요." + 상품 상세로
+  - "경매가 끝났어요" · "결과 화면은 준비 중이에요" + 상품 상세로
 
 ### Figma와 다르게 구현한 부분
 
@@ -287,3 +377,86 @@ Figma와 다르게 구현했거나 Figma에 없어서 새로 정한 부분을 �
   - ErrorState + 아래 버튼. 입력값은 그대로
   - 연결 끊김: "연결이 불안정해요" · 서버 오류: "AI 기준가를 계산하지 못했어요" · 새 세션이 늦음: "분석이 오래 걸리고 있어요" → 다시 시도 / 닫기
   - 상품 정보 문제(40001): "상품 정보를 확인해 주세요" → 수정하러 가기(2/6) / 닫기
+
+## DS 컴포넌트 동기화 (2026-10-15 · Figma 새 화면: 로그인 948:6123 · 마이페이지 957:1951 · 현재 경매 중인 상품 957:3014 · 과거 경매했던 상품 957:3180 · 관심 목록 957:3328, 수정 화면: 홈 572:7790 · 경매 리스트 551:3556)
+
+화면은 아직 반영하지 않았고, 컴포넌트와 `/design-system` 확인 페이지만 바꿨습니다.
+
+### 추가
+
+- **HeaderActions** (Figma 973:2389) · `header.tsx`
+  - 검색 · 알림 · 장바구니(24, 사이 16). 터치 영역은 겉모양을 바꾸지 않고 40×44로 넓힘
+  - HomeHeader와 Header `trailing="actions"`가 함께 씀
+- **PromoBanner** (Figma 977:2424) · `promo-banner.tsx`
+  - 패딩 20, 줄 사이 4, `caption` body04 + `title` head02, 글자 white0, 단어 단위 줄바꿈
+  - 배경: Figma 스타일 `grad/primary`(방사형, #3662FF → #9747FF). **"평면, 그라데이션 없음" 규칙의 승인된 예외**
+    - Figma 그라데이션이 기울어진 타원이라 CSS `radial-gradient`로는 같게 못 그려, Figma가 내보낸 SVG를 `bg-promo` 유틸리티(index.css)로 늘려 씀
+    - 끝 색 #9747FF는 팔레트 밖 값(Figma에도 색 변수 없음)
+  - `href`면 링크, `onClick`이면 버튼, 둘 다 없으면 누를 수 없는 배너(Figma에 인터랙션 정의 없음)
+- **KakaoLoginButton** (Figma 948:6233) · `kakao-login-button.tsx`
+  - **카카오 브랜드 가이드 값을 DS 예외로 그대로 씀**: 높이 45, 반경 6, #FEE500, 문구 15px SemiBold rgba(0,0,0,.85)
+    - index.css에 예외 토큰 `kakao-bg` · `kakao-label`(색), `kakao`(글자), `kakao`(반경)을 둠
+  - 로고 18(`src/assets/logos/kakao-symbol.svg`, Figma에서 받음)은 왼쪽 14 고정, 문구는 버튼 가운데
+  - 폭은 부모를 채움(Figma 320은 로그인 화면이 정함)
+  - Figma에 없어 정한 것: 눌림(조금 어둡게, `brightness-95`), 비활성(반투명), `label` 변경
+- **MyPageListButton** (Figma 207:749) · `my-page-menu.tsx`
+  - 높이 52, 왼쪽 20 · 오른쪽 8 · 위아래 8, head03 black0(한 줄 말줄임), 오른쪽 ArrowRight 36, 배경 white0
+  - `href`면 링크, 아니면 버튼
+  - Figma에 없어 정한 것: 누르는 동안 gray1 바탕
+- **MyPageMenuSection** (Figma 977:2446, 제목 MyPageMenuSectionTitle 977:2430) · `my-page-menu.tsx`
+  - 제목(body03 gray4, 좌우 20 · 위아래 8, 높이 38) 아래 메뉴 행을 간격 없이 쌓음
+  - 그룹 사이 12는 화면이 맡음
+
+### 수정
+
+- **Header** (Figma 646:2461) · `header.tsx`
+  - `trailing="actions"` 추가(Figma `trailing=actions` 957:1930): HeaderActions, 아이콘 핸들러는 `actions` prop
+  - Figma `trailing=sort`(957:2827)는 `title`에 `<SortTabs />`를 넣고 `trailing="actions"`로 그림
+    - 이를 위해 `title`이 문자열이면 h1, 요소면 h1 없이 그대로 그리게 바꿈
+  - 기존 props·변형은 그대로(기존 화면 영향 없음). 오른쪽 18은 기존 예외 그대로
+- **HomeHeader** (Figma 239:754) · `header.tsx`
+  - 오른쪽 여백 20 → **16**(`pr-space-16`, Figma 값). 아이콘 묶음은 HeaderActions로 바꿈
+- **SortTabs** (Figma 676:56 · 칸 `_SortTab` 674:6224) · `sort-tabs.tsx`
+  - 글자: 선택 body03 / 나머지 body05 → **둘 다 head02**(색은 그대로 black0 / gray4, 사이 8)
+  - 예전 작은 크기는 쓰는 곳이 없어 Figma·코드 모두에서 없앰
+  - 터치 영역 위아래 10(높이 45)
+- **SellerProfile** (Figma 971:3808, 예전 단일 컴포넌트 646:2549) · `seller-profile.tsx`
+  - `size` 추가: `md`(기본, 48px) · `lg`(60px, 마이페이지 프로필)
+  - lg: 이름 head03 black0, 보조 caption01 gray4, 사이 12
+  - **md의 보조 정보 label01 gray4 → caption01 gray5**(Figma md 변형 값)
+  - 두 크기 모두 이름·보조 정보 한 줄 말줄임
+- **Divider** (Figma 674:6225) · `divider.tsx`
+  - `size` 추가: `line`(1px, 기본) · `section`(8px, Figma `tone=default, size=section` 975:2406)
+
+### 추가 · 수정 (2026-10-29)
+
+- **색 토큰 gray0 추가** (Figma 스타일 `gray/gray0` #F8F8F8) · `index.css` `--color-gray0` → `bg-gray0` 등
+  - Figma에서는 HeaderInput(1044:3430, 아직 코드에 없음) 바탕에도 쓰임
+- **흰 바탕 요소의 눌림 = gray0 바탕** (공통 규칙, 누르는 동안 + 최소 150ms, `usePressed`)
+  - Button `outline` · `danger`: 눌림 없음 → gray0 (Figma에 없음)
+  - LoadMoreButton, LoadMoreDownButton 머리: 눌림 없음 → gray0
+  - SegmentedControl 칸: gray2 → **gray0** (DS 원본 gray2에서 바꿈)
+  - MyPageListButton: gray1 → gray0
+  - TimeInput 날짜 · 시간 칸(버튼일 때), ImageUploadButton 빈 칸: 눌림 없음 → gray0
+  - 마이페이지 프로필 행: gray0
+  - 흰 바탕이 아닌 요소(Button primary gray7, KakaoLoginButton 어둡게, InfoRow · InfoField 반투명)와 아이콘만 있는 버튼(HeaderActions, TabBar)은 그대로
+
+- **HeaderInput 추가** (Figma 1044:3397) · `header.tsx`
+  - 높이 50, 패딩 12, 사이 8, gray0 바탕, radius-md, body02, placeholder gray5 "찾으시는 상품을 입력해주세요"
+  - default: 테두리 gray2 + 돋보기(gray5) / focused: 테두리 primary1 + 지우기 / filled: 테두리 gray2 + 지우기
+  - 지우기는 Icon `Close` 24(Figma Icon/Close 883:6070, 새로 받음). 눌러도 입력 포커스가 빠지지 않음
+- **Header `search` 추가** (Figma `trailing=search` 1044:2859): 뒤로 가기 + HeaderInput(폭 채움), 아래 선 없음, 왼쪽 8 · 오른쪽 20
+- **SearchHeader 삭제** (Figma ProductSearchHeader 207:470): 위 두 개로 대체
+- **HeaderActions 기본 동작**: 핸들러가 없으면 검색 → `/search`, 알림 · 장바구니 → "아직 준비 중인 기능이에요" 안내
+
+- **BottomButtonBar 버튼 순서** (Figma 396:4869, 2026-10-29)
+  - `triple`: primary / outline + danger → **outline + danger / primary**(primary가 아래)
+  - `primaryDanger`: primary / danger → **danger / primary**(primary가 아래)
+  - 이유: Figma 컴포넌트 · 실시간 경매 화면(395:4340) 기준. design-system/README.md의 "primary / outline + danger" 표기와 다름
+  - 영향: 실시간 경매(자동 입찰 중), 경매 등록 중 나가기 확인 시트
+
+### 바꾸지 않은 것
+
+- **ProductCard**(572:6531): Figma에서 이미지 fill, 브랜드 1줄 · 상품명 2줄 말줄임을 코드와 같게 맞춤. 코드 변경 없음
+- **FloatingActionButton**: Figma 오른쪽 12 대신 코드 20 유지(사용자 결정)
+- ~~**SearchHeader**(Figma ProductSearchHeader 207:470)~~: 2026-10-29 삭제. 검색 헤더는 Header `search` + HeaderInput으로 바꿈(아래)

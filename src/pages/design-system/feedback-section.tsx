@@ -9,8 +9,10 @@ import {
   ProductGridSkeleton,
   Skeleton,
 } from '@/components/feedback'
+import { TOAST_DURATION_MS } from '@/components/feedback'
 import type { AnalysisStage } from '@/features/register/analysis'
 import { ANALYSIS_STAGE_COPY } from '@/features/register/analysis'
+import { PREPARING_MESSAGE, showToast } from '@/stores/toast-store'
 import { Caption, Demo, OptionGroup, Section } from './showcase'
 
 /** src/components/feedback: 화면 상태(로딩 · 비어 있음 · 에러) 공용 컴포넌트 */
@@ -22,6 +24,7 @@ export function FeedbackSection() {
       <SkeletonDemo />
       <EmptyStateDemo />
       <ErrorStateDemo />
+      <ToastDemo />
     </Section>
   )
 }
@@ -106,13 +109,13 @@ function EmptyStateDemo() {
   return (
     <Demo
       title="EmptyState"
-      description="목록이 비었을 때. 아이콘(gray4) → 제목 head03 → 설명 body05 gray5 → 행동(선택), 가운데 정렬, 위아래 32."
+      description="목록이 비었을 때. 제목 head03 → 설명 body05 gray5 → 행동(선택), 가운데 정렬, 위아래 32. 아이콘은 두지 않습니다."
     >
       <OptionGroup label="행동 버튼" options={['없음', '있음'] as const} value={withAction} onChange={setWithAction} />
       <div className="border-gray2 rounded-md border">
         <EmptyState
           title="아직 열린 경매가 없어요"
-          description="새 경매가 등록되면 여기에서 보여드릴게요."
+          description="새 경매가 등록되면 여기에서 보여드릴게요"
           action={
             withAction === '있음' ? (
               <Button variant="outline" block={false}>
@@ -145,6 +148,41 @@ function ErrorStateDemo() {
         <ErrorState title="더 불러오지 못했어요" description={null} onRetry={() => {}} className="py-0" />
       </div>
       <Caption>목록 끝에서 다음 페이지 실패</Caption>
+    </Demo>
+  )
+}
+
+function ToastDemo() {
+  const [count, setCount] = useState(0)
+
+  return (
+    <Demo
+      title="Toast"
+      description={`화면 아래 짧은 안내(Figma에 없음, DS 톤으로 정함). gray7 바탕 · white0 body04, 패딩 16×12, radius-md, 하단 safe-area 위 96(TabBar를 가리지 않음). ${TOAST_DURATION_MS / 1000}초 뒤 사라지고, 다시 띄우면 시간이 새로 시작됩니다. showToast('문구')로 띄웁니다.`}
+    >
+      <div className="gap-space-8 flex flex-col">
+        <Button variant="outline" onClick={() => showToast(PREPARING_MESSAGE)}>
+          준비 중 안내 띄우기
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => {
+            setCount((c) => c + 1)
+            showToast(`연속으로 눌렀어요 (${count + 1}번째)`)
+          }}
+        >
+          연속으로 띄우기 (문구가 바뀌고 시간이 새로 시작)
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() =>
+            showToast('긴 안내 문구가 들어가면 단어 단위로 줄을 바꿔 두 줄까지 자연스럽게 보여줘요')
+          }
+        >
+          긴 문구 띄우기
+        </Button>
+      </div>
+      <Caption>스크린리더에는 role=&quot;status&quot;로 읽힙니다.</Caption>
     </Demo>
   )
 }

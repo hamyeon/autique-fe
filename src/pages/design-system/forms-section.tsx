@@ -173,7 +173,7 @@ function SegmentedControlDemo() {
   return (
     <Demo
       title="SegmentedControl"
-      description="40px 칸, body05. 선택 black0 채움(Figma는 gray6), 눌림 gray2, 비활성 gray2 + gray5 글자. Radix ToggleGroup: 탭으로 들어와 ←→로 이동, Space·Enter로 선택."
+      description="40px 칸, body05. 선택 black0 채움(Figma는 gray6), 눌림 gray0(DS 원본 gray2, 흰 바탕 요소 공통 규칙), 비활성 gray2 + gray5 글자. Radix ToggleGroup: 탭으로 들어와 ←→로 이동, Space·Enter로 선택."
     >
       <div className="gap-form-field flex flex-col">
         <SegmentedControl label="비제어형 · defaultValue" options={PARTS} defaultValue="일부 있음" />

@@ -1,6 +1,6 @@
 import { endpoints } from '@/api/endpoints'
 import type { MockAuction } from '@/mocks/data/auctions'
-import { auctions, statusOf, toListItem } from '@/mocks/data/auctions'
+import { auctions, isSeller, statusOf, toListItem } from '@/mocks/data/auctions'
 import { mockEndpoint, pageParams, paginate } from '@/mocks/define'
 import { mockErrors } from '@/mocks/errors'
 
@@ -26,10 +26,15 @@ export const assumedAuctionHandlers = [
     empty: ({ query, ok }) => ok({ items: [], ...pageParams(query), hasNext: false }),
     resolve: ({ query, ok }) => {
       const sort = query.get('sort') ?? 'popular'
+      const keyword = query.get('keyword')?.trim().toLowerCase()
       // 등록한 상품도 목록에 보이도록 홈 4개 + 목에서 새로 만든 경매(id 100~)를 씁니다.
-      const visible = auctions.filter(
-        (a) => (HOME_IDS.includes(a.auctionId) || a.auctionId >= 100) && statusOf(a) !== 'CANCELED',
-      )
+      // [ASSUMED] 검색어가 있으면 취소되지 않은 모든 경매에서 브랜드 · 상품명 · 영문명에 검색어가 들어간 것만(대소문자 무시)
+      const visible = auctions.filter((a) => {
+        if (statusOf(a) === 'CANCELED') return false
+        if (!keyword) return HOME_IDS.includes(a.auctionId) || a.auctionId >= 100
+        const { brand, name, subName } = a.product
+        return [brand, name, subName].some((text) => text.toLowerCase().includes(keyword))
+      })
       const sorted =
         sort === 'recommended'
           ? HOME_IDS.map((id) => visible.find((a) => a.auctionId === id)).filter(
@@ -38,6 +43,31 @@ export const assumedAuctionHandlers = [
           : [...visible].sort(SORTERS[sort] ?? SORTERS.popular)
       const { page, size } = pageParams(query)
       return ok(paginate(sorted.map(toListItem), page, size))
+    },
+  }),
+
+  // [ASSUMED] GET /api/me/auctions — 내가 판매자로 올린 경매. ONGOING = 예정 + 진행 중, ENDED = 종료 + 취소, 최근 등록순
+  mockEndpoint(endpoints.getMyAuctions, {
+    error: mockErrors.INVALID_REQUEST,
+    empty: ({ query, ok }) => ok({ items: [], ...pageParams(query), hasNext: false }),
+    resolve: ({ query, ok }) => {
+      const ongoing = query.get('status') !== 'ENDED'
+      const mine = auctions
+        .filter((a) => isSeller(a))
+        .filter((a) => ['SCHEDULED', 'LIVE'].includes(statusOf(a)) === ongoing)
+        .sort(SORTERS.latest)
+      const { page, size } = pageParams(query)
+      return ok(paginate(mine.map(toListItem), page, size))
+    },
+  }),
+  // [ASSUMED] GET /api/me/likes — 관심 등록한 경매. 목 데이터에 등록 시각이 없어 최근 등록된 경매순
+  mockEndpoint(endpoints.getLikedAuctions, {
+    error: mockErrors.INVALID_REQUEST,
+    empty: ({ query, ok }) => ok({ items: [], ...pageParams(query), hasNext: false }),
+    resolve: ({ query, ok }) => {
+      const liked = auctions.filter((a) => a.isLiked).sort(SORTERS.latest)
+      const { page, size } = pageParams(query)
+      return ok(paginate(liked.map(toListItem), page, size))
     },
   }),
 ]

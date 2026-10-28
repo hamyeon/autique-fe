@@ -1,11 +1,21 @@
 import type { RouteObject } from 'react-router'
 import { createBrowserRouter } from 'react-router'
+import { RequireAuth } from '@/app/require-auth'
 import { MobileLayout } from '@/layouts/mobile-layout'
+import { AuctionListPage } from '@/pages/auction-list/auction-list-page'
+import {
+  LikedAuctionsPage,
+  MyEndedAuctionsPage,
+  MyOngoingAuctionsPage,
+} from '@/pages/auction-list/my-auction-list-pages'
 import { AuctionResultPage } from '@/pages/auction-result/auction-result-page'
 import { HomePage } from '@/pages/home/home-page'
 import { LiveAuctionPage } from '@/pages/live-auction/live-auction-page'
+import { MyPage } from '@/pages/my/my-page'
 import { NotFoundPage } from '@/pages/not-found-page'
+import { PlaceholderPage } from '@/pages/placeholder-page'
 import { ProductDetailPage } from '@/pages/product-detail/product-detail-page'
+import { SearchPage } from '@/pages/search/search-page'
 import { RegisterAnalyzingPage } from '@/pages/register/register-analyzing-page'
 import { RegisterCompletePage } from '@/pages/register/register-complete-page'
 import { RegisterLayout } from '@/pages/register/register-layout'
@@ -46,6 +56,20 @@ export const router = createBrowserRouter([
     element: <MobileLayout />,
     children: [
       { path: '/', element: <HomePage /> },
+      { path: '/products', element: <AuctionListPage /> },
+      { path: '/search', element: <SearchPage /> },
+      {
+        // 로그인이 필요한 화면. 로그아웃 상태면 /login으로 보냅니다.
+        element: <RequireAuth />,
+        children: [
+          { path: '/my', element: <MyPage /> },
+          { path: '/my/auctions/ongoing', element: <MyOngoingAuctionsPage /> },
+          { path: '/my/auctions/ended', element: <MyEndedAuctionsPage /> },
+          { path: '/my/likes', element: <LikedAuctionsPage /> },
+        ],
+      },
+      // 로그인 화면은 아직 없어 자리만 둡니다.
+      { path: '/login', element: <PlaceholderPage title="로그인" /> },
       { path: '/products/:id', element: <ProductDetailPage /> },
       { path: '/auctions/:id/live', element: <LiveAuctionPage /> },
       { path: '/auctions/:id/result', element: <AuctionResultPage /> },

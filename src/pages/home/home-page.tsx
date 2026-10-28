@@ -9,9 +9,8 @@ import type { SimilarAuction } from '@/api/schemas/auctions'
 import {
   FloatingActionButton,
   HomeHeader,
-  ImagePlaceholder,
   LoadMoreButton,
-  PageIndicator,
+  PromoBanner,
   TabBar,
 } from '@/components/ds'
 import {
@@ -23,12 +22,14 @@ import {
 import { useInfiniteScroll } from '@/hooks/use-infinite-scroll'
 import { Screen } from '@/layouts/screen'
 import { AuctionGrid } from '@/components/auction-grid'
-import promotionImage from '@/assets/illustrations/img_promotion.png'
+import { ImageCarousel } from '@/components/image-carousel'
+import promotionImage01 from '@/assets/illustrations/img_promotion_01.png'
+import promotionImage02 from '@/assets/illustrations/img_promotion_02.png'
 
 /** '지금 인기 있는 경매' 한 번에 불러올 개수(2열 × 4줄) */
 const POPULAR_PAGE_SIZE = 8
 
-/** 홈 탭: 배너 → 나에게 딱 맞는 상품 → 지금 인기 있는 경매(무한 스크롤) + 상품 등록 버튼 + 탭바 (Figma 572:7790) */
+/** 홈 탭: 배너 → AI 추천 배너 → 나에게 딱 맞는 상품 → 지금 인기 있는 경매(무한 스크롤) + 상품 등록 버튼 + 탭바 (Figma 572:7790) */
 export function HomePage() {
   const navigate = useNavigate()
   const recommended = useAuctionsQuery({ sort: 'recommended', size: 4 })
@@ -74,7 +75,7 @@ export function HomePage() {
     content = (
       <EmptyState
         title="아직 열린 경매가 없어요"
-        description="새 경매가 등록되면 여기에서 보여드릴게요."
+        description="새 경매가 등록되면 여기에서 보여드릴게요"
       />
     )
   } else {
@@ -135,23 +136,29 @@ export function HomePage() {
       }
     >
       <HomeBanner />
+      <PromoBanner
+        className="-mx-layout-gutter w-auto"
+        caption="꼭 실시간 경매를 보고 있지 않아도,"
+        title={
+          <>
+            AI로 나에게 더 딱 맞는 상품 추천받고
+            <br />
+            자동 입찰하러 가기
+          </>
+        }
+      />
+      {/* 상단 이미지(배너) 아래 첫 콘텐츠 24 — design-system/README.md 화면 여백 규칙 */}
       <div className="mt-layout-section gap-layout-section flex flex-col">{content}</div>
     </Screen>
   )
 }
 
-/** 상단 배너. 배너 API가 명세에 없어 고정 프로모션 이미지와 위치 표시만 둡니다. */
+/** 상단 배너 이미지(로컬) */
+const BANNER_IMAGES = [promotionImage01, promotionImage02]
+
+/** 상단 배너: 화면 폭 정사각 이미지, 좌우 스와이프 + PageIndicator. 자동 넘김 · 링크 없음(Figma 프로토타입에 없음) */
 function HomeBanner() {
-  return (
-    <div className="-mx-layout-gutter relative">
-      <ImagePlaceholder ratio={1} src={promotionImage} alt="프로모션 배너" />
-      <PageIndicator
-        count={4}
-        current={0}
-        className="bottom-space-20 absolute left-1/2 -translate-x-1/2"
-      />
-    </div>
-  )
+  return <ImageCarousel images={BANNER_IMAGES} alt="프로모션 배너" />
 }
 
 /** 섹션 제목(head02) → 16 → 내용 */

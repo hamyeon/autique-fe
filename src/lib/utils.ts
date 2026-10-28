@@ -21,6 +21,7 @@ const twMerge = extendTailwindMerge({
         'caption02',
         'label01',
         'label02',
+        'kakao', // 카카오 브랜드 예외(KakaoLoginButton)
       ],
       spacing: [
         'space-4',
@@ -42,7 +43,7 @@ const twMerge = extendTailwindMerge({
         'form-field',
         'form-label',
       ],
-      radius: ['sm', 'md', 'lg', 'full'],
+      radius: ['sm', 'md', 'lg', 'full', 'kakao'],
     },
   },
 })

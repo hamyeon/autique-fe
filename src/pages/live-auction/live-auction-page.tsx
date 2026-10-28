@@ -52,13 +52,9 @@ function LiveAuction({ auctionId, valid }: { auctionId: number; valid: boolean }
       <Screen header={header} className="justify-center">
         <EmptyState
           title="경매를 찾을 수 없어요"
-          description="경매가 삭제되었거나 주소가 잘못되었어요."
+          description="경매가 삭제되었거나 주소가 잘못되었어요"
           action={
-            <Button
-              variant="outline"
-              block={false}
-              onClick={() => navigate('/', { replace: true })}
-            >
+            <Button block={false} onClick={() => navigate('/', { replace: true })}>
               홈으로
             </Button>
           }
@@ -91,7 +87,7 @@ function LiveAuction({ auctionId, valid }: { auctionId: number; valid: boolean }
         <EmptyState
           title={data.status === 'SCHEDULED' ? '아직 경매가 시작되지 않았어요' : '취소된 경매예요'}
           description={
-            data.status === 'SCHEDULED' ? '경매가 시작되면 실시간 상황을 볼 수 있어요.' : undefined
+            data.status === 'SCHEDULED' ? '경매가 시작되면 실시간 상황을 볼 수 있어요' : undefined
           }
           action={
             <Button variant="outline" block={false} onClick={toDetail}>
@@ -193,7 +189,7 @@ function LiveContent({
           {bidsState === 'ready' && bids && bids.length === 0 && (
             <EmptyState
               title="아직 입찰이 없어요"
-              description="첫 입찰자가 되어 보세요."
+              description="첫 입찰자가 되어 보세요"
               className="py-space-24"
             />
           )}

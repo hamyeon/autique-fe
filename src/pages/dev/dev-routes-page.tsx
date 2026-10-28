@@ -23,6 +23,28 @@ const GROUPS: { title: string; links: RouteLink[] }[] = [
     ],
   },
   {
+    title: '경매 리스트 · 마이페이지',
+    links: [
+      { to: '/products', label: '경매 리스트 · 인기순' },
+      { to: '/products?sort=latest', label: '경매 리스트 · 최신순' },
+      { to: '/products?mock=empty', label: '경매 리스트 · 비어 있음' },
+      { to: '/products?mock=error', label: '경매 리스트 · 에러' },
+      { to: '/search', label: '검색(입력 전)' },
+      { to: '/search?q=나이키', label: '검색 결과 · 나이키' },
+      { to: '/search?q=asics', label: '검색 결과 · asics(대소문자 무시)' },
+      { to: '/search?q=없는상품', label: '검색 결과 · 없음' },
+      { to: '/search?q=나이키&mock=error', label: '검색 결과 · 에러' },
+      { to: '/my', label: '마이페이지' },
+      { to: '/my?mock=empty', label: '마이페이지 · 이메일 없는 계정(목록은 비어 있음)' },
+      { to: '/my?mock=error', label: '마이페이지 · 에러(프로필 자리만)' },
+      { to: '/my/auctions/ongoing', label: '현재 경매 중인 상품(내 경매 17 · 18)' },
+      { to: '/my/auctions/ended', label: '과거 경매했던 상품(내 경매 19)' },
+      { to: '/my/likes', label: '관심 목록(처음엔 비어 있음 · 하트를 누르면 추가)' },
+      { to: '/my/likes?mock=error', label: '관심 목록 · 에러' },
+      { to: '/login', label: '로그인(준비 중 자리)' },
+    ],
+  },
+  {
     title: '상품 상세 · 경매 예정',
     links: [
       { to: '/products/1', label: '나이키 에어포스 1 로우 화이트' },
@@ -95,13 +117,6 @@ const GROUPS: { title: string; links: RouteLink[] }[] = [
       { to: '/register/4', label: '4/6 바로 가기(앞 단계 미완료면 되돌아감)' },
       { to: '/register/6', label: '6/6 바로 가기(앞 단계 미완료면 되돌아감)' },
       { to: '/register/complete', label: '등록 완료 바로 가기(등록 전이면 되돌아감)' },
-    ],
-  },
-  {
-    title: '아직 없는 화면',
-    links: [
-      { to: '/products', label: '상품 찾기', pending: true },
-      { to: '/mypage', label: '마이페이지', pending: true },
     ],
   },
   {

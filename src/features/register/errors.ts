@@ -31,45 +31,45 @@ export interface RegisterFailure {
 const CONNECTION: RegisterFailure = {
   kind: 'connection',
   title: '연결이 불안정해요',
-  message: '인터넷 연결을 확인하고 다시 시도해 주세요. 입력한 정보는 그대로 남아 있어요.',
+  message: '인터넷 연결을 확인하고 다시 시도해 주세요. 입력한 정보는 그대로 남아 있어요',
 }
 
 const AUTH: RegisterFailure = {
   kind: 'auth',
   title: '로그인이 만료됐어요',
-  message: '다시 로그인한 뒤 이어서 등록해 주세요. 입력한 정보는 그대로 남아 있어요.',
+  message: '다시 로그인한 뒤 이어서 등록해 주세요. 입력한 정보는 그대로 남아 있어요',
 }
 
 const SERVER: RegisterFailure = {
   kind: 'server',
   title: '잠시 후 다시 시도해 주세요',
-  message: '일시적인 오류로 처리하지 못했어요. 입력한 정보는 그대로 남아 있어요.',
+  message: '일시적인 오류로 처리하지 못했어요. 입력한 정보는 그대로 남아 있어요',
 }
 
 export const ANALYSIS_FAILED: RegisterFailure = {
   kind: 'analysis',
   title: '분석에 실패했어요',
   // 명세: failureMessage는 서버 내부 메시지라 그대로 보여주지 않음
-  message: '사진을 다시 분석하거나, 더 밝은 곳에서 찍은 사진으로 바꿔 주세요.',
+  message: '사진을 다시 분석하거나, 더 밝은 곳에서 찍은 사진으로 바꿔 주세요',
   step: '1',
 }
 
 export const ANALYSIS_TOO_SLOW: RegisterFailure = {
   kind: 'server',
   title: '분석이 오래 걸리고 있어요',
-  message: '잠시 후 다시 시도해 주세요. 입력한 정보는 그대로 남아 있어요.',
+  message: '잠시 후 다시 시도해 주세요. 입력한 정보는 그대로 남아 있어요',
 }
 
 export const PRICE_FAILED: RegisterFailure = {
   kind: 'server',
   title: 'AI 기준가를 계산하지 못했어요',
-  message: '잠시 후 다시 시도해 주세요. 입력한 정보는 그대로 남아 있어요.',
+  message: '잠시 후 다시 시도해 주세요. 입력한 정보는 그대로 남아 있어요',
 }
 
 export const ANALYSIS_NOT_FOUND: RegisterFailure = {
   kind: 'analysis',
   title: '사진 분석 정보를 찾을 수 없어요',
-  message: '분석 정보가 만료됐어요. 사진을 다시 분석해 주세요.',
+  message: '분석 정보가 만료됐어요. 사진을 다시 분석해 주세요',
   step: '1',
 }
 
@@ -106,7 +106,7 @@ export function fromValidationError(error: z.ZodError): RegisterFailure {
     message:
       issue?.message && /요\.?$/.test(issue.message)
         ? issue.message
-        : '입력한 정보를 다시 확인해 주세요.',
+        : '입력한 정보를 다시 확인해 주세요',
     step,
   }
 }
@@ -124,7 +124,7 @@ export class RegisterFailureError extends Error {
 export const PHOTOS_MISSING: RegisterFailure = {
   kind: 'invalid',
   title: '사진을 다시 올려 주세요',
-  message: '올린 사진을 찾을 수 없어요. 사진을 다시 골라 주세요.',
+  message: '올린 사진을 찾을 수 없어요. 사진을 다시 골라 주세요',
   step: '1',
 }
 
@@ -153,14 +153,14 @@ export function toRegisterFailure(error: unknown): RegisterFailure {
       return {
         kind: 'invalid',
         title: '경매 일정을 확인해 주세요',
-        message: '경매 시간은 1시간 이상이어야 하고, 시작 시간은 지금 이후여야 해요.',
+        message: '경매 시간은 1시간 이상이어야 하고, 시작 시간은 지금 이후여야 해요',
         step: '5',
       }
     case API_ERROR_CODE.INVALID_REQUEST:
       return {
         kind: 'invalid',
         title: '확인이 필요한 정보가 있어요',
-        message: '사진 개수나 빠진 정보가 없는지 확인해 주세요.',
+        message: '사진 개수나 빠진 정보가 없는지 확인해 주세요',
         step: '6',
       }
     case API_ERROR_CODE.IMAGE_FILE_MISSING:

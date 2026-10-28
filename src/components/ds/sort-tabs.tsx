@@ -15,7 +15,8 @@ export interface SortTabsProps {
 }
 
 /**
- * 목록 정렬 선택. 선택 body03 black0, 나머지 body05 gray4, 사이 8(DS 원본은 4).
+ * 목록 정렬 선택. 모두 head02, 선택 black0 · 나머지 gray4, 사이 8(Figma SortTabs 676:56).
+ * Header 제목 자리(trailing=sort)에 넣어 씁니다. 예전 작은 크기(body03/body05)는 쓰는 곳이 없어 없앴습니다.
  * Radix ToggleGroup(single)이 radio 역할·←→ 키 이동을 맡습니다.
  */
 export function SortTabs({
@@ -44,9 +45,9 @@ export function SortTabs({
             key={option}
             value={option}
             className={cn(
-              /* 글자 크기만 한 항목 + 보이지 않는 터치 영역(위아래 11px, 좌우 4px) */
-              'focus-visible:outline-primary1 relative rounded-sm before:absolute before:-inset-x-1 before:-inset-y-2.75 focus-visible:outline-2 focus-visible:outline-offset-2',
-              on ? 'text-body03 text-black0' : 'text-body05 text-gray4',
+              /* 글자 크기만 한 항목(25px) + 보이지 않는 터치 영역(위아래 10px, 좌우 4px → 45px) */
+              'focus-visible:outline-primary1 text-head02 relative rounded-sm before:absolute before:-inset-x-1 before:-inset-y-2.5 focus-visible:outline-2 focus-visible:outline-offset-2',
+              on ? 'text-black0' : 'text-gray4',
             )}
           >
             {option}
