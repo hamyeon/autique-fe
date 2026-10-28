@@ -25,9 +25,9 @@ const VARIANT_LABEL: Record<(typeof VARIANTS)[number], string> = {
 const LAYOUT_DESC: Record<BarLayout, string> = {
   single: 'primary 1개 (78px)',
   double: 'primary + secondary 가로',
-  triple: 'primary / secondary + danger (144px)',
+  triple: 'secondary + danger / primary (144px, primary가 아래)',
   secondary: 'outline 1개 (예전 layout4)',
-  primaryDanger: 'primary / danger 세로 (144px, 예전 layout5)',
+  primaryDanger: 'danger / primary 세로 (144px, primary가 아래, 예전 layout5)',
 }
 
 export function ActionsSection() {

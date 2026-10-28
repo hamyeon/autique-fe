@@ -449,6 +449,12 @@ Figma와 다르게 구현했거나 Figma에 없어서 새로 정한 부분을 �
 - **SearchHeader 삭제** (Figma ProductSearchHeader 207:470): 위 두 개로 대체
 - **HeaderActions 기본 동작**: 핸들러가 없으면 검색 → `/search`, 알림 · 장바구니 → "아직 준비 중인 기능이에요" 안내
 
+- **BottomButtonBar 버튼 순서** (Figma 396:4869, 2026-10-29)
+  - `triple`: primary / outline + danger → **outline + danger / primary**(primary가 아래)
+  - `primaryDanger`: primary / danger → **danger / primary**(primary가 아래)
+  - 이유: Figma 컴포넌트 · 실시간 경매 화면(395:4340) 기준. design-system/README.md의 "primary / outline + danger" 표기와 다름
+  - 영향: 실시간 경매(자동 입찰 중), 경매 등록 중 나가기 확인 시트
+
 ### 바꾸지 않은 것
 
 - **ProductCard**(572:6531): Figma에서 이미지 fill, 브랜드 1줄 · 상품명 2줄 말줄임을 코드와 같게 맞춤. 코드 변경 없음
