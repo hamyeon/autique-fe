@@ -33,7 +33,7 @@ import { Screen } from '@/layouts/screen'
 import { formatDateTime, formatGrade, formatPrice } from '@/lib/format'
 import { formatRemaining } from '@/lib/remaining-time'
 import { DetailBodySkeleton, DetailTopSkeleton } from '@/pages/product-detail/detail-skeleton'
-import { ImageCarousel } from '@/pages/product-detail/image-carousel'
+import { ImageCarousel } from '@/components/image-carousel'
 
 const STATUS_CHIP: Record<AuctionStatus, { kind: ChipKind; label: string }> = {
   SCHEDULED: { kind: 'plan', label: '경매 예정' },
@@ -82,13 +82,9 @@ function ProductDetail({ auctionId, valid }: { auctionId: number; valid: boolean
       <Screen header={header} className="justify-center">
         <EmptyState
           title="상품을 찾을 수 없어요"
-          description="경매가 삭제되었거나 주소가 잘못되었어요."
+          description="경매가 삭제되었거나 주소가 잘못되었어요"
           action={
-            <Button
-              variant="outline"
-              block={false}
-              onClick={() => navigate('/', { replace: true })}
-            >
+            <Button block={false} onClick={() => navigate('/', { replace: true })}>
               홈으로
             </Button>
           }

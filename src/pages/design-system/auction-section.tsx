@@ -178,7 +178,7 @@ function SellerProfileDemo() {
       <SellerProfile name="보조 정보 없음" />
       <Divider />
       <Caption>size="lg"</Caption>
-      <SellerProfile size="lg" name="mmaybei님 안녕하세요!" meta="mmaybei@gmail.com" />
+      <SellerProfile size="lg" name="hamyeon님 안녕하세요!" meta="hamyeon@ewha.ac.kr" />
       <SellerProfile
         size="lg"
         name="sneaker_collector_seoul_2026_official님 안녕하세요!"

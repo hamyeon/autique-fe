@@ -23,6 +23,7 @@
   --color-error3: #ffe2e0;
   --color-error4: #fffafa;
   --color-white0: #ffffff;
+  --color-gray0: #f8f8f8; /* Figma gray/gray0. 흰 바탕 요소를 눌렀을 때 잠깐 보이는 바탕 */
   --color-gray1: #ececec;
   --color-gray2: #dedede;
   --color-gray3: #cacaca;

@@ -4,10 +4,10 @@ import type { TabKey } from '@/components/ds'
 import {
   Header,
   HeaderActions,
+  HeaderInput,
   HomeHeader,
   MyPageListButton,
   MyPageMenuSection,
-  SearchHeader,
   SortTabs,
   TabBar,
 } from '@/components/ds'
@@ -19,6 +19,7 @@ export function NavigationSection() {
       <HeaderDemo />
       <HeaderActionsDemo />
       <HomeHeaderDemo />
+      <HeaderInputDemo />
       <SearchHeaderDemo />
       <TabBarDemo />
       <SortTabsDemo />
@@ -137,6 +138,35 @@ function HomeHeaderDemo() {
   )
 }
 
+function HeaderInputDemo() {
+  const [filled, setFilled] = useState('나이키 덩크 로우')
+  const [typing, setTyping] = useState('')
+
+  return (
+    <Demo
+      title="HeaderInput"
+      description="헤더 안 검색 입력(Figma 1044:3397). 높이 50, gray0 바탕, radius-md, body02. 비어 있으면 돋보기(gray5), 글자가 있으면 지우기(×, 24). 포커스 중 테두리 primary1."
+    >
+      <div className="gap-space-8 flex flex-col">
+        <Caption>state=default · 비어 있음 (눌러서 입력하면 focused)</Caption>
+        <HeaderInput value={typing} onChange={(e) => setTyping(e.target.value)} onClear={() => setTyping('')} aria-label="검색어" />
+      </div>
+      <div className="gap-space-8 flex flex-col">
+        <Caption>state=filled · 글자 있음 (×를 누르면 비워지고 포커스는 그대로)</Caption>
+        <HeaderInput value={filled} onChange={(e) => setFilled(e.target.value)} onClear={() => setFilled('')} aria-label="검색어" />
+      </div>
+      <div className="gap-space-8 flex flex-col">
+        <Caption>긴 검색어 · 가로로 넘치면 입력 안에서 스크롤</Caption>
+        <HeaderInput
+          value="나이키 에어 조던 1 레트로 하이 OG 시카고 로스트 앤 파운드 2022 한정판"
+          readOnly
+          aria-label="검색어"
+        />
+      </div>
+    </Demo>
+  )
+}
+
 function SearchHeaderDemo() {
   const [query, setQuery] = useState('')
   const [submitted, setSubmitted] = useState<string | null>(null)
@@ -148,15 +178,18 @@ function SearchHeaderDemo() {
 
   return (
     <Demo
-      title="SearchHeader"
-      description="화면 폭 검색창(gray2 테두리, body02, 회색 돋보기). 포커스 시 테두리 primary1(TextField와 맞춤). 휴대폰 키보드에 '검색' 키가 떠요."
+      title="Header · search"
+      description="Figma Header trailing=search(1044:2859): 뒤로 가기 + HeaderInput(폭 채움), 아래 선 없음, 왼쪽 8 · 오른쪽 20. Header에 search props를 넘깁니다. 휴대폰 키보드에 '검색' 키가 떠요."
     >
-      <form onSubmit={onSubmit}>
-        <FullBleed label="value + onChange, Enter로 제출">
-          <SearchHeader
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            aria-label="상품 검색"
+      <form role="search" onSubmit={onSubmit}>
+        <FullBleed label="value + onChange, Enter로 제출 · 뒤로 가기 = navigate(-1)">
+          <Header
+            search={{
+              value: query,
+              onChange: (e) => setQuery(e.target.value),
+              onClear: () => setQuery(''),
+              'aria-label': '상품 검색',
+            }}
           />
         </FullBleed>
       </form>
@@ -184,8 +217,8 @@ function TabBarDemo() {
         </FullBleed>
       ))}
       <Caption>
-        탭은 실제 링크라 누르면 이동해요. 홈(/)만 있고 상품 찾기(/products)·마이페이지(/mypage)
-        화면은 아직 없어 404로 가요. 마지막 onChange: {last ?? '없음'}
+        탭은 실제 링크라 누르면 홈(/) · 상품 찾기(/products) · 마이페이지(/my)로 이동해요. 마지막
+        onChange: {last ?? '없음'}
       </Caption>
     </Demo>
   )
@@ -237,7 +270,7 @@ function MyPageListButtonDemo() {
   return (
     <Demo
       title="MyPageListButton"
-      description="높이 52, 왼쪽 20 · 오른쪽 8, head03 black0 + 화살표 36(Figma 207:749). 누르는 동안 gray1 바탕(Figma에 없음). href면 링크, 아니면 버튼."
+      description="높이 52, 왼쪽 20 · 오른쪽 8, head03 black0 + 화살표 36(Figma 207:749). 누르는 동안 gray0 바탕(흰 바탕 요소 공통 규칙). href면 링크, 아니면 버튼."
     >
       <FullBleed label={`onClick (버튼) · 누른 횟수 ${count}회`}>
         <MyPageListButton onClick={() => setCount((c) => c + 1)}>현재 경매 중인 상품</MyPageListButton>

@@ -106,6 +106,22 @@ export const endpoints = {
     response: auctions.auctionListSchema,
     auth: 'optional',
   }),
+  // [ASSUMED] 명세에 없는 엔드포인트. 마이페이지 '현재 경매 중인 상품' · '과거 경매했던 상품'
+  getMyAuctions: endpoint({
+    method: 'GET',
+    path: '/api/me/auctions',
+    query: auctions.myAuctionListQuerySchema,
+    response: auctions.auctionListSchema,
+    auth: 'required',
+  }),
+  // [ASSUMED] 명세에 없는 엔드포인트. 마이페이지 '관심 목록'
+  getLikedAuctions: endpoint({
+    method: 'GET',
+    path: '/api/me/likes',
+    query: auctions.likedAuctionListQuerySchema,
+    response: auctions.auctionListSchema,
+    auth: 'required',
+  }),
   getAuctionDetail: endpoint({
     method: 'GET',
     path: '/api/auctions/{auctionId}',
@@ -235,6 +251,13 @@ export const endpoints = {
   }),
 
   /* ───────── 내 정보 ───────── */
+  // [ASSUMED] 명세에 없는 엔드포인트. 마이페이지 프로필
+  getMyProfile: endpoint({
+    method: 'GET',
+    path: '/api/me',
+    response: me.myProfileSchema,
+    auth: 'required',
+  }),
   getMyPenalties: endpoint({
     method: 'GET',
     path: '/api/me/penalties',

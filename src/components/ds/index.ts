@@ -51,8 +51,8 @@ export { ImageUploadButton } from './image-upload-button'
 export type { ImageUploadButtonProps } from './image-upload-button'
 
 /* Navigation */
-export { Header, HeaderActions, HomeHeader, SearchHeader } from './header'
-export type { HeaderProps, HeaderActionsProps, HomeHeaderProps, SearchHeaderProps } from './header'
+export { Header, HeaderActions, HeaderInput, HomeHeader } from './header'
+export type { HeaderProps, HeaderActionsProps, HeaderInputProps, HomeHeaderProps } from './header'
 export { TabBar } from './tab-bar'
 export type { TabBarProps, TabKey } from './tab-bar'
 export { SortTabs } from './sort-tabs'

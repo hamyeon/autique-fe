@@ -15,12 +15,12 @@ export interface MyPageListButtonProps {
 
 /**
  * 마이페이지 메뉴 행(Figma MyPageListButton 207:749): 높이 52, 왼쪽 20 · 오른쪽 8 · 위아래 8,
- * 문구 head03 black0(한 줄 말줄임), 오른쪽 ArrowRight 36. 눌림 gray1 바탕은 Figma에 없어 정했습니다.
+ * 문구 head03 black0(한 줄 말줄임), 오른쪽 ArrowRight 36. 눌림은 gray0 바탕(흰 바탕 요소 공통 규칙).
  */
 export function MyPageListButton({ children, href, onClick, className }: MyPageListButtonProps) {
   const { pressed, handlers } = usePressed()
   const classes = cn(
-    'bg-white0 text-head03 text-black0 pl-layout-gutter pr-space-8 py-space-8 data-pressed:bg-gray1 focus-visible:outline-primary1 flex w-full items-center justify-between text-left focus-visible:outline-2 focus-visible:-outline-offset-2',
+    'bg-white0 text-head03 text-black0 pl-layout-gutter pr-space-8 py-space-8 data-pressed:bg-gray0 focus-visible:outline-primary1 flex w-full items-center justify-between text-left focus-visible:outline-2 focus-visible:-outline-offset-2',
     className,
   )
   const content = (

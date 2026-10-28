@@ -48,7 +48,7 @@ function ButtonMatrixDemo() {
   return (
     <Demo
       title="Button · variant × 상태"
-      description="54px, radius-md, head03. 눌림(primary)은 누르는 동안 + 최소 150ms, 비활성은 disabled. outline·danger의 눌림/비활성 모양은 Figma에 없습니다. DS 원본의 neutral은 쓰는 화면이 없어 뺐습니다."
+      description="54px, radius-md, head03. 눌림(primary)은 누르는 동안 + 최소 150ms, 비활성은 disabled. outline·danger의 눌림은 gray0 바탕(흰 바탕 요소 공통 규칙, Figma에 없음), 비활성 모양은 Figma에 없습니다. DS 원본의 neutral은 쓰는 화면이 없어 뺐습니다."
     >
       <div className="gap-space-12 grid grid-cols-2">
         <Caption>기본</Caption>

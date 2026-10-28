@@ -5,13 +5,13 @@ import { Icon } from './icon'
 const TABS = [
   { key: 'home', label: '홈', icon: 'Home', to: '/' },
   { key: 'product', label: '상품 찾기', icon: 'Product', to: '/products' },
-  { key: 'mypage', label: '마이페이지', icon: 'User', to: '/mypage' },
+  { key: 'mypage', label: '마이페이지', icon: 'User', to: '/my' },
 ] as const
 
 export type TabKey = (typeof TABS)[number]['key']
 
 export interface TabBarProps {
-  /** 없으면 현재 경로로 정합니다(/ · /products · /mypage, 하위 경로 포함). */
+  /** 없으면 현재 경로로 정합니다(/ · /products · /my, 하위 경로 포함). */
   active?: TabKey
   /** 탭을 누를 때 (이동은 링크가 합니다) */
   onChange?: (tab: TabKey) => void

@@ -1,7 +1,8 @@
-import type { InputHTMLAttributes, ReactNode } from 'react'
+import type { InputHTMLAttributes, ReactNode, Ref } from 'react'
 import { forwardRef } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { cn } from '@/lib/utils'
+import { showPreparingToast } from '@/stores/toast-store'
 import { Chip } from './chip'
 import { Icon } from './icon'
 
@@ -18,26 +19,103 @@ export interface HeaderActionsProps {
   className?: string
 }
 
-/** 탭 화면 헤더 오른쪽 아이콘 묶음: 검색 · 알림 · 장바구니(24, 사이 16). Figma HeaderActions 973:2389 */
+/**
+ * 탭 화면 헤더 오른쪽 아이콘 묶음: 검색 · 알림 · 장바구니(24, 사이 16). Figma HeaderActions 973:2389
+ * 핸들러를 넘기지 않으면 검색은 검색 화면(/search)으로, 알림 · 장바구니는 "준비 중" 안내를 띄웁니다.
+ */
 export function HeaderActions({ onSearch, onNotifications, onBag, className }: HeaderActionsProps) {
+  const navigate = useNavigate()
+
   return (
     <div className={cn('gap-space-16 flex shrink-0 items-center', className)}>
-      <button type="button" aria-label="검색" onClick={onSearch} className={ICON_BUTTON}>
+      <button
+        type="button"
+        aria-label="검색"
+        onClick={onSearch ?? (() => navigate('/search'))}
+        className={ICON_BUTTON}
+      >
         <Icon name="Search" />
       </button>
-      <button type="button" aria-label="알림" onClick={onNotifications} className={ICON_BUTTON}>
+      <button
+        type="button"
+        aria-label="알림"
+        onClick={onNotifications ?? showPreparingToast}
+        className={ICON_BUTTON}
+      >
         <Icon name="Bell" />
       </button>
-      <button type="button" aria-label="장바구니" onClick={onBag} className={ICON_BUTTON}>
+      <button
+        type="button"
+        aria-label="장바구니"
+        onClick={onBag ?? showPreparingToast}
+        className={ICON_BUTTON}
+      >
         <Icon name="Bag" />
       </button>
     </div>
   )
 }
 
+export interface HeaderInputProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  'value' | 'type'
+> {
+  /** 제어형. 비어 있으면 돋보기, 글자가 있으면 지우기(×) 버튼 */
+  value: string
+  /** 지우기(×)를 눌렀을 때. 보통 value를 ''로 바꿉니다. 입력 포커스는 그대로 둡니다. */
+  onClear?: () => void
+}
+
+/**
+ * 헤더 안 검색 입력(Figma HeaderInput 1044:3397): 높이 50, 패딩 12, 사이 8, gray0 바탕, radius-md, body02.
+ * state=default 테두리 gray2 + 돋보기(gray5) · focused 테두리 primary1 + 지우기 · filled 테두리 gray2 + 지우기.
+ * ref는 input으로 갑니다.
+ */
+export const HeaderInput = forwardRef<HTMLInputElement, HeaderInputProps>(function HeaderInput(
+  { value, onClear, className, placeholder = '찾으시는 상품을 입력해주세요', ...props },
+  ref,
+) {
+  return (
+    <div
+      className={cn(
+        'bg-gray0 border-gray2 focus-within:border-primary1 gap-space-8 p-space-12 flex h-12.5 min-w-0 flex-1 items-center rounded-md border',
+        className,
+      )}
+    >
+      <input
+        ref={ref}
+        /* type="search"는 브라우저 기본 지우기(×) 버튼이 생겨 text + 검색 키보드로 둡니다. */
+        type="text"
+        role="searchbox"
+        inputMode="search"
+        enterKeyHint="search"
+        value={value}
+        placeholder={placeholder}
+        className="text-body02 text-black0 placeholder:text-gray5 caret-black0 min-w-0 flex-1 bg-transparent focus:outline-none"
+        {...props}
+      />
+      {value ? (
+        <button
+          type="button"
+          aria-label="검색어 지우기"
+          /* 누르는 순간 입력 포커스가 빠지지 않게 합니다(키보드가 내려가지 않음). */
+          onPointerDown={(e) => e.preventDefault()}
+          onClick={onClear}
+          /* 24px 아이콘 + 터치 영역 44px */
+          className={cn(FOCUS, '-m-2.5 flex size-11 shrink-0 items-center justify-center')}
+        >
+          <Icon name="Close" size={24} />
+        </button>
+      ) : (
+        <Icon name="Search" color="gray5" />
+      )}
+    </div>
+  )
+})
+
 export interface HeaderProps {
-  /** 문자열이면 h1 제목(head02). 정렬 탭처럼 요소를 넣으면 h1 없이 그대로 그립니다(trailing=sort). */
-  title: ReactNode
+  /** 문자열이면 h1 제목(head02). 정렬 탭처럼 요소를 넣으면 h1 없이 그대로 그립니다(trailing=sort). search가 있으면 쓰지 않습니다. */
+  title?: ReactNode
   /** 기본 true */
   showBack?: boolean
   /** 없으면 React Router로 이전 화면(navigate(-1)). 돌아갈 기록이 없으면 홈으로 갑니다. */
@@ -49,6 +127,10 @@ export interface HeaderProps {
   onFavorite?: () => void
   /** trailing="actions"일 때 각 아이콘 버튼 */
   actions?: Omit<HeaderActionsProps, 'className'>
+  /** 넘기면 검색 헤더(Figma trailing=search 1044:2859): 뒤로 가기 + HeaderInput(폭 채움), 아래 선 없음. title · trailing은 쓰지 않습니다. */
+  search?: HeaderInputProps
+  /** search 입력의 ref */
+  searchRef?: Ref<HTMLInputElement>
   className?: string
 }
 
@@ -61,6 +143,8 @@ export function Header({
   favorited = false,
   onFavorite,
   actions,
+  search,
+  searchRef,
   className,
 }: HeaderProps) {
   const navigate = useNavigate()
@@ -71,6 +155,35 @@ export function Header({
     /* 주소를 직접 열고 들어온 첫 화면(key 'default')이면 돌아갈 곳이 없으므로 홈으로 */
     if (location.key === 'default') navigate('/', { replace: true })
     else navigate(-1)
+  }
+
+  const backButton = showBack && (
+    <button
+      type="button"
+      aria-label="뒤로 가기"
+      onClick={goBack}
+      /* 36px 아이콘 + 터치 영역 44px */
+      className={cn(FOCUS, '-m-1 flex size-11 shrink-0 items-center justify-center')}
+    >
+      <Icon name="ArrowLeft" size={36} />
+    </button>
+  )
+
+  if (search) {
+    return (
+      <header
+        className={cn(
+          BAR,
+          /* Figma trailing=search: 아래 선 없음, 왼쪽 8(뒤로 가기) · 오른쪽 20 */
+          'gap-space-4 pr-layout-gutter border-b-0',
+          showBack ? 'pl-space-8' : 'pl-layout-gutter',
+          className,
+        )}
+      >
+        {backButton}
+        <HeaderInput ref={searchRef} {...search} />
+      </header>
+    )
   }
 
   let right: ReactNode = trailing
@@ -110,17 +223,7 @@ export function Header({
       )}
     >
       <div className="gap-space-4 flex min-w-0 items-center">
-        {showBack && (
-          <button
-            type="button"
-            aria-label="뒤로 가기"
-            onClick={goBack}
-            /* 36px 아이콘 + 터치 영역 44px */
-            className={cn(FOCUS, '-m-1 flex size-11 shrink-0 items-center justify-center')}
-          >
-            <Icon name="ArrowLeft" size={36} />
-          </button>
-        )}
+        {backButton}
         {typeof title === 'string' || typeof title === 'number' ? (
           <h1 className="text-head02 text-black0 truncate">{title}</h1>
         ) : (
@@ -150,33 +253,3 @@ export function HomeHeader({ onSearch, onNotifications, onBag, className }: Home
     </header>
   )
 }
-
-export type SearchHeaderProps = InputHTMLAttributes<HTMLInputElement>
-
-/**
- * 상품 찾기 탭 헤더: 화면 폭을 채우는 검색창. 네이티브 input 속성을 그대로 넘기고 ref는 input으로 갑니다.
- * 포커스 시 테두리 primary1은 TextField와 맞춘 값입니다(DS 원본에는 없음).
- */
-export const SearchHeader = forwardRef<HTMLInputElement, SearchHeaderProps>(function SearchHeader(
-  { className, placeholder = '찾으시는 상품을 입력해주세요', ...props },
-  ref,
-) {
-  return (
-    <div className={cn('bg-white0 px-layout-gutter flex h-15 w-full items-center', className)}>
-      <label className="border-gray2 gap-space-8 px-space-12 focus-within:border-primary1 flex h-12.5 w-full items-center rounded-sm border">
-        <input
-          ref={ref}
-          /* type="search"는 브라우저 기본 지우기(×) 버튼이 생겨 text + 검색 키보드로 둡니다. */
-          type="text"
-          role="searchbox"
-          inputMode="search"
-          enterKeyHint="search"
-          placeholder={placeholder}
-          className="text-body02 text-black0 placeholder:text-gray5 min-w-0 flex-1 bg-transparent focus:outline-none"
-          {...props}
-        />
-        <Icon name="Search" color="gray5" />
-      </label>
-    </div>
-  )
-})

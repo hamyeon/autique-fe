@@ -286,6 +286,7 @@ export type AuctionSort = z.infer<typeof auctionSortSchema>
 // [ASSUMED] 쿼리 형태. 입찰 이력의 page/size 규칙을 따름
 export const auctionListQuerySchema = pageQuerySchema.extend({
   sort: auctionSortSchema.optional(),
+  keyword: z.string().trim().min(1).optional(), // [ASSUMED] 검색어(검색 화면). 명세에 검색 API가 없어 목록 API의 쿼리로 둠
 })
 export type AuctionListQuery = z.infer<typeof auctionListQuerySchema>
 
@@ -301,3 +302,22 @@ export const auctionListSchema = pageMetaSchema.extend({
   items: z.array(auctionListItemSchema),
 })
 export type AuctionList = z.infer<typeof auctionListSchema>
+
+/* ───────── GET /api/me/auctions · GET /api/me/likes ───────── */
+
+// [ASSUMED] 명세에 내 경매 · 관심 목록 API가 없습니다. 마이페이지 하위 목록(Figma 957:3014 · 957:3180 · 957:3328)에 필요해 만들었습니다.
+export const myAuctionStatusSchema = z.enum([
+  'ONGOING', // [ASSUMED] 경매 예정 + 진행 중. '현재 경매 중인 상품'
+  'ENDED', // [ASSUMED] 종료 + 취소. '과거 경매했던 상품'
+])
+export type MyAuctionStatus = z.infer<typeof myAuctionStatusSchema>
+
+// [ASSUMED] 내가 판매자로 올린 경매만 돌려줍니다(Figma 메뉴 행 원본 문구 '현재 판매 중인 상품' 기준). 쿼리 형태는 경매 목록과 같음
+export const myAuctionListQuerySchema = pageQuerySchema.extend({
+  status: myAuctionStatusSchema,
+})
+export type MyAuctionListQuery = z.infer<typeof myAuctionListQuerySchema>
+
+// [ASSUMED] 내가 관심 등록한 경매. 쿼리는 page/size만
+export const likedAuctionListQuerySchema = pageQuerySchema
+export type LikedAuctionListQuery = z.infer<typeof likedAuctionListQuerySchema>

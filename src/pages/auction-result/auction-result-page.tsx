@@ -13,7 +13,7 @@ export function AuctionResultPage() {
     <Screen header={<Header title="경매 결과" onBack={toDetail} />} className="justify-center">
       <EmptyState
         title="경매가 끝났어요"
-        description="결과 화면은 준비 중이에요."
+        description="결과 화면은 준비 중이에요"
         action={
           <Button variant="outline" block={false} onClick={toDetail}>
             상품 상세로
