@@ -115,6 +115,7 @@ const GROUPS: { title: string; links: RouteLink[] }[] = [
     links: [
       { to: '/register', label: '처음부터(첫 미완료 단계로)' },
       { to: '/register/1', label: '1/6 상품 이미지 업로드' },
+      { to: '/register/1?mock=photo-mismatch', label: '1/6 · 밑창 촬영 면 불일치(사진을 고르면)' },
       { to: '/register/analyzing', label: 'AI 분석 자리' },
       { to: '/register/4', label: '4/6 바로 가기(앞 단계 미완료면 되돌아감)' },
       { to: '/register/6', label: '6/6 바로 가기(앞 단계 미완료면 되돌아감)' },

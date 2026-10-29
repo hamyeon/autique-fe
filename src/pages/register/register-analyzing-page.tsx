@@ -14,12 +14,13 @@ import {
   ANALYSIS_POLL_MAX_FAILURES,
   ANALYSIS_STAGE_COPY,
   isAnalysisDone,
+  isAnalysisCancelled,
   isAnalysisFailed,
   targetStage,
 } from '@/features/register/analysis'
 import type { RegisterFailure } from '@/features/register/errors'
 import { ANALYSIS_FAILED, toRegisterFailure } from '@/features/register/errors'
-import { uploadPhotos } from '@/features/register/analysis-session'
+import { startAnalysis } from '@/features/register/analysis-session'
 import { analysisToDraft, isStepDone, registerPath } from '@/features/register/schemas'
 import { onAppForeground } from '@/lib/app-visibility'
 import { Screen } from '@/layouts/screen'
@@ -76,7 +77,7 @@ export function RegisterAnalyzingPage() {
 
   /* 작업이 없으면 업로드부터. 업로드가 끝나면 화면을 떠났어도 작업 ID는 스토어에 남습니다. */
   const startUpload = () => {
-    uploadPhotos()
+    startAnalysis()
       .then((next) => {
         pollFailures.current = 0
         waitFrom.current = next.startedAt
@@ -182,6 +183,12 @@ export function RegisterAnalyzingPage() {
       const shownFor = now - stageShownAt.current
 
       if (checkPollError()) return
+
+      // 취소된 세션('분석이 진행 중이에요' 시트에서 취소하고 나간 뒤 다시 들어옴): 지우면 새로 분석을 시작합니다.
+      if (analysis && isAnalysisCancelled(analysis.status)) {
+        setAnalysisTask(null)
+        return
+      }
 
       // 분석 실패 응답(200 + *_FAILED): 작업은 끝났으므로 지우고 다시 시도 / 정보 수정하기
       if (analysis && isAnalysisFailed(analysis.status)) {

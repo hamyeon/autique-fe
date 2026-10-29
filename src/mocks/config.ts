@@ -13,6 +13,7 @@ import type { EndpointKey } from '@/api/endpoints'
  *   'POST /api/products',
  *   'POST /api/products/analyze',
  *   'GET /api/products/analyze/{taskId}',
+  'POST /api/products/analyze/{taskId}/cancel',
  * ]
  */
 export const passthrough: EndpointKey[] = [
@@ -20,7 +21,8 @@ export const passthrough: EndpointKey[] = [
   'POST /api/auth/kakao',
   'POST /api/auth/refresh',
   'POST /api/auth/logout',
-  // 경매 등록: AI 분석 · 가격 계산 · 등록은 실제 서버로
+  // 경매 등록: 사진 선업로드 · AI 분석 · 가격 계산 · 등록은 실제 서버로
+  'POST /api/products/photos',
   'POST /api/products/analyze',
   'GET /api/products/analyze/{taskId}',
   'POST /api/products/calculate-price',

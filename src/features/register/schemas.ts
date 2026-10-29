@@ -5,6 +5,7 @@ import {
   createProductFieldsSchema,
   createProductRequestSchema,
   isAuctionLongEnough,
+  photoCheckSchema,
 } from '@/api/schemas/products'
 import type { ComponentStatus } from '@/api/schemas/common'
 import type { CreateProductRequest, ProductAnalysis } from '@/api/schemas/products'
@@ -25,7 +26,7 @@ export function registerPath(step: RegisterStep | 'complete') {
 
 /* ───────── 1/6 사진 ───────── */
 
-/** Figma 1/6 칸 순서. 앞면 · 측면 · 밑창은 필수, 하자는 선택(명세 등록은 3~4장). 서버에는 방향 구분 없이 보냅니다. */
+/** Figma 1/6 칸 순서. 앞면 · 측면 · 밑창은 필수, 하자는 선택(명세 등록은 3~4장). 업로드할 때 칸을 함께 보냅니다(toApiPhotoSlot). */
 export const PHOTO_SLOTS = ['side', 'front', 'outsole', 'defect'] as const
 export type PhotoSlot = (typeof PHOTO_SLOTS)[number]
 export const REQUIRED_PHOTO_SLOTS = [
@@ -41,11 +42,26 @@ export const PHOTO_LABELS: Record<PhotoSlot, string> = {
   defect: '하자',
 }
 
-/** 고른 사진의 정보. 파일 자체는 분석 요청 전까지 IndexedDB에 둡니다(src/lib/file-store.ts). */
+export function toApiPhotoSlot(slot: PhotoSlot) {
+  return slot.toUpperCase() as Uppercase<PhotoSlot>
+}
+
+/**
+ * 고른 사진의 정보. 파일은 고를 때 POST /api/products/photos로 올리고, 다시 올릴 때를 위해 IndexedDB에도 둡니다(src/lib/file-store.ts).
+ * photoId는 분석에 한 번 쓰면(used) 다시 쓸 수 없어, 다음 분석(가격 재계산 · 사진 일부 변경) 때 파일을 다시 올려 새 ID를 받습니다.
+ */
 export const photoMetaSchema = z.object({
   name: z.string(),
   type: z.string(),
   size: z.number(),
+  /** 없으면(이전 버전에서 고른 사진 등) 분석 직전에 올립니다. */
+  photoId: z.number().int().optional(),
+  /** 분석 요청에 보냈음 */
+  used: z.boolean().optional(),
+  /** 촬영 면 판정. MISMATCH여도 분석에 쓸 수 있어 '다음'을 막지 않고 안내만 합니다. */
+  check: photoCheckSchema.nullish(),
+  /** 촬영 면이 다를 때 서버 안내 문구 */
+  message: z.string().nullish(),
 })
 export type PhotoMeta = z.infer<typeof photoMetaSchema>
 
@@ -204,6 +220,7 @@ export function buildCreateProductRequest(
 ): CreateProductRequest {
   const { priceResult } = draft
   return createProductRequestSchema.parse({
+    analysisId: draft.analysisId,
     imageUrls,
     brand: draft.brand,
     modelName: draft.modelName,

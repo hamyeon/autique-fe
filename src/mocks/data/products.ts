@@ -2,6 +2,7 @@ import type {
   AnalysisStatus,
   CalculatePriceResponse,
   ProductAnalysis,
+  ProductPhotoSlot,
 } from '@/api/schemas/products'
 import { sessionAppStorage } from '@/lib/storage'
 import { PRODUCT_IMAGES } from '@/mocks/data/common'
@@ -25,6 +26,7 @@ interface MockAnalysis {
   createdAt: number
   imageUrls: string[]
   priced: boolean
+  cancelled?: boolean
   /** Vision 분석에 걸리는 시간 */
   visionMs: number
   /** 이 시간(Vision 시작 기준)이 지나면 실패 */
@@ -47,6 +49,46 @@ export const analyses: MockAnalysis[] = loadAnalyses()
 const saveAnalyses = () => sessionAppStorage.setItem(STORAGE_KEY, JSON.stringify(analyses))
 
 let nextAnalysisId = analyses.reduce((max, a) => Math.max(max, a.analysisId), 0) + 1
+
+/* ───────── 선업로드한 사진(POST /api/products/photos) ───────── */
+
+interface MockPhoto {
+  photoId: number
+  slot: ProductPhotoSlot
+  /** 분석에 썼음(다시 쓰면 40923) */
+  used: boolean
+}
+
+const PHOTOS_KEY = 'autique-mock-photos'
+
+function loadPhotos(): MockPhoto[] {
+  try {
+    const raw = sessionAppStorage.getItem(PHOTOS_KEY)
+    return raw ? (JSON.parse(raw) as MockPhoto[]) : []
+  } catch {
+    return []
+  }
+}
+
+const photos: MockPhoto[] = loadPhotos()
+const savePhotos = () => sessionAppStorage.setItem(PHOTOS_KEY, JSON.stringify(photos))
+let nextPhotoId = photos.reduce((max, p) => Math.max(max, p.photoId), 0) + 1
+
+export function createPhoto(slot: ProductPhotoSlot) {
+  const photo: MockPhoto = { photoId: nextPhotoId++, slot, used: false }
+  photos.push(photo)
+  savePhotos()
+  return photo
+}
+
+export function findPhoto(photoId: number) {
+  return photos.find((p) => p.photoId === photoId)
+}
+
+export function markPhotosUsed(photoIds: number[]) {
+  for (const photo of photos) if (photoIds.includes(photo.photoId)) photo.used = true
+  savePhotos()
+}
 
 export function createAnalysis(
   imageCount: number,
@@ -78,7 +120,13 @@ export function markPriced(analysis: MockAnalysis) {
   saveAnalyses()
 }
 
+export function markCancelled(analysis: MockAnalysis) {
+  analysis.cancelled = true
+  saveAnalyses()
+}
+
 export function analysisStatusOf(a: MockAnalysis): AnalysisStatus {
+  if (a.cancelled) return 'CANCELLED'
   if (a.priced) return 'COMPLETED'
   const elapsed = Date.now() - a.createdAt
   if (elapsed < QUEUED_MS) return 'QUEUED'

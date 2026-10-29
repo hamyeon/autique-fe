@@ -67,18 +67,34 @@ export const endpoints = {
   }),
 
   /* ───────── 상품 등록 (AI 분석 · 시세) ───────── */
+  /** 사진 1장 선업로드 + 촬영 면 판정(S3 업로드 · AI 판정을 기다림) */
+  uploadProductPhoto: endpoint({
+    method: 'POST',
+    path: '/api/products/photos',
+    multipart: true,
+    response: products.uploadProductPhotoResponseSchema,
+    auth: 'required',
+    timeoutMs: SLOW_TIMEOUT_MS,
+  }),
+  /** 명세상 같은 경로가 multipart(images)도 받지만(유지), 선업로드한 photoIds를 보내는 JSON 방식만 씁니다. */
   analyzeProduct: endpoint({
     method: 'POST',
     path: '/api/products/analyze',
-    multipart: true,
+    request: products.analyzeProductRequestSchema,
     response: products.analyzeProductResponseSchema,
     auth: 'required',
-    timeoutMs: SLOW_TIMEOUT_MS,
   }),
   getProductAnalysis: endpoint({
     method: 'GET',
     path: '/api/products/analyze/{taskId}',
     response: products.productAnalysisSchema,
+    auth: 'required',
+  }),
+  /** 실패 코드(등록 확정 400 · 세션 없음 404)는 명세에 숫자가 아직 없어 구분하지 않습니다. */
+  cancelAnalysis: endpoint({
+    method: 'POST',
+    path: '/api/products/analyze/{taskId}/cancel',
+    response: products.cancelAnalysisResponseSchema,
     auth: 'required',
   }),
   calculatePrice: endpoint({
