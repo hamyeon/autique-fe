@@ -95,6 +95,7 @@ There is no test runner configured yet.
 ### Real server in development
 
 - The server has no CORS allowance (any request with an `Origin` header gets 403), so dev uses the Vite proxy in `vite.config.ts`: set `API_PROXY_TARGET` in `.env.local` and leave `VITE_API_BASE_URL` empty so requests go to `/api` on the dev server; the proxy strips `Origin`. Deploy and Capacitor builds need backend CORS instead.
+- Kakao login (web): `src/lib/kakao.ts` redirects to Kakao, exchanges the code for a Kakao access token in the browser (`VITE_KAKAO_REST_API_KEY`), then calls `POST /api/auth/kakao`. Each origin needs `{origin}/login/kakao` registered as a Redirect URI in the Kakao console. For Capacitor, swap only that file for the native Kakao SDK.
 - Dev login: `VITE_DEV_ACCESS_TOKEN` / `VITE_DEV_REFRESH_TOKEN` in `.env.local` seed the auth store in dev only (`src/app/dev-auth.ts`, dynamically imported so it never reaches the build); expired access tokens refresh automatically on 401. Never put tokens anywhere except `.env.local` (git-ignored), and don't print them.
 
 ## Capacitor compatibility

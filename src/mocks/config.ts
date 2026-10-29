@@ -16,7 +16,8 @@ import type { EndpointKey } from '@/api/endpoints'
  * ]
  */
 export const passthrough: EndpointKey[] = [
-  // 실제 토큰(.env.local 개발용 토큰)을 재발급 · 무효화하려면 실제 서버로
+  // 카카오 로그인은 실제 서버로(카카오 토큰은 서버만 검증할 수 있음). 받은 실제 토큰을 재발급 · 무효화하려면 refresh · logout도 실제 서버로
+  'POST /api/auth/kakao',
   'POST /api/auth/refresh',
   'POST /api/auth/logout',
   // 경매 등록: AI 분석 · 가격 계산 · 등록은 실제 서버로

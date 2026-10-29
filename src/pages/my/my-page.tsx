@@ -1,3 +1,5 @@
+import { useNavigate } from 'react-router'
+import { useLogoutMutation } from '@/api/auth'
 import { useMyProfileQuery } from '@/api/me'
 import {
   Divider,
@@ -18,9 +20,18 @@ const notifyPreparing = showPreparingToast
 
 /**
  * 마이페이지 탭(Figma 마이페이지 957:1951): 프로필 → 8px 띠 → 메뉴 그룹 3개(사이 12) + TabBar.
- * 로그인이 필요해 RequireAuth 안에 있습니다. 로그아웃 메뉴는 로그인 화면을 만든 뒤 붙입니다.
+ * 로그인이 필요해 RequireAuth 안에 있습니다.
+ * 로그아웃은 먼저 홈으로 옮긴 뒤 서버 무효화를 보냅니다(성공 여부와 관계없이 로컬 토큰 · 캐시를 비움).
+ * 토큰을 먼저 비우면 RequireAuth가 이 화면을 /login으로 보내기 때문입니다.
  */
 export function MyPage() {
+  const navigate = useNavigate()
+  const logout = useLogoutMutation()
+  const handleLogout = () => {
+    navigate('/', { replace: true })
+    logout.mutate()
+  }
+
   return (
     <Screen
       top="none"
@@ -39,6 +50,9 @@ export function MyPage() {
         </MyPageMenuSection>
         <MyPageMenuSection title="고객센터">
           <MyPageListButton onClick={notifyPreparing}>약관 및 정책</MyPageListButton>
+          <MyPageListButton showArrow={false} onClick={handleLogout}>
+            로그아웃
+          </MyPageListButton>
         </MyPageMenuSection>
       </div>
     </Screen>

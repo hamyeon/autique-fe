@@ -41,7 +41,9 @@ const GROUPS: { title: string; links: RouteLink[] }[] = [
       { to: '/my/auctions/ended', label: '과거 경매했던 상품(내 경매 19)' },
       { to: '/my/likes', label: '관심 목록(처음엔 비어 있음 · 하트를 누르면 추가)' },
       { to: '/my/likes?mock=error', label: '관심 목록 · 에러' },
-      { to: '/login', label: '로그인(준비 중 자리)' },
+      { to: '/login', label: '로그인(로그인 상태면 홈으로)' },
+      { to: '/login/kakao?error=access_denied', label: '카카오 콜백 · 동의 취소(로그인 화면으로)' },
+      { to: '/login/kakao?code=x&state=x', label: '카카오 콜백 · 요청 만료(state 불일치)' },
     ],
   },
   {
