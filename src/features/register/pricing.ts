@@ -2,7 +2,11 @@ import { isApiError } from '@/api/client'
 import { calculatePrice } from '@/api/products'
 import { API_ERROR_CODE } from '@/api/schemas/common'
 import { calculatePriceRequestSchema } from '@/api/schemas/products'
-import { uploadPhotos, waitUntilReadyForPricing } from '@/features/register/analysis-session'
+import {
+  cancelAnalysesQuietly,
+  startAnalysis,
+  waitUntilReadyForPricing,
+} from '@/features/register/analysis-session'
 import { PRICE_FAILED, RegisterFailureError } from '@/features/register/errors'
 import type { ExtraInfoForm, PriceResult } from '@/features/register/schemas'
 import { priceResultSchema } from '@/features/register/schemas'
@@ -13,7 +17,7 @@ import { useRegisterStore } from '@/stores/register-store'
  * 명세: 가격 계산은 AWAITING_USER_CONFIRMATION 세션에서 세션당 1회만(이후 40003, 서버 오류면 PRICING_FAILED).
  * 다시 계산하려면 POST /api/products/analyze부터 새 세션을 만들어야 합니다.
  * → 이미 계산에 쓴 세션이거나 서버가 세션을 쓸 수 없다고 하면, 같은 사진으로 새 세션을 만들어(사용자가 고친 값은 그대로)
- *   한 번 더 계산합니다. 사용자는 로딩 화면만 봅니다.
+ *   한 번 더 계산합니다. 분석에 쓴 photoId는 다시 쓸 수 없어 같은 파일을 다시 올립니다(startAnalysis). 사용자는 로딩 화면만 봅니다.
  */
 
 const INVALID_PRODUCT_INFO = new RegisterFailureError({
@@ -35,9 +39,12 @@ function isSessionUnusable(error: unknown) {
 
 /** 같은 사진으로 새 분석 세션을 만들고 계산할 수 있는 상태까지 기다립니다. AI 결과로 2/6 값을 덮어쓰지 않습니다. */
 async function renewSession(): Promise<number> {
-  const task = await uploadPhotos()
+  const previous = useRegisterStore.getState().draft.analysisId
+  const task = await startAnalysis()
   await waitUntilReadyForPricing(task.id)
   useRegisterStore.getState().update({ analysisId: task.id })
+  // 이전 세션은 다시 쓰지 않으므로 취소합니다.
+  if (previous != null && previous !== task.id) cancelAnalysesQuietly([previous])
   return task.id
 }
 

@@ -6,7 +6,40 @@ import {
   dateTimeSchema,
 } from '@/api/schemas/common'
 
-/* ───────── POST /api/products/analyze (multipart: images) ───────── */
+/* ───────── POST /api/products/photos (multipart: image, slot) ───────── */
+
+/** 사진 칸. DEFECT는 선택이고 촬영 면 판정을 하지 않습니다. */
+export const productPhotoSlotSchema = z.enum(['SIDE', 'FRONT', 'OUTSOLE', 'DEFECT'])
+export type ProductPhotoSlot = z.infer<typeof productPhotoSlotSchema>
+
+/** 촬영 면 판정. MISMATCH · UNKNOWN이어도 업로드는 성공이고 분석에 쓸 수 있습니다. DEFECT는 null */
+export const photoCheckSchema = z.enum(['MATCH', 'MISMATCH', 'UNKNOWN'])
+export type PhotoCheck = z.infer<typeof photoCheckSchema>
+
+export const detectedViewSchema = z.enum(['SIDE', 'FRONT', 'BACK', 'TOP', 'OUTSOLE', 'OTHER'])
+
+export const uploadProductPhotoResponseSchema = z.object({
+  /** 분석 요청(POST /api/products/analyze)에 넣는 사진 ID. 한 번 분석에 쓰면 다시 쓸 수 없습니다. */
+  photoId: z.number().int(),
+  slot: productPhotoSlotSchema,
+  check: photoCheckSchema.nullable(),
+  /** 판정 생략 · 실패면 null */
+  detectedView: detectedViewSchema.nullable(),
+  /** 촬영 면이 다를 때 사용자 안내 문구(예: '밑창이 보이게 신발을 뒤집어 찍어주세요.'). 그 외 null */
+  message: z.string().nullable(),
+})
+export type UploadProductPhotoResponse = z.infer<typeof uploadProductPhotoResponseSchema>
+
+/* ───────── POST /api/products/analyze (JSON: photoIds) ───────── */
+
+/**
+ * SIDE · FRONT · OUTSOLE 각 1장 필수, DEFECT 최대 1장. 같은 사진 · 같은 칸 중복 불가(40007),
+ * 내 사진이 아니거나 없으면 40409, 이미 다른 분석에 쓴 사진이면 40923.
+ */
+export const analyzeProductRequestSchema = z.object({
+  photoIds: z.array(z.number().int()).min(1),
+})
+export type AnalyzeProductRequest = z.infer<typeof analyzeProductRequestSchema>
 
 export const analysisStatusSchema = z.enum([
   'CREATED',
@@ -20,6 +53,8 @@ export const analysisStatusSchema = z.enum([
   'QUEUE_FAILED',
   'VISION_FAILED',
   'PRICING_FAILED',
+  /** 사용자가 취소함(POST /api/products/analyze/{taskId}/cancel) */
+  'CANCELLED',
 ])
 export type AnalysisStatus = z.infer<typeof analysisStatusSchema>
 
@@ -28,6 +63,15 @@ export const analyzeProductResponseSchema = z.object({
   status: analysisStatusSchema,
 })
 export type AnalyzeProductResponse = z.infer<typeof analyzeProductResponseSchema>
+
+/* ───────── POST /api/products/analyze/{taskId}/cancel ───────── */
+
+/** 등록 확정 전이면 어느 상태에서나 취소할 수 있고, 이미 취소한 세션을 다시 취소해도 같은 성공 응답입니다. */
+export const cancelAnalysisResponseSchema = z.object({
+  analysisId: z.number().int(),
+  status: analysisStatusSchema,
+})
+export type CancelAnalysisResponse = z.infer<typeof cancelAnalysisResponseSchema>
 
 /* ───────── GET /api/products/analyze/{taskId} ───────── */
 
@@ -156,6 +200,8 @@ export const imageUrlSchema = z
 
 /** 등록 요청 필드(검증 규칙 없이). 등록 단계별 폼 스키마가 여기서 필드를 골라 씁니다(src/features/register/schemas.ts). */
 export const createProductFieldsSchema = z.object({
+  /** 분석 생성(POST /api/products/analyze)이 준 분석 세션 ID. 분석 조회의 taskId와 같은 값(명세 2026-10-10 필수로 추가) */
+  analysisId: z.number().int(),
   /**
    * 최소 3개 · 최대 4개. http(s) 주소만(data: · blob: 등 미리보기용 주소는 거부).
    * [MISMATCH] 명세는 분석 결과의 imageUrls를 그대로 보내는 흐름이지만, 실서버는 분석이 주는 S3 서명 URL(쿼리 포함, 약 1,800자)을

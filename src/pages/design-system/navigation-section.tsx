@@ -270,7 +270,7 @@ function MyPageListButtonDemo() {
   return (
     <Demo
       title="MyPageListButton"
-      description="높이 52, 왼쪽 20 · 오른쪽 8, head03 black0 + 화살표 36(Figma 207:749). 누르는 동안 gray0 바탕(흰 바탕 요소 공통 규칙). href면 링크, 아니면 버튼."
+      description="높이 52, 왼쪽 20 · 오른쪽 8, head03 black0 + 화살표 36(Figma 207:749). 누르는 동안 gray0 바탕(흰 바탕 요소 공통 규칙). href면 링크, 아니면 버튼. showArrow={false}면 화살표 없이 높이 52 유지(로그아웃처럼 이동하지 않는 행)."
     >
       <FullBleed label={`onClick (버튼) · 누른 횟수 ${count}회`}>
         <MyPageListButton onClick={() => setCount((c) => c + 1)}>현재 경매 중인 상품</MyPageListButton>
@@ -281,6 +281,11 @@ function MyPageListButtonDemo() {
       <FullBleed label="긴 문구 · 한 줄 말줄임, 화살표는 그대로">
         <MyPageListButton onClick={() => setCount((c) => c + 1)}>
           경매 AI Agent 설정과 자동 입찰 상한가 기본값 관리하기
+        </MyPageListButton>
+      </FullBleed>
+      <FullBleed label="showArrow={false} · 화살표 없음(로그아웃), 높이는 52 그대로">
+        <MyPageListButton showArrow={false} onClick={() => setCount((c) => c + 1)}>
+          로그아웃
         </MyPageListButton>
       </FullBleed>
     </Demo>

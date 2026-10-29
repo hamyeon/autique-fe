@@ -88,13 +88,14 @@ There is no test runner configured yet.
 - Handlers in `src/mocks/handlers/` (one file per domain, built with `mockEndpoint()`), data in `src/mocks/data/`. Mock responses pass through the same response schema as the real API.
 - On/off per "method + path": `src/mocks/config.ts` `passthrough` lists endpoints sent to the real server (e.g. `'POST /api/products'`). **When switching an endpoint to the real API, add it to `passthrough`** — don't delete its mock.
 - `VITE_MOCK=off` in `.env.local` turns MSW off entirely. Append `?mock=empty` or `?mock=error` to the page URL to get empty lists or each endpoint's spec error.
-- Registration flow scenarios: `?mock=slow` (AI analysis takes 30s), `?mock=analysis-fail` (VISION_FAILED), `?mock=submit-fail` (POST /api/products 500). Only in these scenarios are those passthrough endpoints mocked (`mockIn` in the handler); they stick for the tab until `?mock=off`.
+- Registration flow scenarios: `?mock=slow` (AI analysis takes 30s), `?mock=analysis-fail` (VISION_FAILED), `?mock=submit-fail` (POST /api/products 500), `?mock=photo-mismatch` (step 1 only: photo upload is mocked and the outsole slot comes back MISMATCH). Only in these scenarios are those passthrough endpoints mocked (`mockIn` in the handler); they stick for the tab until `?mock=off`.
 - Whenever any endpoint uses the real server, keep `POST /api/auth/refresh` and `POST /api/auth/logout` in `passthrough` too (the mock only accepts mock tokens).
 - The browser can terminate the idle MSW service worker (e.g. while the phone is in the camera app), and the restarted worker forgets which pages to mock and passes everything to the real server. `src/mocks/keep-active.ts` re-registers the page before requests and on app foreground (hooked into `request()` via `setBeforeRequest` in `src/main.tsx`); keep it when changing the MSW setup.
 
 ### Real server in development
 
 - The server has no CORS allowance (any request with an `Origin` header gets 403), so dev uses the Vite proxy in `vite.config.ts`: set `API_PROXY_TARGET` in `.env.local` and leave `VITE_API_BASE_URL` empty so requests go to `/api` on the dev server; the proxy strips `Origin`. Deploy and Capacitor builds need backend CORS instead.
+- Kakao login (web): `src/lib/kakao.ts` redirects to Kakao, exchanges the code for a Kakao access token in the browser (`VITE_KAKAO_REST_API_KEY`), then calls `POST /api/auth/kakao`. Each origin needs `{origin}/login/kakao` registered as a Redirect URI in the Kakao console. For Capacitor, swap only that file for the native Kakao SDK.
 - Dev login: `VITE_DEV_ACCESS_TOKEN` / `VITE_DEV_REFRESH_TOKEN` in `.env.local` seed the auth store in dev only (`src/app/dev-auth.ts`, dynamically imported so it never reaches the build); expired access tokens refresh automatically on 401. Never put tokens anywhere except `.env.local` (git-ignored), and don't print them.
 
 ## Capacitor compatibility

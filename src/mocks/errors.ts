@@ -32,6 +32,18 @@ export const mockErrors = {
     'AUCTION_TIME_INVALID',
     '경매 진행 시간은 최소 1시간이어야 합니다.',
   ),
+  PHOTO_REQUIRED_SLOTS: error(
+    400,
+    'PHOTO_REQUEST_INVALID',
+    '측면(SIDE)/앞면(FRONT)/밑창(OUTSOLE) 사진이 모두 필요합니다.',
+  ),
+  PHOTO_DUPLICATED: error(400, 'PHOTO_REQUEST_INVALID', '중복된 photoId가 포함되어 있습니다.'),
+  PHOTO_NOT_FOUND: error(404, 'PHOTO_NOT_FOUND', '존재하지 않는 사진이 포함되어 있습니다.'),
+  PHOTO_ALREADY_USED: error(
+    409,
+    'PHOTO_ALREADY_USED',
+    '이미 다른 분석에 사용된 사진이 포함되어 있습니다.',
+  ),
   START_PRICE_INVALID: error(400, 'INVALID_REQUEST', '시작가는 0보다 커야 합니다.'),
 
   UNAUTHORIZED: error(401, 'UNAUTHORIZED', '인증이 필요합니다.'),
@@ -124,6 +136,11 @@ export const mockErrors = {
 
   INTERNAL_SERVER_ERROR: error(500, 'INTERNAL_SERVER_ERROR', '서버 내부 오류: ...'),
   S3_UPLOAD_FAILED: error(500, 'S3_UPLOAD_FAILED', 'S3 이미지 업로드 중 문제가 발생했습니다.'),
+  ANALYSIS_QUEUE_FAILED: error(
+    500,
+    'ANALYSIS_QUEUE_FAILED',
+    '분석 작업을 큐에 적재하는 중 오류가 발생했습니다: ...',
+  ),
   KAKAO_API_FAILED: error(502, 'KAKAO_API_FAILED', 'Kakao 사용자 정보 조회에 실패했습니다.'),
 }
 

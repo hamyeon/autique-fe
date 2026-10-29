@@ -13,13 +13,16 @@ import type { EndpointKey } from '@/api/endpoints'
  *   'POST /api/products',
  *   'POST /api/products/analyze',
  *   'GET /api/products/analyze/{taskId}',
+  'POST /api/products/analyze/{taskId}/cancel',
  * ]
  */
 export const passthrough: EndpointKey[] = [
-  // 실제 토큰(.env.local 개발용 토큰)을 재발급 · 무효화하려면 실제 서버로
+  // 카카오 로그인은 실제 서버로(카카오 토큰은 서버만 검증할 수 있음). 받은 실제 토큰을 재발급 · 무효화하려면 refresh · logout도 실제 서버로
+  'POST /api/auth/kakao',
   'POST /api/auth/refresh',
   'POST /api/auth/logout',
-  // 경매 등록: AI 분석 · 가격 계산 · 등록은 실제 서버로
+  // 경매 등록: 사진 선업로드 · AI 분석 · 가격 계산 · 등록은 실제 서버로
+  'POST /api/products/photos',
   'POST /api/products/analyze',
   'GET /api/products/analyze/{taskId}',
   'POST /api/products/calculate-price',

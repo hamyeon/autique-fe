@@ -10,23 +10,32 @@ export interface MyPageListButtonProps {
   /** 누르면 이동할 경로. 없으면 버튼으로 그려 onClick만 부릅니다. */
   href?: string
   onClick?: () => void
+  /** 오른쪽 화살표. 다른 화면으로 가지 않는 행(로그아웃 등)은 false. 기본 true */
+  showArrow?: boolean
   className?: string
 }
 
 /**
  * 마이페이지 메뉴 행(Figma MyPageListButton 207:749): 높이 52, 왼쪽 20 · 오른쪽 8 · 위아래 8,
  * 문구 head03 black0(한 줄 말줄임), 오른쪽 ArrowRight 36. 눌림은 gray0 바탕(흰 바탕 요소 공통 규칙).
+ * 화살표를 숨겨도 높이 52(min-h-13)는 그대로입니다.
  */
-export function MyPageListButton({ children, href, onClick, className }: MyPageListButtonProps) {
+export function MyPageListButton({
+  children,
+  href,
+  onClick,
+  showArrow = true,
+  className,
+}: MyPageListButtonProps) {
   const { pressed, handlers } = usePressed()
   const classes = cn(
-    'bg-white0 text-head03 text-black0 pl-layout-gutter pr-space-8 py-space-8 data-pressed:bg-gray0 focus-visible:outline-primary1 flex w-full items-center justify-between text-left focus-visible:outline-2 focus-visible:-outline-offset-2',
+    'bg-white0 text-head03 text-black0 pl-layout-gutter pr-space-8 py-space-8 data-pressed:bg-gray0 focus-visible:outline-primary1 flex min-h-13 w-full items-center justify-between text-left focus-visible:outline-2 focus-visible:-outline-offset-2',
     className,
   )
   const content = (
     <>
       <span className="min-w-0 truncate">{children}</span>
-      <Icon name="ArrowRight" size={36} />
+      {showArrow && <Icon name="ArrowRight" size={36} />}
     </>
   )
   const pressedAttr = pressed ? '' : undefined

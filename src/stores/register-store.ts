@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
-import type { PhotoSlot, RegisterDraft, RegisterStep } from '@/features/register/schemas'
+import type { PhotoMeta, PhotoSlot, RegisterDraft, RegisterStep } from '@/features/register/schemas'
 import { REGISTER_STEPS, STEP_SCHEMAS } from '@/features/register/schemas'
 import { deleteFile, deleteFiles, loadFile, saveFile } from '@/lib/file-store'
 import { sessionAppStorage } from '@/lib/storage'
@@ -46,13 +46,18 @@ interface RegisterState {
   setAnalysisTask: (task: AnalysisTask | null) => void
   setCompleting: (completing: boolean) => void
   setPricedAnalysisId: (id: number | null) => void
-  /** 사진을 바꾸면 분석부터 다시 합니다(사용자 결정). 파일은 IndexedDB, 정보만 스토어에 */
-  setPhoto: (slot: PhotoSlot, file: File) => Promise<void>
+  /** 사진을 바꾸면 분석부터 다시 합니다(사용자 결정). 파일은 IndexedDB, 정보(업로드 결과 포함)만 스토어에 */
+  setPhoto: (slot: PhotoSlot, file: File, upload: PhotoUpload) => Promise<void>
+  /** 같은 파일을 다시 올렸거나 분석에 썼을 때 정보만 바꿉니다(분석 · 완료 표시는 그대로). */
+  updatePhotoMeta: (slot: PhotoSlot, patch: Partial<PhotoMeta>) => void
   removePhoto: (slot: PhotoSlot) => Promise<void>
   loadPhoto: (slot: PhotoSlot) => Promise<Blob | null>
   /** 등록 완료 · 등록 취소 시 모두 비웁니다(사진 파일 포함). */
   reset: () => Promise<void>
 }
+
+/** POST /api/products/photos 결과 중 저장하는 값 */
+export type PhotoUpload = Pick<PhotoMeta, 'photoId' | 'check' | 'message'>
 
 /** 사진이 바뀌면 분석 세션 · 가격 계산 결과는 더 쓸 수 없어 함께 지웁니다. */
 const STALE_AFTER_PHOTO_CHANGE: (keyof RegisterDraft)[] = ['analysisId', 'priceResult']
@@ -94,17 +99,25 @@ export const useRegisterStore = create<RegisterState>()(
 
       setPricedAnalysisId: (pricedAnalysisId) => set({ pricedAnalysisId }),
 
-      setPhoto: async (slot, file) => {
+      setPhoto: async (slot, file, upload) => {
         await saveFile(PHOTO_KEY + slot, file)
         const draft = { ...get().draft }
         for (const key of STALE_AFTER_PHOTO_CHANGE) delete draft[key]
         draft.photos = {
           ...draft.photos,
-          [slot]: { name: file.name, type: file.type, size: file.size },
+          [slot]: { name: file.name, type: file.type, size: file.size, ...upload },
         } as RegisterDraft['photos']
         set({ draft, analysisTask: null })
         get().resetFrom('1')
       },
+
+      updatePhotoMeta: (slot, patch) =>
+        set((s) => {
+          const meta = s.draft.photos?.[slot]
+          if (!meta) return s
+          const photos = { ...s.draft.photos, [slot]: { ...meta, ...patch } }
+          return { draft: { ...s.draft, photos: photos as RegisterDraft['photos'] } }
+        }),
 
       removePhoto: async (slot) => {
         await deleteFile(PHOTO_KEY + slot)

@@ -13,6 +13,7 @@ import {
   registerEntryIdx,
   rememberRegisterEntry,
 } from '@/pages/register/register-history'
+import { cancelAnalysesQuietly, currentAnalysisIds } from '@/features/register/analysis-session'
 import type { RegisterNavState } from '@/pages/register/use-register-nav'
 import { selectIsDirty, useRegisterStore } from '@/stores/register-store'
 
@@ -21,8 +22,10 @@ import { selectIsDirty, useRegisterStore } from '@/stores/register-store'
  * - 앞 단계를 끝내지 않고 주소로 뒤 단계에 들어오면 첫 미완료 단계로 보냅니다.
  * - 작성 중에 2/6 이후에서 등록 흐름 밖으로 나가려 하면(브라우저 뒤로 가기, 다른 탭 · 링크) 확인 시트를 띄웁니다.
  * - 1/6에서 나가면(헤더 · 브라우저 뒤로 가기) 시트 없이 작성 내용을 비우고 나갑니다(사용자 결정).
- * - AI 분석 중에 다른 화면으로 가려 하면 '분석이 진행 중이에요' 시트. 분석은 서버 작업이라 나가도 취소되지 않고,
- *   작성 내용 · 작업 ID를 남겨 두어 다시 들어오면 이어서 기다립니다(명세: 비동기 Worker, 취소 API 없음).
+ * - AI 분석 중에 다른 화면으로 가려 하면 '분석이 진행 중이에요' 시트에서 고릅니다(작성 내용은 어느 쪽이든 남김).
+ *   - 나가기: 분석은 서버에서 계속되고, 다시 들어오면 이어서 기다립니다.
+ *   - 분석 취소: 서버 분석을 취소하고 나갑니다. 다시 들어오면 취소된 세션을 보고 새로 분석합니다(분석 화면).
+ * - 작성 내용을 지우고 나갈 때(1/6에서 나가기 · '작성 중인 내용이 사라져요' 시트)는 분석 세션도 취소합니다.
  * - 등록에 성공하면 등록을 시작한 기록 위치로 되돌아간 뒤 완료 화면으로 바꿔 넣습니다(use-register-nav goComplete).
  */
 export function RegisterLayout() {
@@ -54,14 +57,20 @@ export function RegisterLayout() {
   /* 1/6에서 나가는 경우: 묻지 않고 비운 뒤 그대로 이동 */
   const leavingFromFirst = blocked && pathname === registerPath('1')
   const leaving = useRef(false)
+  /** 작성 내용을 모두 지우고 등록을 그만둡니다. 더 쓰지 않을 분석 세션은 취소합니다. */
+  const abandon = () => {
+    cancelAnalysesQuietly(currentAnalysisIds())
+    return reset()
+  }
   useEffect(() => {
     if (!leavingFromFirst || leaving.current) return
     leaving.current = true
-    void reset().then(() => {
+    void abandon().then(() => {
       leaving.current = false
       blocker.proceed?.()
     })
-  }, [leavingFromFirst, reset, blocker])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- abandon은 스토어만 읽음
+  }, [leavingFromFirst, blocker])
 
   /* 등록 성공: 시작 위치까지 기록을 되돌렸으면 그 자리를 완료 화면으로 바꿉니다. */
   useEffect(() => {
@@ -98,17 +107,22 @@ export function RegisterLayout() {
         title="분석이 진행 중이에요"
         footer={
           <BottomButtonBar
-            layout="double"
+            layout="triple"
             primaryLabel="계속 기다리기"
             secondaryLabel="나가기"
+            dangerLabel="분석 취소하기"
             onPrimary={() => blocker.reset?.()}
             onSecondary={() => blocker.proceed?.()}
+            onDanger={() => {
+              cancelAnalysesQuietly(currentAnalysisIds())
+              blocker.proceed?.()
+            }}
           />
         }
       >
         <p className="text-body05 text-gray6">
-          지금 나가도 분석은 서버에서 계속돼요. 사진을 바꾸지 않고 다시 경매 등록을 이어가면 분석
-          결과를 이어서 확인할 수 있어요.
+          그냥 나가면 분석은 서버에서 계속되고, 다시 경매 등록을 이어가면 결과를 이어서 확인할 수
+          있어요. 분석을 취소하면 다음에 처음부터 다시 분석해요.
         </p>
       </BottomSheet>
       <BottomSheet
@@ -122,7 +136,7 @@ export function RegisterLayout() {
             dangerLabel="나가기"
             onPrimary={() => blocker.reset?.()}
             onDanger={async () => {
-              await reset()
+              await abandon()
               blocker.proceed?.()
             }}
           />

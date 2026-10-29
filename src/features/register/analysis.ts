@@ -4,7 +4,7 @@ import type { AnalysisStatus, ProductAnalysis } from '@/api/schemas/products'
  * AI 상품 분석(업로드 → 폴링) 화면 규칙.
  * 명세: POST /api/products/analyze(202 + analysisId) → GET /api/products/analyze/{taskId}를
  * AWAITING_USER_CONFIRMATION 또는 *_FAILED가 될 때까지 폴링. 분석은 서버 백그라운드 작업이라
- * 화면을 떠나도 취소되지 않습니다(취소 API 없음).
+ * 화면을 떠나도 계속되고, 사용자가 고르면 취소합니다(POST /api/products/analyze/{taskId}/cancel).
  */
 
 /* ───────── 조절용 상수 ───────── */
@@ -53,6 +53,8 @@ const DONE: ReadonlySet<AnalysisStatus> = new Set([
 ])
 
 export const isAnalysisFailed = (status: AnalysisStatus) => FAILED.has(status)
+/** 취소된 세션: 다시 들어오면 새로 분석합니다. */
+export const isAnalysisCancelled = (status: AnalysisStatus) => status === 'CANCELLED'
 export const isAnalysisDone = (status: AnalysisStatus) => DONE.has(status)
 
 /**

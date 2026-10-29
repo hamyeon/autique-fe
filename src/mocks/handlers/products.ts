@@ -1,4 +1,5 @@
 import { endpoints } from '@/api/endpoints'
+import { productPhotoSlotSchema } from '@/api/schemas/products'
 import { auctions, createAuctionId, createProductId } from '@/mocks/data/auctions'
 import { ME, kst } from '@/mocks/data/common'
 import {
@@ -8,22 +9,72 @@ import {
   SLOW_VISION_MS,
   analysisStatusOf,
   createAnalysis,
+  createPhoto,
   findAnalysis,
+  findPhoto,
+  markCancelled,
+  markPhotosUsed,
   markPriced,
   toAnalysis,
 } from '@/mocks/data/products'
 import { idParam, mockEndpoint } from '@/mocks/define'
 import { invalidAuctionTime, mockErrors } from '@/mocks/errors'
 
+/** ?mock=photo-mismatch: 밑창 칸 사진을 측면으로 판정(명세 예시 그대로) */
+const MISMATCH_MESSAGE = '밑창이 보이게 신발을 뒤집어 찍어주세요.'
+
 export const productHandlers = [
-  /** 202 Accepted. images 파트가 없으면 40002. ?mock=slow · analysis-fail 일 때만 목(평소엔 실서버) */
-  mockEndpoint(endpoints.analyzeProduct, {
+  /**
+   * 사진 선업로드 + 촬영 면 판정. 목은 사진을 보지 않고 항상 MATCH(하자 칸은 판정 생략 null).
+   * ?mock=photo-mismatch면 밑창 칸을 MISMATCH로. 분석을 목으로 하는 시나리오에서도 목(평소엔 실서버)
+   */
+  mockEndpoint(endpoints.uploadProductPhoto, {
     error: mockErrors.S3_UPLOAD_FAILED,
+    mockIn: ['slow', 'analysis-fail', 'photo-mismatch'],
+    resolve: ({ body, ok, fail, scenario }) => {
+      const image = body.get('image')
+      if (!(image instanceof File) || image.size === 0) return fail(mockErrors.IMAGE_FILE_MISSING)
+      const slot = productPhotoSlotSchema.safeParse(body.get('slot'))
+      if (!slot.success) return fail(mockErrors.INVALID_REQUEST)
+      const { photoId } = createPhoto(slot.data)
+      if (slot.data === 'DEFECT') {
+        return ok({ photoId, slot: slot.data, check: null, detectedView: null, message: null })
+      }
+      if (scenario === 'photo-mismatch' && slot.data === 'OUTSOLE') {
+        return ok({
+          photoId,
+          slot: slot.data,
+          check: 'MISMATCH',
+          detectedView: 'SIDE',
+          message: MISMATCH_MESSAGE,
+        })
+      }
+      return ok({
+        photoId,
+        slot: slot.data,
+        check: 'MATCH',
+        detectedView: slot.data,
+        message: null,
+      })
+    },
+  }),
+
+  /** 202 Accepted. 명세의 photoIds 검증 규칙대로 거절합니다. ?mock=slow · analysis-fail 일 때만 목(평소엔 실서버) */
+  mockEndpoint(endpoints.analyzeProduct, {
+    error: mockErrors.ANALYSIS_QUEUE_FAILED,
     mockIn: ['slow', 'analysis-fail'],
     resolve: ({ body, ok, fail, scenario }) => {
-      const images = body.getAll('images').filter((v) => v instanceof File)
-      if (images.length === 0) return fail(mockErrors.IMAGE_FILE_MISSING)
-      const analysis = createAnalysis(images.length, {
+      const { photoIds } = body
+      if (new Set(photoIds).size !== photoIds.length) return fail(mockErrors.PHOTO_DUPLICATED)
+      const found = photoIds.map(findPhoto)
+      if (found.some((p) => !p)) return fail(mockErrors.PHOTO_NOT_FOUND)
+      const slots = found.map((p) => p!.slot)
+      if (new Set(slots).size !== slots.length) return fail(mockErrors.PHOTO_DUPLICATED)
+      if (!(['SIDE', 'FRONT', 'OUTSOLE'] as const).every((s) => slots.includes(s)))
+        return fail(mockErrors.PHOTO_REQUIRED_SLOTS)
+      if (found.some((p) => p!.used)) return fail(mockErrors.PHOTO_ALREADY_USED)
+      markPhotosUsed(photoIds)
+      const analysis = createAnalysis(photoIds.length, {
         visionMs: scenario === 'slow' ? SLOW_VISION_MS : undefined,
         failAfterMs: scenario === 'analysis-fail' ? FAIL_AFTER_MS : null,
       })
@@ -38,6 +89,18 @@ export const productHandlers = [
       const analysis = findAnalysis(idParam(params, 'taskId'))
       if (!analysis) return fail(mockErrors.ANALYSIS_NOT_FOUND(params.taskId))
       return ok(toAnalysis(analysis))
+    },
+  }),
+
+  /** 등록 확정 전이면 언제나 취소. 이미 취소했어도 200. 세션이 목에만 있는 시나리오에서만 목(평소엔 실서버) */
+  mockEndpoint(endpoints.cancelAnalysis, {
+    error: mockErrors.ANALYSIS_NOT_FOUND('999'),
+    mockIn: ['slow', 'analysis-fail'],
+    resolve: ({ params, ok, fail }) => {
+      const analysis = findAnalysis(idParam(params, 'taskId'))
+      if (!analysis) return fail(mockErrors.ANALYSIS_NOT_FOUND(params.taskId))
+      markCancelled(analysis)
+      return ok({ analysisId: analysis.analysisId, status: 'CANCELLED' })
     },
   }),
 

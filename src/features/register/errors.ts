@@ -82,6 +82,7 @@ const FIELD_STEP: Record<string, RegisterStep> = {
   size: '2',
   conditionGrade: '2',
   componentStatus: '3',
+  analysisId: '1',
   sellerDescription: '3',
   recommendedPrice: '3',
   baseMarketPrice: '3',
@@ -164,6 +165,9 @@ export function toRegisterFailure(error: unknown): RegisterFailure {
         step: '6',
       }
     case API_ERROR_CODE.IMAGE_FILE_MISSING:
+    case API_ERROR_CODE.PHOTO_REQUEST_INVALID:
+    case API_ERROR_CODE.PHOTO_NOT_FOUND:
+    case API_ERROR_CODE.PHOTO_ALREADY_USED:
       return PHOTOS_MISSING
     case API_ERROR_CODE.ANALYSIS_SESSION_NOT_FOUND:
       return ANALYSIS_NOT_FOUND
