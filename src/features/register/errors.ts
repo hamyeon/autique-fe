@@ -75,12 +75,12 @@ export const ANALYSIS_NOT_FOUND: RegisterFailure = {
 
 /** 제출용 스키마 검증에서 걸린 필드 → 고칠 단계 */
 const FIELD_STEP: Record<string, RegisterStep> = {
-  imageUrls: '1',
   brand: '2',
   modelName: '2',
   color: '2',
   size: '2',
   conditionGrade: '2',
+  conditionDescription: '2',
   componentStatus: '3',
   analysisId: '1',
   sellerDescription: '3',
@@ -120,6 +120,14 @@ export class RegisterFailureError extends Error {
     this.name = 'RegisterFailureError'
     this.failure = failure
   }
+}
+
+/** 등록 요청의 분석 세션이 취소됐거나 이미 다른 등록에 쓰임(40003). 사진을 다시 올려 새로 분석해야 합니다. */
+export const ANALYSIS_SESSION_USED: RegisterFailure = {
+  kind: 'analysis',
+  title: '이 분석으로는 등록할 수 없어요',
+  message: '이미 등록에 쓰였거나 취소된 분석이에요. 사진을 다시 분석해 주세요',
+  step: '1',
 }
 
 export const PHOTOS_MISSING: RegisterFailure = {
@@ -164,6 +172,7 @@ export function toRegisterFailure(error: unknown): RegisterFailure {
         message: '사진 개수나 빠진 정보가 없는지 확인해 주세요',
         step: '6',
       }
+    // 등록: 분석 세션에 저장된 사진이 3~4장이 아님 → 사진부터 다시
     case API_ERROR_CODE.IMAGE_FILE_MISSING:
     case API_ERROR_CODE.PHOTO_REQUEST_INVALID:
     case API_ERROR_CODE.PHOTO_NOT_FOUND:
@@ -171,6 +180,8 @@ export function toRegisterFailure(error: unknown): RegisterFailure {
       return PHOTOS_MISSING
     case API_ERROR_CODE.ANALYSIS_SESSION_NOT_FOUND:
       return ANALYSIS_NOT_FOUND
+    case API_ERROR_CODE.ANALYSIS_STATUS_INVALID:
+      return ANALYSIS_SESSION_USED
     case API_ERROR_CODE.S3_UPLOAD_FAILED:
     case API_ERROR_CODE.ANALYSIS_QUEUE_FAILED:
       return { ...SERVER, title: '사진을 올리지 못했어요' }

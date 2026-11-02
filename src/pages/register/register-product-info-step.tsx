@@ -33,7 +33,8 @@ function productInfoDefaults(): DefaultValues<ProductInfoInput> {
 
 /**
  * 2/6 AI 상품 분석(Figma 551:2377). AI 분석 값으로 채우고 사용자가 고칩니다.
- * conditionGrade는 화면에 없고 AI 값 그대로 보냅니다. 입력은 바로바로 스토어에 저장되어 돌아와도 남습니다.
+ * conditionGrade는 화면에 없고 AI 값 그대로 보냅니다. '상태'는 고친 값을 등록 요청의 conditionDescription으로 보냅니다.
+ * 입력은 바로바로 스토어에 저장되어 돌아와도 남습니다.
  */
 export function RegisterProductInfoStep() {
   const { goNext: goNextStep } = useRegisterNav('2')
@@ -103,7 +104,11 @@ export function RegisterProductInfoStep() {
           error={errors.size?.message}
           {...register('size', { setValueAs: toNumber })}
         />
-        <Textarea label="상태" {...register('conditionDescription')} />
+        <Textarea
+          label="상태"
+          error={errors.conditionDescription?.message}
+          {...register('conditionDescription')}
+        />
         {/* 키보드 '이동/완료'로도 제출되도록 */}
         <button type="submit" hidden />
       </form>

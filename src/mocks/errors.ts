@@ -21,6 +21,22 @@ export const mockErrors = {
     'Idempotency-Key 헤더가 필요합니다.',
   ),
   IMAGE_FILE_MISSING: error(400, 'IMAGE_FILE_MISSING', '이미지 파일이 존재하지 않습니다.'),
+  SESSION_IMAGE_COUNT: (count: number) =>
+    error(
+      400,
+      'IMAGE_FILE_MISSING',
+      `분석 세션에 저장된 상품 이미지는 최소 3개, 최대 4개여야 합니다. 현재 이미지 수: ${count}`,
+    ),
+  ANALYSIS_SESSION_USED: error(
+    400,
+    'ANALYSIS_STATUS_INVALID',
+    '이미 상품 등록에 사용된 분석 세션은 취소할 수 없습니다. 현재 상태: COMPLETED',
+  ),
+  ANALYSIS_SESSION_CLOSED: error(
+    400,
+    'ANALYSIS_STATUS_INVALID',
+    '취소되었거나 이미 상품 등록에 사용된 분석 세션입니다.',
+  ),
   ANALYSIS_STATUS_INVALID: (status: string) =>
     error(
       400,

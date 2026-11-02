@@ -77,8 +77,8 @@ export const photosStepSchema = z.object({
 /* ───────── analyzing: 업로드 + AI 분석 ───────── */
 
 /**
- * 분석 세션 ID만 저장합니다. 분석 결과의 imageUrls는 6시간짜리 서명 URL이라 저장하지 않고,
- * 등록할 때 GET /api/products/analyze/{taskId}로 다시 받습니다(명세).
+ * 분석 세션 ID만 저장합니다. 등록할 때 서버가 이 세션에 저장한 사진을 상품 이미지로 쓰므로
+ * 이미지 주소는 보내지 않습니다(명세).
  */
 export const analysisStepSchema = z.object({
   analysisId: analyzeProductResponseSchema.shape.analysisId,
@@ -86,19 +86,18 @@ export const analysisStepSchema = z.object({
 
 /* ───────── 2/6 AI 결과 확인 ───────── */
 
-/** AI 값으로 채우고 사용자가 고칩니다. conditionGrade는 AI 값 그대로(UNKNOWN 포함, 화면에서 고르지 않음) */
-export const productInfoStepSchema = createProductFieldsSchema
-  .pick({
-    brand: true,
-    modelName: true,
-    color: true,
-    size: true,
-    conditionGrade: true,
-  })
-  .extend({
-    /** 2/6 '상태'. AI 분석 확인용이라 등록 요청에는 보내지 않습니다(사용자 결정). 분석 결과 conditionDescription */
-    conditionDescription: z.string().nullish(),
-  })
+/**
+ * AI 값으로 채우고 사용자가 고칩니다. conditionGrade는 AI 값 그대로(UNKNOWN 포함, 화면에서 고르지 않음).
+ * conditionDescription(2/6 '상태')은 고친 값을 등록 요청에 보냅니다(사용자 결정, 2026-11-03).
+ */
+export const productInfoStepSchema = createProductFieldsSchema.pick({
+  brand: true,
+  modelName: true,
+  color: true,
+  size: true,
+  conditionGrade: true,
+  conditionDescription: true,
+})
 export type ProductInfoForm = z.infer<typeof productInfoStepSchema>
 
 /** AI 분석 결과 → 2/6 기본값. 사진을 다시 분석하면 이 값으로 덮어씁니다. */
@@ -154,8 +153,13 @@ export const extraInfoStepSchema = extraInfoFormSchema.extend({ priceResult: pri
  */
 export const REGISTER_BID_INCREMENT = 5000
 
-/** 기준가. 등록 때 sellingPrice와 auctionStartPrice에 같은 값으로 들어갑니다(사용자 결정). */
-export const startPriceStepSchema = createProductFieldsSchema.pick({ sellingPrice: true })
+/**
+ * 기준가. 등록 때 sellingPrice와 auctionStartPrice에 같은 값으로 들어가므로 경매 시작가 규칙(0원 초과)을 따릅니다.
+ * 시세가 없어 AI 기준가가 0원이면 4/6에서 직접 정해야 넘어갑니다(사용자 결정, 2026-11-03).
+ */
+export const startPriceStepSchema = z.object({
+  sellingPrice: createProductFieldsSchema.shape.auctionStartPrice,
+})
 
 /* ───────── 5/6 일정 ───────── */
 
@@ -212,16 +216,12 @@ export function canEnterStep(step: RegisterStep, draft: RegisterDraft, completed
 
 /**
  * 모은 값을 POST /api/products 요청으로 바꿉니다. 필드 이름은 단계 스키마와 같습니다.
- * imageUrls는 등록 직전에 분석 조회로 다시 받은 값(서명 URL 만료 때문).
+ * 이미지는 서버가 분석 세션의 사진을 쓰므로 imageUrls는 보내지 않습니다.
  */
-export function buildCreateProductRequest(
-  draft: RegisterDraft,
-  imageUrls: string[],
-): CreateProductRequest {
+export function buildCreateProductRequest(draft: RegisterDraft): CreateProductRequest {
   const { priceResult } = draft
   return createProductRequestSchema.parse({
     analysisId: draft.analysisId,
-    imageUrls,
     brand: draft.brand,
     modelName: draft.modelName,
     color: draft.color,
@@ -235,6 +235,7 @@ export function buildCreateProductRequest(
     sellingPrice: draft.sellingPrice,
     auctionStartPrice: draft.sellingPrice,
     sellerDescription: draft.sellerDescription,
+    conditionDescription: draft.conditionDescription,
     auctionStartAt: draft.auctionStartAt,
     auctionEndAt: draft.auctionEndAt,
   })

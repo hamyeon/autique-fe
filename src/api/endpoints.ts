@@ -90,7 +90,7 @@ export const endpoints = {
     response: products.productAnalysisSchema,
     auth: 'required',
   }),
-  /** 실패 코드(등록 확정 400 · 세션 없음 404)는 명세에 숫자가 아직 없어 구분하지 않습니다. */
+  /** 이미 취소한 세션은 다시 200. 이미 등록에 쓴 세션 40003, 없거나 남의 세션 40408 */
   cancelAnalysis: endpoint({
     method: 'POST',
     path: '/api/products/analyze/{taskId}/cancel',
