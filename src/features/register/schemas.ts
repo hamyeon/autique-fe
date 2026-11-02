@@ -149,7 +149,7 @@ export const extraInfoStepSchema = extraInfoFormSchema.extend({ priceResult: pri
 
 /**
  * 기준가를 고치는 단위 · 6/6 '최소 입찰 단위'.
- * [ASSUMED] 등록 요청에 입찰 단위 필드가 없어 서버가 정함. 상품 · 경매 조회 응답의 bidIncrement 예시 값(5,000)
+ * 등록 요청에 입찰 단위 필드가 없고 서버가 5,000으로 정합니다(명세 POST /api/products).
  */
 export const REGISTER_BID_INCREMENT = 5000
 

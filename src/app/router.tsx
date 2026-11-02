@@ -5,8 +5,8 @@ import { MobileLayout } from '@/layouts/mobile-layout'
 import { AuctionListPage } from '@/pages/auction-list/auction-list-page'
 import {
   LikedAuctionsPage,
-  MyEndedAuctionsPage,
-  MyOngoingAuctionsPage,
+  MyParticipatingAuctionsPage,
+  MySellingAuctionsPage,
 } from '@/pages/auction-list/my-auction-list-pages'
 import { AuctionResultPage } from '@/pages/auction-result/auction-result-page'
 import { HomePage } from '@/pages/home/home-page'
@@ -64,8 +64,8 @@ export const router = createBrowserRouter([
         element: <RequireAuth />,
         children: [
           { path: '/my', element: <MyPage /> },
-          { path: '/my/auctions/ongoing', element: <MyOngoingAuctionsPage /> },
-          { path: '/my/auctions/ended', element: <MyEndedAuctionsPage /> },
+          { path: '/my/selling', element: <MySellingAuctionsPage /> },
+          { path: '/my/participating', element: <MyParticipatingAuctionsPage /> },
           { path: '/my/likes', element: <LikedAuctionsPage /> },
           {
             // 경매 등록. /register 와 없는 단계는 RegisterLayout이 첫 미완료 단계로 보냅니다.

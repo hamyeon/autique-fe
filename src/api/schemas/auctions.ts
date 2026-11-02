@@ -192,20 +192,36 @@ export const forfeitAwardResponseSchema = z.object({
 })
 export type ForfeitAwardResponse = z.infer<typeof forfeitAwardResponseSchema>
 
+/* ───────── 경매 카드 (목록 · 인기 · 추천 · 비슷한 상품 · 마이페이지 목록 공통 항목) ───────── */
+
+export const auctionCardSchema = z.object({
+  auctionId: z.number().int(),
+  productId: z.number().int(),
+  brand: z.string().nullish(),
+  /** 상품 표시명 */
+  name: z.string(),
+  /** 대표 이미지 서명 URL. 이미지가 없으면 null */
+  thumbnailUrl: z.string().nullish(),
+  /** 홈 · 상품 찾기는 SCHEDULED / LIVE만. 마이페이지 목록은 ENDED / CANCELED도 */
+  status: auctionStatusSchema,
+  /** 저장된 상품 등급 */
+  grade: conditionGradeSchema.nullish(),
+  startPrice: z.number().int(),
+  /** 현재 경매가. 내 입찰가 · 자동입찰 상한 · 결제 금액이 아님 */
+  currentPrice: z.number().int(),
+  likeCount: z.number().int(),
+  /** 비로그인이면 false */
+  isLiked: z.boolean(),
+})
+export type AuctionCard = z.infer<typeof auctionCardSchema>
+
 /* ───────── GET /api/auctions/{auctionId}/similar ───────── */
 
-export const similarAuctionSchema = z.object({
-  productId: z.number().int(),
-  auctionId: z.number().int(),
+/** 같은 브랜드의 예정 · 진행 중 경매 최대 4개 */
+export const similarAuctionSchema = auctionCardSchema.extend({
   brand: z.string(),
-  name: z.string(),
-  thumbnailUrl: z.string(),
-  /** 현재가 */
+  /** 호환용 가격 필드. currentPrice와 같음 */
   price: z.number().int(),
-  likeCount: z.number().int(),
-  isLiked: z.boolean(),
-  status: auctionStatusSchema, // [ASSUMED] 비슷한 상품 카드(Figma)의 경매 예정 / LIVE 칩. 명세 항목에 없음
-  grade: conditionGradeSchema, // [ASSUMED] 비슷한 상품 카드(Figma)의 등급 칩. 명세 항목에 없음
 })
 export type SimilarAuction = z.infer<typeof similarAuctionSchema>
 
@@ -273,51 +289,81 @@ export const updateStartPriceResponseSchema = z.object({
 })
 export type UpdateStartPriceResponse = z.infer<typeof updateStartPriceResponseSchema>
 
-/* ───────── GET /api/auctions (경매 목록) ───────── */
+/* ───────── GET /api/auctions (상품 찾기 기본 목록) ───────── */
 
-// [ASSUMED] 명세에 경매 목록 API가 없습니다. 홈 '인기순 · 최신순' 상품 목록에 필요해 만들었습니다.
-export const auctionSortSchema = z.enum([
-  'popular', // [ASSUMED] 정렬 값 이름. 홈 '지금 인기 있는 경매' · SortTabs 인기순
-  'latest', // [ASSUMED] SortTabs 최신순
-  'recommended', // [ASSUMED] 홈 '나에게 딱 맞는 상품'. 개인화 추천 API가 명세에 없어 정렬 값으로 둠
-])
-export type AuctionSort = z.infer<typeof auctionSortSchema>
-
-// [ASSUMED] 쿼리 형태. 입찰 이력의 page/size 규칙을 따름
+/** 예정 · 진행 중 경매. 정렬은 경매 생성 최신순 고정이고 정렬 · 검색 · 필터 파라미터는 없습니다. */
 export const auctionListQuerySchema = pageQuerySchema.extend({
-  sort: auctionSortSchema.optional(),
-  keyword: z.string().trim().min(1).optional(), // [ASSUMED] 검색어(검색 화면). 명세에 검색 API가 없어 목록 API의 쿼리로 둠
+  /** 1~50, 기본 20 */
+  size: z.number().int().min(1).max(50).optional(),
 })
 export type AuctionListQuery = z.infer<typeof auctionListQuerySchema>
 
-// [ASSUMED] 항목 필드는 '비슷한 상품 목록'(similar) 항목(status · grade 포함)을 기준으로 하고, 시각만 더했습니다.
-export const auctionListItemSchema = similarAuctionSchema.extend({
-  startsAt: dateTimeSchema, // [ASSUMED] 경매 예정 카드의 시작까지 남은 시간
-  endsAt: dateTimeSchema, // [ASSUMED] LIVE 카드의 마감까지 남은 시간
-})
+export const auctionListItemSchema = auctionCardSchema
 export type AuctionListItem = z.infer<typeof auctionListItemSchema>
 
-// [ASSUMED] 응답 형태. 입찰 이력·알림 목록과 같은 page/size/hasNext 구조
+/** 전체 개수는 주지 않습니다. 마지막 페이지를 넘겨도 빈 목록 */
 export const auctionListSchema = pageMetaSchema.extend({
   items: z.array(auctionListItemSchema),
 })
 export type AuctionList = z.infer<typeof auctionListSchema>
 
-/* ───────── GET /api/me/auctions · GET /api/me/likes ───────── */
+/* ───────── GET /api/auctions/popular (홈 '지금 인기 있는 경매') ───────── */
 
-// [ASSUMED] 명세에 내 경매 · 관심 목록 API가 없습니다. 마이페이지 하위 목록(Figma 957:3014 · 957:3180 · 957:3328)에 필요해 만들었습니다.
-export const myAuctionStatusSchema = z.enum([
-  'ONGOING', // [ASSUMED] 경매 예정 + 진행 중. '현재 경매 중인 상품'
-  'ENDED', // [ASSUMED] 종료 + 취소. '과거 경매했던 상품'
-])
-export type MyAuctionStatus = z.infer<typeof myAuctionStatusSchema>
+export const popularAuctionsQuerySchema = z.object({
+  /** 1~20, 기본 4 */
+  limit: z.number().int().min(1).max(20).optional(),
+})
+export type PopularAuctionsQuery = z.infer<typeof popularAuctionsQuerySchema>
 
-// [ASSUMED] 내가 판매자로 올린 경매만 돌려줍니다(Figma 메뉴 행 원본 문구 '현재 판매 중인 상품' 기준). 쿼리 형태는 경매 목록과 같음
-export const myAuctionListQuerySchema = pageQuerySchema.extend({
-  status: myAuctionStatusSchema,
+/** 실제 입찰 기록 수 많은 순(관심 수 아님). 대상이 부족하면 있는 만큼만 */
+export const popularAuctionsSchema = z.object({
+  items: z.array(auctionCardSchema),
+})
+export type PopularAuctions = z.infer<typeof popularAuctionsSchema>
+
+/* ───────── GET /api/recommendations/auctions (홈 '나에게 딱 맞는 상품') ───────── */
+
+export const recommendedAuctionsQuerySchema = z.object({
+  /** 기본 10, 최대 50(넘으면 50, 0 이하면 10으로 보정) */
+  limit: z.number().int().optional(),
+})
+export type RecommendedAuctionsQuery = z.infer<typeof recommendedAuctionsQuerySchema>
+
+export const recommendedAuctionSchema = auctionCardSchema.extend({
+  model: z.string().nullish(),
+  colorway: z.string().nullish(),
+  sizeKr: z.number().int().nullish(),
+  /** 오프셋 없는 서울 시각 문자열('2026-11-07T22:00'). 다른 API와 형식이 다름 */
+  endAt: z.string(),
+  /** 취향 유사도. 대체 추천이면 null */
+  similarity: z.number().nullish(),
+})
+export type RecommendedAuction = z.infer<typeof recommendedAuctionSchema>
+
+/** 로그인 · 행동 로그가 충분하면 개인화(personalized=true), 아니면 마감 임박 · 인기 경매를 섞은 대체 추천 */
+export const recommendedAuctionsSchema = z.object({
+  personalized: z.boolean(),
+  /** 추천 근거 문구 */
+  reason: z.string(),
+  items: z.array(recommendedAuctionSchema),
+})
+export type RecommendedAuctions = z.infer<typeof recommendedAuctionsSchema>
+
+/* ───────── GET /api/me/auctions · GET /api/me/selling-auctions · GET /api/me/likes ───────── */
+
+/** current: 예정 · 진행 중(SCHEDULED · LIVE) / past: 종료 · 취소(ENDED · CANCELED). 기본 current */
+export const myAuctionStateSchema = z.enum(['current', 'past'])
+export type MyAuctionState = z.infer<typeof myAuctionStateSchema>
+
+/**
+ * 참여 경매(/api/me/auctions: 내 실제 입찰이 있거나 취소되지 않은 자동입찰이 있는 경매) ·
+ * 판매 경매(/api/me/selling-auctions: 내가 판매 등록한 경매) 공통 쿼리. 둘 다 경매 생성 최신순
+ */
+export const myAuctionListQuerySchema = auctionListQuerySchema.extend({
+  state: myAuctionStateSchema.optional(),
 })
 export type MyAuctionListQuery = z.infer<typeof myAuctionListQuerySchema>
 
-// [ASSUMED] 내가 관심 등록한 경매. 쿼리는 page/size만
-export const likedAuctionListQuerySchema = pageQuerySchema
+/** 관심 목록. 종료 · 취소 경매도 포함, 관심 등록 최신순 */
+export const likedAuctionListQuerySchema = auctionListQuerySchema
 export type LikedAuctionListQuery = z.infer<typeof likedAuctionListQuerySchema>

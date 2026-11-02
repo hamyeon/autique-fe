@@ -15,14 +15,14 @@ export function getMyPenalties(signal?: AbortSignal) {
   return request(endpoints.getMyPenalties, { signal })
 }
 
-/** [ASSUMED] 명세에 없는 사용자 정보 API (마이페이지) */
+/** 로그인한 나(마이페이지 프로필) */
 export function getMyProfile(signal?: AbortSignal) {
   return request(endpoints.getMyProfile, { signal })
 }
 
 /* ───────── 훅 ───────── */
 
-/** [ASSUMED] 명세에 없는 사용자 정보 API (마이페이지) */
+/** 로그인한 나(마이페이지 프로필) */
 export function useMyProfileQuery() {
   return useQuery({
     queryKey: meKeys.profile(),

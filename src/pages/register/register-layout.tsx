@@ -44,7 +44,7 @@ export function RegisterLayout() {
   const onAnalysis = pathname === registerPath('analyzing')
   const blocker = useBlocker(({ currentLocation, nextLocation }) => {
     if ((nextLocation.state as RegisterNavState | null)?.skipBlock) return false
-    if (useRegisterStore.getState().completing) return false
+    if (useRegisterStore.getState().completing !== null) return false
     const leavingAnalysis =
       currentLocation.pathname === registerPath('analyzing') &&
       useRegisterStore.getState().analysisTask !== null &&
@@ -74,16 +74,20 @@ export function RegisterLayout() {
 
   /* 등록 성공: 시작 위치까지 기록을 되돌렸으면 그 자리를 완료 화면으로 바꿉니다. */
   useEffect(() => {
-    if (!completing || currentHistoryIdx() !== registerEntryIdx()) return
-    useRegisterStore.getState().setCompleting(false)
+    if (completing === null || currentHistoryIdx() !== registerEntryIdx()) return
+    useRegisterStore.getState().setCompleting(null)
     void navigate(registerPath('complete'), {
       replace: true,
-      state: { registered: true, skipBlock: true } satisfies RegisterNavState,
+      state: {
+        registered: true,
+        auctionId: completing,
+        skipBlock: true,
+      } satisfies RegisterNavState,
     })
   }, [completing, pathname, navigate])
 
   // 기록을 되돌리는 동안 거쳐 가는 화면은 그리지 않습니다(완료 직전 1/6 등이 깜빡이지 않게).
-  if (completing) return null
+  if (completing !== null) return null
 
   const segment = pathname.split('/')[2] ?? ''
   const step = REGISTER_STEPS.find((s) => s === segment) as RegisterStep | undefined

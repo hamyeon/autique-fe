@@ -32,8 +32,8 @@ interface RegisterState {
    * 같은 세션으로 다시 계산해야 하면 같은 사진으로 새 분석 세션을 만듭니다(src/features/register/pricing.ts).
    */
   pricedAnalysisId: number | null
-  /** 등록 성공 후 완료 화면으로 가려고 기록을 되돌리는 중(저장하지 않음) */
-  completing: boolean
+  /** 등록 성공 후 완료 화면으로 가려고 기록을 되돌리는 중이면 등록된 경매 ID(저장하지 않음). 아니면 null */
+  completing: number | null
   /** 값만 바꿉니다(완료 표시는 그대로). */
   update: (patch: Partial<RegisterDraft>) => void
   /** 값을 합치고 그 단계 스키마를 통과하면 완료로 표시합니다. 통과 여부를 돌려줍니다. */
@@ -44,7 +44,7 @@ interface RegisterState {
   uncompleteStep: (step: RegisterStep) => void
   markReviewed: () => void
   setAnalysisTask: (task: AnalysisTask | null) => void
-  setCompleting: (completing: boolean) => void
+  setCompleting: (completing: number | null) => void
   setPricedAnalysisId: (id: number | null) => void
   /** 사진을 바꾸면 분석부터 다시 합니다(사용자 결정). 파일은 IndexedDB, 정보(업로드 결과 포함)만 스토어에 */
   setPhoto: (slot: PhotoSlot, file: File, upload: PhotoUpload) => Promise<void>
@@ -69,7 +69,7 @@ export const useRegisterStore = create<RegisterState>()(
       completed: [],
       reviewed: false,
       analysisTask: null,
-      completing: false,
+      completing: null,
       pricedAnalysisId: null,
 
       update: (patch) => set((s) => ({ draft: { ...s.draft, ...patch } })),

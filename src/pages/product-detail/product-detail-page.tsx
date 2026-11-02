@@ -7,7 +7,7 @@ import {
   useToggleAuctionLikeMutation,
 } from '@/api/auctions'
 import { isApiError } from '@/api/client'
-import type { AuctionDetail, SimilarAuction } from '@/api/schemas/auctions'
+import type { AuctionDetail, AuctionCard } from '@/api/schemas/auctions'
 import type { AuctionStatus } from '@/api/schemas/common'
 import { AuctionGrid } from '@/components/auction-grid'
 import type { ChipKind, InfoRowData } from '@/components/ds'
@@ -353,7 +353,7 @@ function DetailSection({
 function SimilarSection({ auctionId }: { auctionId: number }) {
   const similar = useSimilarAuctionsQuery(auctionId)
   const toggleLike = useToggleAuctionLikeMutation()
-  const onToggleLike = (item: SimilarAuction) =>
+  const onToggleLike = (item: AuctionCard) =>
     toggleLike.mutate({ auctionId: item.auctionId, liked: !item.isLiked })
 
   let content: ReactNode

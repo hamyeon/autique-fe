@@ -1,13 +1,10 @@
 import type { FormEvent, ReactNode } from 'react'
 import { useRef, useState } from 'react'
 import { useSearchParams } from 'react-router'
-import { useAuctionsInfiniteQuery } from '@/api/auctions'
+import { useAuctionSearchInfiniteQuery } from '@/api/auctions'
 import { Header } from '@/components/ds'
 import { Screen } from '@/layouts/screen'
 import { AuctionListScreen } from '@/pages/auction-list/auction-list-screen'
-
-/** 한 번에 불러올 개수(2열 × 5줄) */
-const PAGE_SIZE = 10
 
 /**
  * 검색(Figma 검색 1044:2708 · 검색 결과 1044:3235). 헤더의 검색 아이콘으로 들어옵니다.
@@ -57,8 +54,8 @@ function SearchScreen({ q }: { q: string }) {
 }
 
 function SearchResults({ q, header }: { q: string; header: ReactNode }) {
-  // [ASSUMED] 명세에 검색 API가 없어 경매 목록 API에 keyword를 붙입니다.
-  const query = useAuctionsInfiniteQuery({ keyword: q, size: PAGE_SIZE })
+  // 명세에 검색 API가 없어 상품 찾기 목록을 훑으며 화면에서 거릅니다(예정 · 진행 중 경매만).
+  const query = useAuctionSearchInfiniteQuery(q)
 
   return (
     <AuctionListScreen

@@ -26,8 +26,24 @@ export const passthrough: EndpointKey[] = [
   'POST /api/products/analyze',
   'GET /api/products/analyze/{taskId}',
   'POST /api/products/calculate-price',
-  // 등록 제출. 서명 쿼리를 뗀 이미지 주소를 보내 실서버 등록 성공(2026-10-07, src/features/register/submit.ts)
+  // 등록 제출(서버가 분석 세션 사진을 씀. 2026-11-03 실서버 등록 확인)
   'POST /api/products',
+  // 둘러보기(2026-11-03): 홈 · 상품 찾기 · 검색 · 내 정보 + 카드를 눌러 여는 상세 · 비슷한 상품 · 입찰 이력 · 관심.
+  // 목록이 실서버면 카드의 경매 ID도 실서버 것이라 상세 쪽도 함께 보냅니다.
+  // 아직 목: 입찰 · 자동입찰 · 실시간 · 결과(실서버 경매에서 누르면 목 응답이라 맞지 않을 수 있음)
+  'GET /api/auctions',
+  'GET /api/auctions/popular',
+  'GET /api/recommendations/auctions',
+  'GET /api/me',
+  'GET /api/auctions/{auctionId}',
+  'GET /api/auctions/{auctionId}/similar',
+  'GET /api/auctions/{auctionId}/bids',
+  'POST /api/auctions/{auctionId}/likes',
+  'DELETE /api/auctions/{auctionId}/likes',
+  // 마이페이지 하위 목록(2026-11-03): 판매 · 참여 · 관심
+  'GET /api/me/selling-auctions',
+  'GET /api/me/auctions',
+  'GET /api/me/likes',
 ]
 
 /** 개발: VITE_MOCK이 off가 아니면 켭니다. 빌드(배포): VITE_MOCK=on일 때만 켭니다. src/main.tsx와 같은 조건 */

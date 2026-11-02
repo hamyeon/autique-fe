@@ -1,7 +1,7 @@
 import type { InfiniteData, UseInfiniteQueryResult } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { useToggleAuctionLikeMutation } from '@/api/auctions'
-import type { AuctionList, SimilarAuction } from '@/api/schemas/auctions'
+import type { AuctionList, AuctionCard } from '@/api/schemas/auctions'
 import { AuctionGrid } from '@/components/auction-grid'
 import {
   EmptyState,
@@ -38,7 +38,7 @@ export function AuctionListScreen({
   errorTitle,
 }: AuctionListScreenProps) {
   const toggleLike = useToggleAuctionLikeMutation()
-  const onToggleLike = (item: SimilarAuction) =>
+  const onToggleLike = (item: AuctionCard) =>
     toggleLike.mutate({ auctionId: item.auctionId, liked: !item.isLiked })
 
   const loadMoreRef = useInfiniteScroll<HTMLDivElement>({
@@ -54,7 +54,11 @@ export function AuctionListScreen({
   } else if (query.isLoadingError) {
     // 처음 불러오기 실패만 화면 전체 에러. 다음 페이지 실패는 목록 끝에서 따로 보여줍니다.
     content = (
-      <ErrorState title={errorTitle} retrying={query.isRefetching} onRetry={() => query.refetch()} />
+      <ErrorState
+        title={errorTitle}
+        retrying={query.isRefetching}
+        onRetry={() => query.refetch()}
+      />
     )
   } else if (items.length === 0) {
     content = <EmptyState title={emptyTitle} description={emptyDescription} />

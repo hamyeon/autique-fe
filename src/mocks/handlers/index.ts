@@ -1,5 +1,3 @@
-import { assumedAuctionHandlers } from '@/mocks/handlers/assumed/auctions'
-import { assumedMeHandlers } from '@/mocks/handlers/assumed/me'
 import { auctionHandlers } from '@/mocks/handlers/auctions'
 import { authHandlers } from '@/mocks/handlers/auth'
 import { autoBidHandlers } from '@/mocks/handlers/auto-bids'
@@ -9,7 +7,7 @@ import { notificationHandlers } from '@/mocks/handlers/notifications'
 import { orderHandlers } from '@/mocks/handlers/orders'
 import { productHandlers } from '@/mocks/handlers/products'
 
-/** 명세의 모든 엔드포인트 + 명세에 없어서 만든 엔드포인트(assumed/) */
+/** 명세의 모든 엔드포인트. 명세에 없는 엔드포인트가 생기면 assumed/에 두고 여기에 더합니다. */
 export const handlers = [
   ...authHandlers,
   ...productHandlers,
@@ -19,6 +17,4 @@ export const handlers = [
   ...meHandlers,
   ...backupOfferHandlers,
   ...notificationHandlers,
-  ...assumedAuctionHandlers,
-  ...assumedMeHandlers,
 ]

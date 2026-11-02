@@ -462,20 +462,22 @@ function RemainingTimeDemo() {
   return (
     <Demo
       title="남은 시간 표기 (src/lib/remaining-time.ts)"
-      description="getRemainingMs(endAt, now) → formatRemaining(ms, style). clock은 카운트다운, short는 '경매 시작까지 3시간' 같은 대략 표기."
+      description="getRemainingMs(endAt, now) → formatRemaining(ms, style). clock은 카운트다운, short는 '경매 시작까지 3시간' 같은 대략 표기, duration은 상품 상세 '경매 시작까지'(초 단위)."
     >
       <div className="border-gray2 p-card-padding gap-card-row flex flex-col rounded-sm border">
-        <div className="text-body03 text-black0 grid grid-cols-3">
+        <div className="text-body03 text-black0 grid grid-cols-4">
           <span>남은 시간</span>
           <span>clock</span>
           <span>short</span>
+          <span>duration</span>
         </div>
         <Divider />
         {REMAINING_SAMPLES.map(({ label, ms }) => (
-          <div key={label} className="text-body05 text-black0 grid grid-cols-3">
+          <div key={label} className="text-body05 text-black0 grid grid-cols-4">
             <span className="text-gray5">{label}</span>
             <span>{formatRemaining(ms, 'clock')}</span>
             <span>{formatRemaining(ms, 'short')}</span>
+            <span>{formatRemaining(ms, 'duration')}</span>
           </div>
         ))}
       </div>
