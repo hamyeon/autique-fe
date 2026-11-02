@@ -326,7 +326,12 @@ function previewToDetail(preview: AuctionCard): AuctionDetail {
     bidCount: 0,
     isLiked: preview.isLiked,
     likeCount: preview.likeCount,
-    myState: { isSeller: false, isHighestBidder: false, canBid: false },
+    myState: {
+      isSeller: false,
+      isHighestBidder: false,
+      canBid: false,
+      managedByPurchaseAgent: false,
+    },
   }
 }
 

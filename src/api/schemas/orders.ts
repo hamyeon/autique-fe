@@ -5,6 +5,10 @@ import { dateTimeSchema, productSummarySchema } from '@/api/schemas/common'
 export const orderStatusSchema = z.enum(['PAYMENT_PENDING', 'PAID', 'PAYMENT_EXPIRED', 'CANCELED'])
 export type OrderStatus = z.infer<typeof orderStatusSchema>
 
+/** WINNER: 최초 낙찰 / BACKUP_ACCEPT: 차순위 제안 수락. 유형을 알 수 없는 예전 주문은 null(일반 문구 사용) */
+export const orderTypeSchema = z.enum(['WINNER', 'BACKUP_ACCEPT'])
+export type OrderType = z.infer<typeof orderTypeSchema>
+
 /* ───────── GET /api/orders/{orderId} ───────── */
 
 export const orderSchema = z.object({
@@ -20,6 +24,7 @@ export const orderSchema = z.object({
   serverTime: dateTimeSchema,
   /** 미결제면 null */
   paidAt: dateTimeSchema.nullish(),
+  orderType: orderTypeSchema.nullish(),
 })
 export type Order = z.infer<typeof orderSchema>
 

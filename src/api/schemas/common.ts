@@ -72,7 +72,8 @@ export const productSummarySchema = z.object({
   productId: z.number().int(),
   name: z.string(),
   subName: z.string(),
-  imageUrl: z.string(),
+  /** 대표 이미지 서명 URL. 이미지가 없으면 null */
+  imageUrl: z.string().nullish(),
 })
 export type ProductSummary = z.infer<typeof productSummarySchema>
 
@@ -107,6 +108,7 @@ export const API_ERROR_CODE = {
   BID_NOT_ALIGNED: 40913,
   ALREADY_PAID: 40914,
   ORDER_CANCELED: 40915,
+  AGENT_MANAGED_AUCTION: 40917, // 구매 에이전트가 관리 중인 경매에 직접 입찰 · 자동입찰 수정 · 중단
   METHOD_NOT_ALLOWED: 40501, // 경로는 있지만 메서드를 지원하지 않음(Allow 헤더에 허용 메서드)
   UNSUPPORTED_MEDIA_TYPE: 41501, // 지원하지 않는 Content-Type
 

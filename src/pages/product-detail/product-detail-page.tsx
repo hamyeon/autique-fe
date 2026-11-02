@@ -27,6 +27,7 @@ import { EmptyState, ErrorState, ProductGridSkeleton } from '@/components/feedba
 import type { MyAutoBid } from '@/features/auction/auto-bid'
 import { toMyAutoBid } from '@/features/auction/auto-bid'
 import { AutoBidCancelSheet } from '@/features/auction/auto-bid-cancel-sheet'
+import { AGENT_MANAGED_NOTICE, AgentManagedBottom } from '@/features/auction/agent-managed'
 import { AutoBidSheet } from '@/features/auction/auto-bid-sheet'
 import { useNow } from '@/hooks/use-now'
 import { Screen } from '@/layouts/screen'
@@ -141,7 +142,7 @@ function ProductDetail({ auctionId, valid }: { auctionId: number; valid: boolean
 /** 칩 줄(상태 + 등급, 간격 4) → 8 → 상품명(head02) + 영문명(body05 gray5) */
 function TitleBlock({ detail }: { detail: AuctionDetail }) {
   const chip = STATUS_CHIP[detail.status]
-  const grade = formatGrade(detail.product.grade)
+  const grade = detail.product.grade ? formatGrade(detail.product.grade) : undefined
   return (
     <div className="gap-space-8 flex flex-col">
       <div className="gap-space-4 flex">
@@ -245,13 +246,25 @@ function DetailBody({ detail, onRefetch }: { detail: AuctionDetail; onRefetch: (
         </DetailSection>
       )}
 
-      {/* 판매자 설명 → 프로필 간격은 AI 가격 산정 근거 → 판매자 설명과 같은 24(layout-section) */}
-      <div className="gap-layout-section flex flex-col">
-        <DetailSection title="판매자 설명">
-          {detail.description && (
-            <p className="text-body05 text-gray6 whitespace-pre-line">{detail.description}</p>
-          )}
+      {/* 등록 2/6에서 판매자가 확인한 상품 상태. 예전 상품은 없어 섹션을 숨깁니다(Figma에 없음, DESIGN-CHANGES.md). */}
+      {detail.product.conditionDescription && (
+        <DetailSection title="상품 상태">
+          <p className="text-body05 text-gray6 whitespace-pre-line">
+            {detail.product.conditionDescription}
+          </p>
         </DetailSection>
+      )}
+
+      {/*
+       * 판매자 설명 → 프로필 간격은 AI 가격 산정 근거 → 판매자 설명과 같은 24(layout-section).
+       * 판매자 설명이 비어 있으면 섹션을 숨기고 프로필만 둡니다(사용자 결정, 2026-11-03).
+       */}
+      <div className="gap-layout-section flex flex-col">
+        {detail.description?.trim() && (
+          <DetailSection title="판매자 설명">
+            <p className="text-body05 text-gray6 whitespace-pre-line">{detail.description}</p>
+          </DetailSection>
+        )}
         <SellerProfile
           name={detail.seller.nickname}
           meta={`누적 판매 건수 ${detail.seller.completedSalesCount}회`}
@@ -293,12 +306,22 @@ function ScheduledSummary({
           tone="primary"
           dividerAfter={2}
           rows={[
-            { label: '상태', value: '자동 입찰 예약 중', emphasis: 'primary' },
+            {
+              label: '상태',
+              value: detail.myState.managedByPurchaseAgent
+                ? 'AI Agent 예약 중'
+                : '자동 입찰 예약 중',
+              emphasis: 'primary',
+            },
             { label: '내 상한가', value: formatPrice(myAutoBid.maxAmount), emphasis: 'hero' },
             startRow,
           ]}
         />
-        <InfoBanner>경매 시작 전까지 상한가 수정과 예약 취소가 가능해요.</InfoBanner>
+        <InfoBanner>
+          {detail.myState.managedByPurchaseAgent
+            ? AGENT_MANAGED_NOTICE
+            : '경매 시작 전까지 상한가 수정과 예약 취소가 가능해요.'}
+        </InfoBanner>
       </div>
     )
   }
@@ -380,19 +403,30 @@ function SimilarSection({ auctionId }: { auctionId: number }) {
   )
 }
 
-/** 경매 종료에는 할 수 있는 행동이 없어 하단 버튼을 두지 않습니다(DESIGN-CHANGES.md). */
+/**
+ * 경매 종료에는 할 수 있는 행동이 없어 하단 버튼을 두지 않습니다(DESIGN-CHANGES.md).
+ * 내가 등록한 경매도 자동 입찰을 할 수 없어 두지 않습니다(사용자 결정, 2026-11-03).
+ */
 function hasBottomAction(detail: AuctionDetail) {
+  if (detail.myState.isSeller) return false
   return detail.status === 'SCHEDULED' || detail.status === 'LIVE'
 }
 
 /**
  * 하단 버튼 + 자동 입찰 시트.
- * - 설정 전: '자동 입찰 예약'(Figma) → 상한가 설정 시트. 판매자 본인이면 잠급니다.
+ * - 설정 전: '자동 입찰 예약'(Figma) → 상한가 설정 시트. 판매자 본인이면 하단 자체가 없습니다(hasBottomAction).
  * - 예약 중(661:3580): '상한가 수정' / '입찰 예약 취소'
  * - 경매 중 설정 후(Figma 없음): '상한가 수정' / '자동 입찰 중단'
  */
 function DetailBottom({ detail }: { detail: AuctionDetail }) {
+  /* 구매 에이전트가 관리 중이면 상한 수정 · 중단을 막습니다(명세 40917). canBid · canModify만으로는 판단하지 않습니다. */
+  if (detail.myState.managedByPurchaseAgent) return <AgentManagedBottom />
+  return <AutoBidBottom detail={detail} />
+}
+
+function AutoBidBottom({ detail }: { detail: AuctionDetail }) {
   const myAutoBid = myAutoBidOf(detail)
+
   const [sheetOpen, setSheetOpen] = useState(false)
   /* 취소에 성공하면 myAutoBid가 먼저 사라지므로, 닫히는 동안 연 시점의 설정으로 문구를 유지합니다. */
   const [cancelTarget, setCancelTarget] = useState<MyAutoBid | null>(null)
@@ -417,7 +451,6 @@ function DetailBottom({ detail }: { detail: AuctionDetail }) {
         <BottomButtonBar
           layout="single"
           primaryLabel="자동 입찰 예약"
-          primaryDisabled={detail.myState.isSeller}
           onPrimary={() => setSheetOpen(true)}
         />
       )}

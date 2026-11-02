@@ -9,19 +9,24 @@ import {
   pageQuerySchema,
   productSummarySchema,
 } from '@/api/schemas/common'
+import { orderStatusSchema } from '@/api/schemas/orders'
 
 /* ───────── GET /api/auctions/{auctionId} ───────── */
 
 export const auctionMyStateSchema = z.object({
   isSeller: z.boolean(),
   isHighestBidder: z.boolean(),
-  /** 입찰 버튼 자체를 눌러도 되는가 (금액 검증은 포함하지 않음) */
+  /** 입찰 버튼 자체를 눌러도 되는가 (금액 검증 · 에이전트 관리 제한은 포함하지 않음) */
   canBid: z.boolean(),
   cannotBidReason: cannotBidReasonSchema.nullish(),
   /** 페널티일 때만 값이 있음 */
   bidRestrictedUntil: dateTimeSchema.nullish(),
   autoBidStatus: autoBidStatusSchema.nullish(),
   autoBidCap: z.number().int().nullish(),
+  /** 자동입찰을 만든 구매 목표 ID. 목표가 끝나도 남을 수 있어 관리 중인지는 managedByPurchaseAgent로 판단 */
+  purchaseGoalId: z.number().int().nullish(),
+  /** 구매 에이전트가 지금 이 경매를 관리 중. true면 직접 입찰 · 상한 수정 · 자동입찰 중단을 막습니다(40917). */
+  managedByPurchaseAgent: z.boolean(),
 })
 export type AuctionMyState = z.infer<typeof auctionMyStateSchema>
 
@@ -33,9 +38,11 @@ export const auctionDetailSchema = z.object({
     name: z.string(),
     brand: z.string(),
     subName: z.string(),
-    /** 명세 설명은 A / B / C. 등록 시 DS·S·UNKNOWN도 고를 수 있어 등급 enum 전체를 허용합니다. */
-    grade: conditionGradeSchema,
+    /** 저장된 등급 그대로(A/B/C로 제한되지 않음). 없으면 null */
+    grade: conditionGradeSchema.nullish(),
     imageUrls: z.array(z.string()),
+    /** 상품 상태 설명(등록 2/6 '상태'). 예전 상품이거나 설명이 없으면 null */
+    conditionDescription: z.string().nullish(),
   }),
   seller: z.object({
     sellerId: z.number().int(),
@@ -43,7 +50,8 @@ export const auctionDetailSchema = z.object({
     profileImageUrl: z.string().nullish(),
     completedSalesCount: z.number().int(),
   }),
-  description: z.string(),
+  /** 판매자 설명. 상품 상태 설명과 별개 */
+  description: z.string().nullish(),
   startPrice: z.number().int(),
   currentPrice: z.number().int(),
   bidIncrement: z.number().int(),
@@ -136,6 +144,11 @@ export const auctionLiveSchema = z.object({
   myAutoBidStatus: autoBidStatusSchema.nullish(),
   myCap: z.number().int().nullish(),
   minCapAmount: z.number().int(),
+  /**
+   * 내 실제 마지막 입찰 금액(자동입찰이 낸 입찰 포함). 실제 입찰이 없으면 null.
+   * 밀린 입찰자는 isMine=false이면서 값이 있습니다. 에이전트 관리 여부는 이 응답에 없어 상세로 확인합니다.
+   */
+  myLastBidAmount: z.number().int().nullish(),
 })
 export type AuctionLive = z.infer<typeof auctionLiveSchema>
 
@@ -181,6 +194,11 @@ export const auctionResultSchema = z.object({
   /** BACKUP_WAITING일 때만 */
   backupOfferId: z.number().int().nullish(),
   backupEligible: z.boolean(),
+  /**
+   * 본인 주문 상태. 주문이 없으면 null. 결제 완료여도 result는 WON이라 함께 봅니다.
+   * 결제 버튼은 result=WON && orderStatus=PAYMENT_PENDING일 때(결제 기한이 지났으면 비활성), PAID면 결제 완료 표시
+   */
+  orderStatus: orderStatusSchema.nullish(),
 })
 export type AuctionResult = z.infer<typeof auctionResultSchema>
 

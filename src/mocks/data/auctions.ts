@@ -626,6 +626,9 @@ export function toDetail(a: MockAuction): AuctionDetail {
       bidRestrictedUntil: restrictedUntil(reason),
       autoBidStatus: autoBid?.status ?? null,
       autoBidCap: autoBid?.maxAmount ?? null,
+      // 목에는 구매 에이전트가 없어 늘 일반 자동입찰
+      purchaseGoalId: null,
+      managedByPurchaseAgent: false,
     },
     finalPrice: status === 'ENDED' && a.bids.length > 0 ? currentPriceOf(a) : null,
   }
@@ -652,6 +655,8 @@ export function toLive(a: MockAuction): AuctionLive {
     myAutoBidStatus: autoBid?.status ?? null,
     myCap: autoBid?.maxAmount ?? null,
     minCapAmount: minNextBidOf(a),
+    // 입찰 내역은 최신순이라 처음 나오는 내 입찰이 마지막 입찰
+    myLastBidAmount: a.bids.find((b) => b.isMine)?.amount ?? null,
   }
 }
 

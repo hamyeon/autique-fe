@@ -30,7 +30,7 @@ export const passthrough: EndpointKey[] = [
   'POST /api/products',
   // 둘러보기(2026-11-03): 홈 · 상품 찾기 · 검색 · 내 정보 + 카드를 눌러 여는 상세 · 비슷한 상품 · 입찰 이력 · 관심.
   // 목록이 실서버면 카드의 경매 ID도 실서버 것이라 상세 쪽도 함께 보냅니다.
-  // 아직 목: 입찰 · 자동입찰 · 실시간 · 결과(실서버 경매에서 누르면 목 응답이라 맞지 않을 수 있음)
+  // 아직 목: 결과 · 낙찰 포기 · 결제 · 차순위 · 알림 · 판매자 관리(5 · 6단계에서 옮김)
   'GET /api/auctions',
   'GET /api/auctions/popular',
   'GET /api/recommendations/auctions',
@@ -44,6 +44,14 @@ export const passthrough: EndpointKey[] = [
   'GET /api/me/selling-auctions',
   'GET /api/me/auctions',
   'GET /api/me/likes',
+  // 실시간 · 입찰 · 자동입찰(2026-11-03): 상세가 실서버라 그 경매에서 하는 행동도 실서버로
+  'GET /api/auctions/{auctionId}/live',
+  'POST /api/auctions/{auctionId}/bids',
+  'GET /api/auctions/{auctionId}/auto-bid/recommendation',
+  'POST /api/auctions/{auctionId}/auto-bids',
+  'GET /api/auctions/{auctionId}/auto-bids/me',
+  'PATCH /api/auctions/{auctionId}/auto-bids/me',
+  'DELETE /api/auctions/{auctionId}/auto-bids/me',
 ]
 
 /** 개발: VITE_MOCK이 off가 아니면 켭니다. 빌드(배포): VITE_MOCK=on일 때만 켭니다. src/main.tsx와 같은 조건 */
