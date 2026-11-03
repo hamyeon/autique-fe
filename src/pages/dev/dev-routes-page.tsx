@@ -52,6 +52,19 @@ const GROUPS: { title: string; links: RouteLink[] }[] = [
     ],
   },
   {
+    title: '알림 · 판매자 관리(목 데이터로 보기를 켜고)',
+    links: [
+      { to: '/notifications', label: '알림 목록(안 읽은 3개, 누르면 해당 화면으로)' },
+      { to: '/notifications?mock=empty', label: '알림 · 비어 있음' },
+      { to: '/notifications?mock=error', label: '알림 · 에러' },
+      { to: '/products/18', label: '내 경매 · 예정(경매 취소 · 시작가 수정)' },
+      { to: '/products/19', label: '내 경매 · 유찰(재경매 등록)' },
+      { to: '/products/17', label: '내 경매 · 진행 중(하단 없음)' },
+      { to: '/products/19/relist', label: '재경매 등록 화면' },
+      { to: '/products/2/relist', label: '재경매 · 할 수 없는 경매' },
+    ],
+  },
+  {
     title: '홈',
     links: [
       { to: '/', label: '홈' },

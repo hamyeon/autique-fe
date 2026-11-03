@@ -5,6 +5,7 @@ import {
   useRecommendedAuctionsQuery,
   useToggleAuctionLikeMutation,
 } from '@/api/auctions'
+import { useHasUnreadNotifications } from '@/api/notifications'
 import type { AuctionCard } from '@/api/schemas/auctions'
 import {
   FloatingActionButton,
@@ -33,6 +34,7 @@ export function HomePage() {
   const recommended = useRecommendedAuctionsQuery(HOME_CARD_LIMIT)
   const popular = usePopularAuctionsQuery(HOME_CARD_LIMIT)
   const toggleLike = useToggleAuctionLikeMutation()
+  const hasUnread = useHasUnreadNotifications()
 
   const onToggleLike = (item: AuctionCard) =>
     toggleLike.mutate({ auctionId: item.auctionId, liked: !item.isLiked })
@@ -93,7 +95,7 @@ export function HomePage() {
   return (
     <Screen
       top="none"
-      header={<HomeHeader />}
+      header={<HomeHeader hasUnread={hasUnread} />}
       bottom={
         <>
           {/* 탭바 위 오른쪽에 떠 있습니다. bottom 슬롯(sticky)을 기준으로 위치를 잡습니다. */}

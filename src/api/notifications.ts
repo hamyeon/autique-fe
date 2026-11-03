@@ -1,7 +1,9 @@
+import type { InfiniteData } from '@tanstack/react-query'
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { request } from '@/api/client'
 import { endpoints } from '@/api/endpoints'
-import type { NotificationListQuery } from '@/api/schemas/notifications'
+import type { NotificationList, NotificationListQuery } from '@/api/schemas/notifications'
+import { useAuthStore } from '@/stores/auth-store'
 
 export const notificationKeys = {
   all: ['notifications'] as const,
@@ -40,17 +42,42 @@ export function useNotificationsInfiniteQuery(query: Omit<NotificationListQuery,
 }
 
 /** 상단 알림 벨 배지 */
-export function useUnreadNotificationCountQuery() {
+export function useUnreadNotificationCountQuery({ enabled = true }: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: notificationKeys.unreadCount(),
     queryFn: ({ signal }) => getUnreadNotificationCount(signal),
+    enabled,
   })
 }
 
+/** 헤더 알림 아이콘의 빨간 점. 로그인하지 않았으면 부르지 않고 false */
+export function useHasUnreadNotifications() {
+  const loggedIn = useAuthStore((s) => s.accessToken !== null || s.refreshToken !== null)
+  const count = useUnreadNotificationCountQuery({ enabled: loggedIn })
+  return loggedIn && (count.data?.unreadCount ?? 0) > 0
+}
+
+/** 누르는 즉시 목록에서 읽음으로 바꾸고(낙관적 업데이트), 끝나면 목록 · 안 읽은 개수를 다시 불러옵니다. */
 export function useReadNotificationMutation() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: readNotification,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: notificationKeys.all }),
+    onMutate: (notificationId: number) => {
+      const readAt = new Date().toISOString()
+      queryClient.setQueriesData<InfiniteData<NotificationList>>(
+        { queryKey: notificationKeys.lists() },
+        (data) =>
+          data && {
+            ...data,
+            pages: data.pages.map((page) => ({
+              ...page,
+              notifications: page.notifications.map((n) =>
+                n.id === notificationId && !n.readAt ? { ...n, readAt } : n,
+              ),
+            })),
+          },
+      )
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: notificationKeys.all }),
   })
 }

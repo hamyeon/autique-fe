@@ -246,20 +246,35 @@ function SortTabsDemo() {
 
 function HeaderActionsDemo() {
   const [last, setLast] = useState<string | null>(null)
+  const [unread, setUnread] = useState(true)
 
   return (
     <Demo
       title="HeaderActions"
-      description="검색 · 알림 · 장바구니 24, 사이 16. 보이는 크기는 그대로 두고 터치 영역만 40×44로 넓혔습니다. HomeHeader와 Header trailing='actions'가 씁니다(Figma 973:2389)."
+      description="검색 · 알림 · 장바구니 24, 사이 16. 보이는 크기는 그대로 두고 터치 영역만 40×44로 넓혔습니다. HomeHeader와 Header trailing='actions'가 씁니다(Figma 973:2389). hasUnread면 알림 아이콘을 점 있는 종(BellNoti)으로 바꿉니다(DS 확장). 핸들러가 없으면 알림은 /notifications로 갑니다."
     >
       <div className="flex justify-end">
         <HeaderActions
           onSearch={() => setLast('검색')}
-          onNotifications={() => setLast('알림')}
+          onNotifications={() => {
+            setLast('알림')
+            setUnread(false)
+          }}
           onBag={() => setLast('장바구니')}
+          hasUnread={unread}
         />
       </div>
-      <Caption>마지막으로 누른 아이콘: {last ?? '없음'} · 탭 키로 이동하면 primary1 포커스 링</Caption>
+      <Caption>
+        마지막으로 누른 아이콘: {last ?? '없음'} · 새 알림 점 {unread ? '있음' : '없음'}(알림을
+        누르면 사라짐) · 탭 키로 이동하면 primary1 포커스 링
+      </Caption>
+      <button
+        type="button"
+        onClick={() => setUnread(true)}
+        className="text-caption02 text-primary1 self-start"
+      >
+        새 알림 점 다시 켜기
+      </button>
     </Demo>
   )
 }

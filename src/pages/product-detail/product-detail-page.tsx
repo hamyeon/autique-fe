@@ -29,6 +29,7 @@ import { toMyAutoBid } from '@/features/auction/auto-bid'
 import { AutoBidCancelSheet } from '@/features/auction/auto-bid-cancel-sheet'
 import { AGENT_MANAGED_NOTICE, AgentManagedBottom } from '@/features/auction/agent-managed'
 import { AutoBidSheet } from '@/features/auction/auto-bid-sheet'
+import { SellerBottom } from '@/features/auction/seller-actions'
 import { useNow } from '@/hooks/use-now'
 import { Screen } from '@/layouts/screen'
 import { useAuthStore } from '@/stores/auth-store'
@@ -409,10 +410,14 @@ function SimilarSection({ auctionId }: { auctionId: number }) {
 
 /**
  * 경매 종료는 자동 입찰 대신 내 경매 결과로 가는 버튼만 둡니다(로그인했을 때, DESIGN-CHANGES.md).
- * 내가 등록한 경매도 자동 입찰을 할 수 없어 두지 않습니다(사용자 결정, 2026-11-03).
+ * 내가 등록한 경매는 자동 입찰 대신 판매자 관리 버튼을 둡니다(features/auction/seller-actions.tsx).
  */
 function hasBottomAction(detail: AuctionDetail, loggedIn: boolean) {
-  if (detail.myState.isSeller) return false
+  /* 내 경매: 판매자 관리(취소 · 시작가 수정 · 재경매)를 할 수 있을 때만(사용자 결정, 2026-11-03) */
+  if (detail.myState.isSeller) {
+    if (detail.status === 'SCHEDULED' || detail.status === 'CANCELED') return true
+    return detail.status === 'ENDED' && detail.bidCount === 0
+  }
   /* 종료: 로그인했으면 내 결과(낙찰 · 패찰 등) 화면으로 가는 버튼(명세: 상세에 내 결과가 없어 /result로 확인) */
   if (detail.status === 'ENDED') return loggedIn
   return detail.status === 'SCHEDULED' || detail.status === 'LIVE'
@@ -425,6 +430,7 @@ function hasBottomAction(detail: AuctionDetail, loggedIn: boolean) {
  * - 경매 중 설정 후(Figma 없음): '상한가 수정' / '자동 입찰 중단'
  */
 function DetailBottom({ detail }: { detail: AuctionDetail }) {
+  if (detail.myState.isSeller) return <SellerBottom detail={detail} />
   if (detail.status === 'ENDED') return <ResultBottom auctionId={detail.auctionId} />
   /* 구매 에이전트가 관리 중이면 상한 수정 · 중단을 막습니다(명세 40917). canBid · canModify만으로는 판단하지 않습니다. */
   if (detail.myState.managedByPurchaseAgent) return <AgentManagedBottom />

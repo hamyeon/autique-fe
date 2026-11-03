@@ -16,14 +16,22 @@ export interface HeaderActionsProps {
   onSearch?: () => void
   onNotifications?: () => void
   onBag?: () => void
+  /** 안 읽은 알림이 있으면 알림 아이콘을 BellNoti(점 있는 종)로 (DS 확장) */
+  hasUnread?: boolean
   className?: string
 }
 
 /**
  * 탭 화면 헤더 오른쪽 아이콘 묶음: 검색 · 알림 · 장바구니(24, 사이 16). Figma HeaderActions 973:2389
- * 핸들러를 넘기지 않으면 검색은 검색 화면(/search)으로, 알림 · 장바구니는 "준비 중" 안내를 띄웁니다.
+ * 핸들러를 넘기지 않으면 검색은 검색 화면(/search), 알림은 알림 화면(/notifications)으로 가고, 장바구니는 "준비 중" 안내를 띄웁니다.
  */
-export function HeaderActions({ onSearch, onNotifications, onBag, className }: HeaderActionsProps) {
+export function HeaderActions({
+  onSearch,
+  onNotifications,
+  onBag,
+  hasUnread = false,
+  className,
+}: HeaderActionsProps) {
   const navigate = useNavigate()
 
   return (
@@ -38,11 +46,11 @@ export function HeaderActions({ onSearch, onNotifications, onBag, className }: H
       </button>
       <button
         type="button"
-        aria-label="알림"
-        onClick={onNotifications ?? showPreparingToast}
+        aria-label={hasUnread ? '알림, 새 알림 있음' : '알림'}
+        onClick={onNotifications ?? (() => navigate('/notifications'))}
         className={ICON_BUTTON}
       >
-        <Icon name="Bell" />
+        <Icon name={hasUnread ? 'BellNoti' : 'Bell'} />
       </button>
       <button
         type="button"
@@ -239,17 +247,30 @@ export interface HomeHeaderProps {
   onSearch?: () => void
   onNotifications?: () => void
   onBag?: () => void
+  /** 안 읽은 알림 점 (DS 확장) */
+  hasUnread?: boolean
   className?: string
 }
 
 /** 홈 탭 헤더: 로고(108×28) + HeaderActions. 왼쪽 20 · 오른쪽 16(Figma 239:754) */
-export function HomeHeader({ onSearch, onNotifications, onBag, className }: HomeHeaderProps) {
+export function HomeHeader({
+  onSearch,
+  onNotifications,
+  onBag,
+  hasUnread,
+  className,
+}: HomeHeaderProps) {
   return (
     <header
       className={cn(BAR, 'pl-layout-gutter pr-space-16 py-space-12 justify-between', className)}
     >
       <Icon name="autique-logo" label="Autique" className="*:h-7 *:w-27" />
-      <HeaderActions onSearch={onSearch} onNotifications={onNotifications} onBag={onBag} />
+      <HeaderActions
+        onSearch={onSearch}
+        onNotifications={onNotifications}
+        onBag={onBag}
+        hasUnread={hasUnread}
+      />
     </header>
   )
 }

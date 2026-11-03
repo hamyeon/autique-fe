@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router'
 import { useLogoutMutation } from '@/api/auth'
 import { useMyProfileQuery } from '@/api/me'
+import { useHasUnreadNotifications } from '@/api/notifications'
 import {
   Divider,
   Header,
@@ -27,6 +28,7 @@ const notifyPreparing = showPreparingToast
 export function MyPage() {
   const navigate = useNavigate()
   const logout = useLogoutMutation()
+  const hasUnread = useHasUnreadNotifications()
   const handleLogout = () => {
     navigate('/', { replace: true })
     logout.mutate()
@@ -35,7 +37,9 @@ export function MyPage() {
   return (
     <Screen
       top="none"
-      header={<Header title="마이페이지" showBack={false} trailing="actions" />}
+      header={
+        <Header title="마이페이지" showBack={false} trailing="actions" actions={{ hasUnread }} />
+      }
       bottom={<TabBar active="mypage" />}
     >
       <div className="-mx-layout-gutter gap-space-12 flex flex-col">

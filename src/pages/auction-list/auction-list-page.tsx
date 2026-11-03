@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { useSearchParams } from 'react-router'
 import { useAuctionsInfiniteQuery, usePopularAuctionsInfiniteQuery } from '@/api/auctions'
+import { useHasUnreadNotifications } from '@/api/notifications'
 import { Header, SortTabs, TabBar } from '@/components/ds'
 import type { AuctionListScreenProps } from '@/pages/auction-list/auction-list-screen'
 import { AuctionListScreen } from '@/pages/auction-list/auction-list-screen'
@@ -22,6 +23,7 @@ const SORTS: { label: string; value: ListSort }[] = [
 /** 상품 찾기 탭: 정렬 탭 헤더 + 경매 목록(Figma 경매 리스트 551:3556). 정렬은 주소(?sort=latest)에 남겨 뒤로 와도 유지합니다. */
 export function AuctionListPage() {
   const [params, setParams] = useSearchParams()
+  const hasUnread = useHasUnreadNotifications()
   const sort = SORTS.find((s) => s.value === params.get('sort'))?.value ?? 'popular'
 
   const onSortChange = (label: string) => {
@@ -34,6 +36,7 @@ export function AuctionListPage() {
     <Header
       showBack={false}
       trailing="actions"
+      actions={{ hasUnread }}
       title={
         <SortTabs
           options={SORTS.map((s) => s.label)}

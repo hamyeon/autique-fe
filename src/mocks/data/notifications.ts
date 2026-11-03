@@ -24,12 +24,23 @@ const COPY: Record<NotificationType, { title: string; body: string }> = {
     title: '결제 기한이 만료되었어요',
     body: '결제 기한이 지나 낙찰이 취소되었습니다.',
   },
+  // 명세 예시 문구
+  PURCHASE_AGENT_ENGAGED: {
+    title: '구매 대행이 입찰을 시작했습니다',
+    body: '설정하신 조건에 맞는 경매를 찾아 자동입찰을 등록했습니다.',
+  },
+  PURCHASE_AGENT_LOST: {
+    title: '구매 대행 경매에서 낙찰받지 못했어요',
+    body: '참여한 경매의 결과가 목표에 반영되었습니다.',
+  },
 }
 
 const SEED: Pick<MockNotification, 'type' | 'auctionId' | 'resourceId'>[] = [
   { type: 'AUCTION_WON', auctionId: 13, resourceId: 50 },
   { type: 'BACKUP_OFFER_CREATED', auctionId: 15, resourceId: 90 },
   { type: 'PAYMENT_EXPIRED', auctionId: 16, resourceId: 51 },
+  { type: 'PURCHASE_AGENT_ENGAGED', auctionId: 12, resourceId: 1 },
+  { type: 'PURCHASE_AGENT_LOST', auctionId: 14, resourceId: 1 },
 ]
 
 export const notifications: MockNotification[] = Array.from({ length: 24 }, (_, i) => {

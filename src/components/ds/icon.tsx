@@ -29,6 +29,8 @@ export const ICON_SIZES = {
   Info: [24, 18],
   Search: [24],
   Bell: [24],
+  /** 안 읽은 알림이 있을 때의 종(오른쪽 위 error1 점이 아이콘 칸 밖으로 살짝 나옵니다) */
+  BellNoti: [24],
   Bag: [24],
   ArrowLeft: [36],
   ArrowRight: [16, 36],

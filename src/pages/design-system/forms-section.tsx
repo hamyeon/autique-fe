@@ -244,6 +244,12 @@ function AmountStepperDemo() {
         />
       </div>
       <AmountStepper
+        label="labelStyle='field' · 화면 폼에서 TextField · TimeInput 라벨과 맞출 때(재경매)"
+        labelStyle="field"
+        defaultValue={50000}
+        min={5000}
+      />
+      <AmountStepper
         label="비제어형 · 최솟값에서 시작(− 비활성)"
         defaultValue={100000}
         min={100000}
