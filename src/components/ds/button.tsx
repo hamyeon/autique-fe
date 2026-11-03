@@ -3,11 +3,12 @@ import { usePressed } from '@/hooks/use-pressed'
 import { cn } from '@/lib/utils'
 
 /* 눌림은 :active 대신 data-pressed로 그립니다(usePressed 참고).
+   흰 바탕(outline · danger)의 눌림은 gray0 바탕(DS 원본에는 없음, 흰 바탕 요소 공통 규칙).
    DS 원본의 neutral(gray5 채움)은 쓰는 화면이 없어 의도적으로 뺐습니다. */
 const VARIANT_CLASS = {
   primary: 'bg-black0 text-white0 data-pressed:bg-gray7 disabled:bg-gray5',
-  outline: 'border-gray3 bg-white0 text-black0',
-  danger: 'border-error2 bg-white0 text-error1',
+  outline: 'border-gray3 bg-white0 text-black0 data-pressed:bg-gray0',
+  danger: 'border-error2 bg-white0 text-error1 data-pressed:bg-gray0',
 } as const
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {

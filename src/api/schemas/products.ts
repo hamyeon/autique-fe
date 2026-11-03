@@ -6,7 +6,40 @@ import {
   dateTimeSchema,
 } from '@/api/schemas/common'
 
-/* ───────── POST /api/products/analyze (multipart: images) ───────── */
+/* ───────── POST /api/products/photos (multipart: image, slot) ───────── */
+
+/** 사진 칸. DEFECT는 선택이고 촬영 면 판정을 하지 않습니다. */
+export const productPhotoSlotSchema = z.enum(['SIDE', 'FRONT', 'OUTSOLE', 'DEFECT'])
+export type ProductPhotoSlot = z.infer<typeof productPhotoSlotSchema>
+
+/** 촬영 면 판정. MISMATCH · UNKNOWN이어도 업로드는 성공이고 분석에 쓸 수 있습니다. DEFECT는 null */
+export const photoCheckSchema = z.enum(['MATCH', 'MISMATCH', 'UNKNOWN'])
+export type PhotoCheck = z.infer<typeof photoCheckSchema>
+
+export const detectedViewSchema = z.enum(['SIDE', 'FRONT', 'BACK', 'TOP', 'OUTSOLE', 'OTHER'])
+
+export const uploadProductPhotoResponseSchema = z.object({
+  /** 분석 요청(POST /api/products/analyze)에 넣는 사진 ID. 한 번 분석에 쓰면 다시 쓸 수 없습니다. */
+  photoId: z.number().int(),
+  slot: productPhotoSlotSchema,
+  check: photoCheckSchema.nullable(),
+  /** 판정 생략 · 실패면 null */
+  detectedView: detectedViewSchema.nullable(),
+  /** 촬영 면이 다를 때 사용자 안내 문구(예: '밑창이 보이게 신발을 뒤집어 찍어주세요.'). 그 외 null */
+  message: z.string().nullable(),
+})
+export type UploadProductPhotoResponse = z.infer<typeof uploadProductPhotoResponseSchema>
+
+/* ───────── POST /api/products/analyze (JSON: photoIds) ───────── */
+
+/**
+ * SIDE · FRONT · OUTSOLE 각 1장 필수, DEFECT 최대 1장. 같은 사진 · 같은 칸 중복 불가(40007),
+ * 내 사진이 아니거나 없으면 40409, 이미 다른 분석에 쓴 사진이면 40923.
+ */
+export const analyzeProductRequestSchema = z.object({
+  photoIds: z.array(z.number().int()).min(1),
+})
+export type AnalyzeProductRequest = z.infer<typeof analyzeProductRequestSchema>
 
 export const analysisStatusSchema = z.enum([
   'CREATED',
@@ -20,6 +53,8 @@ export const analysisStatusSchema = z.enum([
   'QUEUE_FAILED',
   'VISION_FAILED',
   'PRICING_FAILED',
+  /** 사용자가 취소함(POST /api/products/analyze/{taskId}/cancel) */
+  'CANCELLED',
 ])
 export type AnalysisStatus = z.infer<typeof analysisStatusSchema>
 
@@ -28,6 +63,15 @@ export const analyzeProductResponseSchema = z.object({
   status: analysisStatusSchema,
 })
 export type AnalyzeProductResponse = z.infer<typeof analyzeProductResponseSchema>
+
+/* ───────── POST /api/products/analyze/{taskId}/cancel ───────── */
+
+/** 등록 확정 전이면 어느 상태에서나 취소할 수 있고, 이미 취소한 세션을 다시 취소해도 같은 성공 응답입니다. */
+export const cancelAnalysisResponseSchema = z.object({
+  analysisId: z.number().int(),
+  status: analysisStatusSchema,
+})
+export type CancelAnalysisResponse = z.infer<typeof cancelAnalysisResponseSchema>
 
 /* ───────── GET /api/products/analyze/{taskId} ───────── */
 
@@ -149,20 +193,15 @@ export function isAuctionLongEnough(startAt: string, endAt: string) {
   return Date.parse(endAt) - Date.parse(startAt) >= HOUR_MS
 }
 
-/** 상품 이미지 주소: http(s)만. 미리보기용 data: · blob: 주소가 서버로 가지 않게 막습니다. */
-export const imageUrlSchema = z
-  .string()
-  .regex(/^https?:\/\//i, '사진 주소가 올바르지 않아요. 사진을 다시 분석해 주세요.')
-
 /** 등록 요청 필드(검증 규칙 없이). 등록 단계별 폼 스키마가 여기서 필드를 골라 씁니다(src/features/register/schemas.ts). */
 export const createProductFieldsSchema = z.object({
   /**
-   * 최소 3개 · 최대 4개. http(s) 주소만(data: · blob: 등 미리보기용 주소는 거부).
-   * [MISMATCH] 명세는 분석 결과의 imageUrls를 그대로 보내는 흐름이지만, 실서버는 분석이 주는 S3 서명 URL(쿼리 포함, 약 1,800자)을
-   * 저장하지 못해 500(50001, Data too long for column 'image_url')을 돌려줌. 서명 쿼리를 뗀 객체 주소(약 110자)를 보냅니다
-   * (쿼리 없이도 공개로 열리는 것 확인, 2026-10-07. src/features/register/submit.ts toStoredImageUrl)
+   * 분석 생성(POST /api/products/analyze)이 준 분석 세션 ID. 분석 조회의 taskId와 같은 값.
+   * 상품 이미지는 서버가 이 세션에 저장한 사진(SIDE → FRONT → OUTSOLE → DEFECT)으로 정합니다.
    */
-  imageUrls: z.array(imageUrlSchema).min(3).max(4),
+  analysisId: z.number().int(),
+  /** 호환용 선택 필드. 서버가 저장에 쓰지 않아 보내지 않습니다(보내면 3~4개, 빈 문자열 불가). */
+  imageUrls: z.array(z.string().min(1)).min(3).max(4).nullish(),
   /* 메시지는 등록 폼(2/6 · 3/6) 입력 아래에 그대로 보입니다(해요체 한 문장). */
   brand: z.string().trim().min(1, '브랜드를 입력해주세요.'),
   modelName: z.string().trim().min(1, '모델명을 입력해주세요.'),
@@ -180,12 +219,15 @@ export const createProductFieldsSchema = z.object({
   /** 가격 계산 응답의 baseMarketPrice(시세 중앙값) */
   baseMarketPrice: z.number().int().nullish(),
   priceRange: z.string().nullish(),
-  /** 판매 희망가 = 사용자가 최종 결정한 기준가. 경매 시작가와 같은 값으로 보냅니다(사용자 결정). */
+  /** 참고용 판매 희망가 = 사용자가 최종 결정한 기준가. 경매 시작가와 같은 값으로 보냅니다(사용자 결정). */
   sellingPrice: z.number().int().nonnegative(),
   reason: z.string().nullish(),
+  /** 판매자 설명. 경매 상세의 description */
   sellerDescription: z.string().nullish(),
-  /** 경매 시작가 = 4/6 기준가. 시세가 없으면 0일 수 있음(사용자 결정) */
-  auctionStartPrice: z.number().int().nonnegative(),
+  /** 상품 상태 설명(2/6 '상태'). 생략 · null · 공백이면 서버가 분석 결과의 상태 설명을 저장. 경매 상세의 product.conditionDescription */
+  conditionDescription: z.string().max(1000, '상태는 1,000자까지 입력할 수 있어요.').nullish(),
+  /** 경매 시작가 = 4/6 기준가. 0보다 커야 함(40001) */
+  auctionStartPrice: z.number().int().positive('경매 시작가는 0원보다 커야 해요.'),
   /** ISO-8601, 오프셋 포함 */
   auctionStartAt: z.iso.datetime({ offset: true }),
   /** 시작 시각으로부터 최소 1시간 뒤 */

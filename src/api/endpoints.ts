@@ -67,18 +67,34 @@ export const endpoints = {
   }),
 
   /* ───────── 상품 등록 (AI 분석 · 시세) ───────── */
+  /** 사진 1장 선업로드 + 촬영 면 판정(S3 업로드 · AI 판정을 기다림) */
+  uploadProductPhoto: endpoint({
+    method: 'POST',
+    path: '/api/products/photos',
+    multipart: true,
+    response: products.uploadProductPhotoResponseSchema,
+    auth: 'required',
+    timeoutMs: SLOW_TIMEOUT_MS,
+  }),
+  /** 명세상 같은 경로가 multipart(images)도 받지만(유지), 선업로드한 photoIds를 보내는 JSON 방식만 씁니다. */
   analyzeProduct: endpoint({
     method: 'POST',
     path: '/api/products/analyze',
-    multipart: true,
+    request: products.analyzeProductRequestSchema,
     response: products.analyzeProductResponseSchema,
     auth: 'required',
-    timeoutMs: SLOW_TIMEOUT_MS,
   }),
   getProductAnalysis: endpoint({
     method: 'GET',
     path: '/api/products/analyze/{taskId}',
     response: products.productAnalysisSchema,
+    auth: 'required',
+  }),
+  /** 이미 취소한 세션은 다시 200. 이미 등록에 쓴 세션 40003, 없거나 남의 세션 40408 */
+  cancelAnalysis: endpoint({
+    method: 'POST',
+    path: '/api/products/analyze/{taskId}/cancel',
+    response: products.cancelAnalysisResponseSchema,
     auth: 'required',
   }),
   calculatePrice: endpoint({
@@ -98,13 +114,52 @@ export const endpoints = {
   }),
 
   /* ───────── 경매 ───────── */
-  // [ASSUMED] 명세에 없는 엔드포인트. 홈 상품 목록용
+  /** 상품 찾기 기본 목록(최신순). 정렬 · 검색은 없습니다. */
   getAuctions: endpoint({
     method: 'GET',
     path: '/api/auctions',
     query: auctions.auctionListQuerySchema,
     response: auctions.auctionListSchema,
     auth: 'optional',
+  }),
+  /** 홈 '지금 인기 있는 경매'. MSW는 먼저 등록된 핸들러가 이기므로 목 핸들러는 경매 상세보다 앞에 둡니다. */
+  getPopularAuctions: endpoint({
+    method: 'GET',
+    path: '/api/auctions/popular',
+    query: auctions.popularAuctionsQuerySchema,
+    response: auctions.popularAuctionsSchema,
+    auth: 'optional',
+  }),
+  /** 홈 '나에게 딱 맞는 상품'. 비로그인이면 대체 추천 */
+  getRecommendedAuctions: endpoint({
+    method: 'GET',
+    path: '/api/recommendations/auctions',
+    query: auctions.recommendedAuctionsQuerySchema,
+    response: auctions.recommendedAuctionsSchema,
+    auth: 'optional',
+  }),
+  /** 내가 구매자로 참여한 경매(판매 등록한 경매가 아님) */
+  getMyAuctions: endpoint({
+    method: 'GET',
+    path: '/api/me/auctions',
+    query: auctions.myAuctionListQuerySchema,
+    response: auctions.auctionListSchema,
+    auth: 'required',
+  }),
+  /** 내가 판매 등록한 경매. 재경매한 상품은 경매마다 따로 */
+  getMySellingAuctions: endpoint({
+    method: 'GET',
+    path: '/api/me/selling-auctions',
+    query: auctions.myAuctionListQuerySchema,
+    response: auctions.auctionListSchema,
+    auth: 'required',
+  }),
+  getLikedAuctions: endpoint({
+    method: 'GET',
+    path: '/api/me/likes',
+    query: auctions.likedAuctionListQuerySchema,
+    response: auctions.auctionListSchema,
+    auth: 'required',
   }),
   getAuctionDetail: endpoint({
     method: 'GET',
@@ -235,6 +290,12 @@ export const endpoints = {
   }),
 
   /* ───────── 내 정보 ───────── */
+  getMyProfile: endpoint({
+    method: 'GET',
+    path: '/api/me',
+    response: me.myProfileSchema,
+    auth: 'required',
+  }),
   getMyPenalties: endpoint({
     method: 'GET',
     path: '/api/me/penalties',

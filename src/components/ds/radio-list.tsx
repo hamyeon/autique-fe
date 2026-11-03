@@ -60,10 +60,13 @@ export const RadioList = forwardRef<HTMLDivElement, RadioListProps>(function Rad
               className="text-body04 text-black0 gap-space-8 focus-visible:outline-primary1 relative flex w-full items-center rounded-sm text-left before:absolute before:inset-x-0 before:-inset-y-2.5 focus-visible:outline-2 focus-visible:outline-offset-2"
             >
               <RadioMark checked={option.value === current} />
-              {option.badge && (
-                <img src={option.badge} alt="" className="h-6 w-10.5 shrink-0 object-contain" />
-              )}
-              <span className="min-w-0">{option.label}</span>
+              {/* 배지와 라벨은 한 묶음이라 더 붙여 둡니다(4, 2026-11-03 사용자 결정) */}
+              <span className="gap-stack-tight flex min-w-0 items-center">
+                {option.badge && (
+                  <img src={option.badge} alt="" className="h-6 w-10.5 shrink-0 object-contain" />
+                )}
+                <span className="min-w-0">{option.label}</span>
+              </span>
             </RadioGroup.Item>
           </Fragment>
         ))}

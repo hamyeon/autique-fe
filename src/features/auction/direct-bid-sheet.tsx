@@ -7,6 +7,7 @@ import type { MyAutoBid } from '@/features/auction/auto-bid'
 import { DEFAULT_BID_INCREMENT, hasErrorCode, isRetryableError } from '@/features/auction/auto-bid'
 import type { BidSheetNotice } from '@/features/auction/bid-amount-sheet'
 import { BidAmountSheet } from '@/features/auction/bid-amount-sheet'
+import { AGENT_MANAGED_NOTICE } from '@/features/auction/agent-managed'
 import { formatPrice } from '@/lib/format'
 import { createUuid } from '@/lib/uuid'
 
@@ -46,6 +47,12 @@ const CANNOT_BID_NOTICE: Record<CannotBidReason, BidSheetNotice> = {
     title: '입찰이 제한돼 있어요',
     message: '페널티로 지금은 경매에 참여할 수 없어요.',
   },
+}
+
+/** 구매 에이전트가 관리 중인 경매(40917) */
+const AGENT_MANAGED: BidSheetNotice = {
+  title: 'AI Agent가 입찰 중이에요',
+  message: AGENT_MANAGED_NOTICE,
 }
 
 const ENDED_NOTICE: BidSheetNotice = {
@@ -150,6 +157,10 @@ export function DirectBidSheet({
     ).find((name) => hasErrorCode(e, name))
     if (reason) {
       setNotice(CANNOT_BID_NOTICE[reason])
+      return
+    }
+    if (hasErrorCode(e, 'AGENT_MANAGED_AUCTION')) {
+      setNotice(AGENT_MANAGED)
       return
     }
     const offline = isApiError(e) && (e.kind === 'network' || e.kind === 'timeout')

@@ -1,6 +1,14 @@
 import { useState } from 'react'
 import type { ChipKind } from '@/components/ds'
-import { Chip, ImagePlaceholder, InfoBanner, PageIndicator, ProgressBar, Tag } from '@/components/ds'
+import {
+  Chip,
+  ImagePlaceholder,
+  InfoBanner,
+  PageIndicator,
+  ProgressBar,
+  PromoBanner,
+  Tag,
+} from '@/components/ds'
 import { formatNumber } from '@/lib/format'
 import { Caption, Demo, OptionGroup, Section } from './showcase'
 
@@ -24,6 +32,7 @@ export function StatusSection() {
       <PageIndicatorDemo />
       <ProgressBarDemo />
       <InfoBannerDemo />
+      <PromoBannerDemo />
     </Section>
   )
 }
@@ -218,6 +227,49 @@ function InfoBannerDemo() {
           다른 입찰자가 내 자동 입찰 상한가를 초과하는 금액을 입찰하여 자동 입찰이 종료되었어요.
           계속 참여하려면 상한가를 수정해 주세요.
         </InfoBanner>
+      </div>
+    </Demo>
+  )
+}
+
+function PromoBannerDemo() {
+  const [count, setCount] = useState(0)
+
+  return (
+    <Demo
+      title="PromoBanner"
+      description="홈 AI 추천 배너(Figma 977:2424): 패딩 20, 줄 사이 4, 윗줄 body04 · 본문 head02, 글자 white0. 방사형 그라데이션은 DS '평면' 규칙의 승인된 예외. 화면 폭을 채웁니다."
+    >
+      <div className="gap-space-8 flex flex-col">
+        <Caption>onClick (버튼) · 누른 횟수 {count}회</Caption>
+        <PromoBanner
+          className="-mx-layout-gutter w-auto"
+          caption="꼭 실시간 경매를 보고 있지 않아도,"
+          title={
+            <>
+              AI로 나에게 더 딱 맞는 상품 추천받고
+              <br />
+              자동 입찰하러 가기
+            </>
+          }
+          onClick={() => setCount((c) => c + 1)}
+        />
+      </div>
+      <div className="gap-space-8 flex flex-col">
+        <Caption>href (링크) · 누르면 /design-system/screen-demo로 이동</Caption>
+        <PromoBanner
+          className="-mx-layout-gutter w-auto"
+          caption="꼭 실시간 경매를 보고 있지 않아도,"
+          title="AI로 나에게 더 딱 맞는 상품 추천받고 자동 입찰하러 가기"
+          href="/design-system/screen-demo"
+        />
+      </div>
+      <div className="gap-space-8 flex flex-col">
+        <Caption>caption 없음 · 누를 수 없음(href·onClick 없음) · 긴 문장은 단어 단위 줄바꿈</Caption>
+        <PromoBanner
+          className="-mx-layout-gutter w-auto"
+          title="경매가 시작되면 AI가 상한가 안에서 자동으로 입찰하고 결과를 알림으로 알려드려요"
+        />
       </div>
     </Demo>
   )

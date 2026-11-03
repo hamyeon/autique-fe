@@ -1,11 +1,27 @@
 import type { RouteObject } from 'react-router'
 import { createBrowserRouter } from 'react-router'
+import { RequireAuth } from '@/app/require-auth'
 import { MobileLayout } from '@/layouts/mobile-layout'
+import { AuctionListPage } from '@/pages/auction-list/auction-list-page'
+import {
+  LikedAuctionsPage,
+  MyParticipatingAuctionsPage,
+  MySellingAuctionsPage,
+} from '@/pages/auction-list/my-auction-list-pages'
 import { AuctionResultPage } from '@/pages/auction-result/auction-result-page'
+import { BackupOfferPage } from '@/pages/backup-offer/backup-offer-page'
 import { HomePage } from '@/pages/home/home-page'
+import { KakaoCallbackPage } from '@/pages/login/kakao-callback-page'
+import { LoginPage } from '@/pages/login/login-page'
 import { LiveAuctionPage } from '@/pages/live-auction/live-auction-page'
+import { MyPage } from '@/pages/my/my-page'
 import { NotFoundPage } from '@/pages/not-found-page'
+import { NotificationsPage } from '@/pages/notifications/notifications-page'
+import { OrderCompletePage } from '@/pages/order/order-complete-page'
+import { OrderPage } from '@/pages/order/order-page'
 import { ProductDetailPage } from '@/pages/product-detail/product-detail-page'
+import { SearchPage } from '@/pages/search/search-page'
+import { RelistPage } from '@/pages/relist/relist-page'
 import { RegisterAnalyzingPage } from '@/pages/register/register-analyzing-page'
 import { RegisterCompletePage } from '@/pages/register/register-complete-page'
 import { RegisterLayout } from '@/pages/register/register-layout'
@@ -46,26 +62,47 @@ export const router = createBrowserRouter([
     element: <MobileLayout />,
     children: [
       { path: '/', element: <HomePage /> },
-      { path: '/products/:id', element: <ProductDetailPage /> },
-      { path: '/auctions/:id/live', element: <LiveAuctionPage /> },
-      { path: '/auctions/:id/result', element: <AuctionResultPage /> },
+      { path: '/products', element: <AuctionListPage /> },
+      { path: '/search', element: <SearchPage /> },
       {
-        // 경매 등록. /register 와 없는 단계는 RegisterLayout이 첫 미완료 단계로 보냅니다.
-        path: '/register',
-        element: <RegisterLayout />,
+        // 로그인이 필요한 화면. 로그아웃 상태면 /login으로 보냅니다.
+        element: <RequireAuth />,
         children: [
-          { index: true },
-          { path: '1', element: <RegisterPhotosStep /> },
-          { path: 'analyzing', element: <RegisterAnalyzingPage /> },
-          { path: '2', element: <RegisterProductInfoStep /> },
-          { path: '3', element: <RegisterExtraInfoStep /> },
-          { path: '4', element: <RegisterStartPriceStep /> },
-          { path: '5', element: <RegisterScheduleStep /> },
-          { path: '6', element: <RegisterReviewStep /> },
-          { path: 'complete', element: <RegisterCompletePage /> },
-          { path: '*' },
+          { path: '/my', element: <MyPage /> },
+          { path: '/my/selling', element: <MySellingAuctionsPage /> },
+          { path: '/my/participating', element: <MyParticipatingAuctionsPage /> },
+          { path: '/my/likes', element: <LikedAuctionsPage /> },
+          // 낙찰 이후: 본인 결과 · 주문 · 차순위 제안이라 모두 로그인이 필요합니다.
+          { path: '/auctions/:id/result', element: <AuctionResultPage /> },
+          { path: '/orders/:id', element: <OrderPage /> },
+          { path: '/orders/:id/complete', element: <OrderCompletePage /> },
+          { path: '/backup-offers/:id', element: <BackupOfferPage /> },
+          { path: '/notifications', element: <NotificationsPage /> },
+          { path: '/products/:id/relist', element: <RelistPage /> },
+          {
+            // 경매 등록. /register 와 없는 단계는 RegisterLayout이 첫 미완료 단계로 보냅니다.
+            path: '/register',
+            element: <RegisterLayout />,
+            children: [
+              { index: true },
+              { path: '1', element: <RegisterPhotosStep /> },
+              { path: 'analyzing', element: <RegisterAnalyzingPage /> },
+              { path: '2', element: <RegisterProductInfoStep /> },
+              { path: '3', element: <RegisterExtraInfoStep /> },
+              { path: '4', element: <RegisterStartPriceStep /> },
+              { path: '5', element: <RegisterScheduleStep /> },
+              { path: '6', element: <RegisterReviewStep /> },
+              { path: 'complete', element: <RegisterCompletePage /> },
+              { path: '*' },
+            ],
+          },
         ],
       },
+      { path: '/login', element: <LoginPage /> },
+      // 카카오 로그인 후 돌아오는 주소(src/lib/kakao.ts KAKAO_REDIRECT_PATH). 카카오 콘솔 Redirect URI와 같아야 합니다.
+      { path: '/login/kakao', element: <KakaoCallbackPage /> },
+      { path: '/products/:id', element: <ProductDetailPage /> },
+      { path: '/auctions/:id/live', element: <LiveAuctionPage /> },
       ...devRoutes,
       { path: '*', element: <NotFoundPage /> },
     ],

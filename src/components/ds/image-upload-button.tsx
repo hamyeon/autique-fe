@@ -1,5 +1,6 @@
 import type { ChangeEvent, InputHTMLAttributes } from 'react'
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
+import { usePressed } from '@/hooks/use-pressed'
 import { cn } from '@/lib/utils'
 import { Icon } from './icon'
 
@@ -49,6 +50,8 @@ export const ImageUploadButton = forwardRef<HTMLInputElement, ImageUploadButtonP
   ) {
     const [preview, setPreview] = useState<string | null>(null)
     const inputRef = useRef<HTMLInputElement>(null)
+    /* 빈 칸(흰 바탕)을 누르는 동안 gray0 바탕. 사진이 있으면 사진이 덮어 보이지 않습니다. */
+    const { pressed, handlers } = usePressed()
     useImperativeHandle(ref, () => inputRef.current!, [])
     const meta = DIRECTION[direction]
     const name = label ?? meta.label
@@ -77,8 +80,10 @@ export const ImageUploadButton = forwardRef<HTMLInputElement, ImageUploadButtonP
     return (
       <div className={cn('relative w-full', className)}>
         <label
+          data-pressed={pressed && !props.disabled ? '' : undefined}
+          {...handlers}
           className={cn(
-            'bg-white0 has-focus-visible:outline-primary1 relative block aspect-square w-full cursor-pointer overflow-hidden rounded-sm border has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-disabled:cursor-default',
+            'bg-white0 data-pressed:bg-gray0 has-focus-visible:outline-primary1 relative block aspect-square w-full cursor-pointer overflow-hidden rounded-sm border has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-disabled:cursor-default',
             invalid ? 'border-error1' : 'border-gray2',
           )}
         >

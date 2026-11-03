@@ -1,5 +1,6 @@
-import type { ReactNode } from 'react'
+import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { forwardRef, useId } from 'react'
+import { usePressed } from '@/hooks/use-pressed'
 import { cn } from '@/lib/utils'
 import { FieldShell, inputStateClass } from './field'
 
@@ -45,17 +46,16 @@ export const TimeInput = forwardRef<HTMLButtonElement, TimeInputProps>(function 
       </>
     )
     return onClick ? (
-      <button
+      <CellButton
         ref={cellRef}
         id={unit === '날짜' ? id : undefined}
-        type="button"
         onClick={onClick}
         aria-label={`${label ?? ''} ${unit} ${value}`.trim()}
         className={cn(CELL, state)}
         {...a11y}
       >
         {content}
-      </button>
+      </CellButton>
     ) : (
       <div className={cn(CELL, error && 'border-error1')}>{content}</div>
     )
@@ -76,3 +76,20 @@ export const TimeInput = forwardRef<HTMLButtonElement, TimeInputProps>(function 
     </FieldShell>
   )
 })
+
+/** 누를 수 있는 칸. 눌림은 gray0 바탕(흰 바탕 요소 공통 규칙) */
+const CellButton = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButtonElement>>(
+  function CellButton({ className, ...props }, ref) {
+    const { pressed, handlers } = usePressed()
+    return (
+      <button
+        ref={ref}
+        type="button"
+        data-pressed={pressed ? '' : undefined}
+        {...handlers}
+        className={cn(className, 'data-pressed:bg-gray0')}
+        {...props}
+      />
+    )
+  },
+)

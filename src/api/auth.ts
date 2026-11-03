@@ -21,12 +21,19 @@ export function logout(body: LogoutRequest) {
 
 /* ───────── 훅 ───────── */
 
-/** Kakao SDK 토큰을 넘기면 서버 JWT를 받아 저장합니다. */
+/**
+ * Kakao 토큰을 넘기면 서버 JWT를 받아 저장합니다.
+ * 로그아웃 상태로 받아 둔 데이터(isLiked 등)가 남지 않도록 캐시를 비웁니다.
+ */
 export function useKakaoLoginMutation() {
+  const queryClient = useQueryClient()
   const setTokens = useAuthStore((s) => s.setTokens)
   return useMutation({
     mutationFn: kakaoLogin,
-    onSuccess: (tokens) => setTokens(tokens),
+    onSuccess: (tokens) => {
+      setTokens(tokens)
+      queryClient.clear()
+    },
   })
 }
 

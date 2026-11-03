@@ -4,12 +4,13 @@ import { cn } from '@/lib/utils'
 /* design-system/README.md "화면 여백 규칙"의 헤더 아래 첫 콘텐츠 여백 */
 const TOP_CLASS = {
   top: 'pt-layout-top', // 16: 일반 화면
+  section: 'pt-layout-section', // 24: 상품 목록 화면(경매 리스트 · 마이페이지 하위 목록, Figma Body 위 24)
   step: 'pt-layout-step', // 32: 경매 등록 단계 화면
   none: 'pt-0', // 상단 이미지가 헤더에 바로 붙는 화면 등
 } as const
 
 export interface ScreenProps {
-  /** Header·HomeHeader·SearchHeader. 위에 sticky로 붙습니다. */
+  /** Header·HomeHeader. 위에 sticky로 붙습니다. */
   header?: ReactNode
   /** BottomButtonBar 또는 TabBar. 아래에 sticky로 붙습니다. */
   bottom?: ReactNode

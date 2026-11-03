@@ -8,8 +8,8 @@ export type BottomButtonBarLayout =
   'single' | 'double' | 'triple' | 'secondary' | 'primaryDanger' | keyof typeof LEGACY_LAYOUT
 
 export interface BottomButtonBarProps {
-  /** single primary 1개, double primary + outline 가로, triple primary / outline + danger,
-   *  secondary outline 1개, primaryDanger primary / danger 세로 */
+  /** single primary 1개, double primary + outline 가로, triple outline + danger / primary(primary가 아래),
+   *  secondary outline 1개, primaryDanger danger / primary 세로(primary가 아래). Figma BottomButtonBar 396:4869 */
   layout?: BottomButtonBarLayout
   primaryLabel?: string
   secondaryLabel?: string
@@ -73,18 +73,18 @@ export function BottomButtonBar({
       )}
       {l === 'triple' && (
         <>
-          {primary()}
           <div className={row}>
             {secondary(inRow)}
             {danger(inRow)}
           </div>
+          {primary()}
         </>
       )}
       {l === 'secondary' && secondary()}
       {l === 'primaryDanger' && (
         <>
-          {primary()}
           {danger()}
+          {primary()}
         </>
       )}
     </div>

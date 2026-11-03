@@ -44,8 +44,9 @@ export function AutoBidCancelSheet({
       onCanceled?.()
       onClose()
     } catch (e) {
-      if (hasErrorCode(e, 'AUTO_BID_NOT_FOUND', 'AUCTION_CLOSED')) {
-        // 이미 취소됐거나 경매가 끝났습니다. 최신 상태로 바꾸고 닫습니다.
+      if (hasErrorCode(e, 'AUTO_BID_NOT_FOUND', 'AUCTION_CLOSED', 'AGENT_MANAGED_AUCTION')) {
+        // 이미 취소됐거나 경매가 끝났거나 구매 에이전트가 관리 중입니다(다시 시도해도 같음).
+        // 최신 상태로 바꾸고 닫으면 하단 버튼이 그 상태(에이전트면 'AI Agent가 입찰 중이에요')로 바뀝니다.
         await invalidate()
         onClose()
         return

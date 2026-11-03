@@ -1,7 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { request } from '@/api/client'
 import { endpoints } from '@/api/endpoints'
-import type { CalculatePriceRequest, CreateProductRequest } from '@/api/schemas/products'
+import type {
+  CalculatePriceRequest,
+  CreateProductRequest,
+  ProductPhotoSlot,
+} from '@/api/schemas/products'
 
 export const productKeys = {
   all: ['products'] as const,
@@ -10,16 +14,27 @@ export const productKeys = {
 
 /* ───────── API 함수 ───────── */
 
-/** 이미지를 multipart(images)로 올리고 분석 작업을 접수합니다. 202 + analysisId */
-export function analyzeProduct(images: File[]) {
+/** 사진 1장을 올리고 촬영 면 판정을 받습니다. photoId는 분석 요청에 씁니다. */
+export function uploadProductPhoto(image: File, slot: ProductPhotoSlot) {
   const body = new FormData()
-  for (const image of images) body.append('images', image)
-  return request(endpoints.analyzeProduct, { body })
+  body.append('image', image)
+  body.append('slot', slot)
+  return request(endpoints.uploadProductPhoto, { body })
+}
+
+/** 선업로드한 사진으로 분석 작업을 접수합니다. 202 + analysisId */
+export function analyzeProduct(photoIds: number[]) {
+  return request(endpoints.analyzeProduct, { body: { photoIds } })
 }
 
 /** taskId = analyzeProduct가 돌려준 analysisId */
 export function getProductAnalysis(taskId: number, signal?: AbortSignal) {
   return request(endpoints.getProductAnalysis, { params: { taskId }, signal })
+}
+
+/** 등록 확정 전의 분석 세션을 취소합니다. taskId = analysisId */
+export function cancelAnalysis(taskId: number) {
+  return request(endpoints.cancelAnalysis, { params: { taskId } })
 }
 
 export function calculatePrice(body: CalculatePriceRequest) {

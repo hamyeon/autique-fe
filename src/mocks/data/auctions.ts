@@ -1,9 +1,10 @@
 import type {
+  AuctionCard,
   AuctionDetail,
-  AuctionListItem,
   AuctionLive,
   Bid,
   BidType,
+  RecommendedAuction,
   SimilarAuction,
 } from '@/api/schemas/auctions'
 import type {
@@ -625,6 +626,9 @@ export function toDetail(a: MockAuction): AuctionDetail {
       bidRestrictedUntil: restrictedUntil(reason),
       autoBidStatus: autoBid?.status ?? null,
       autoBidCap: autoBid?.maxAmount ?? null,
+      // 목에는 구매 에이전트가 없어 늘 일반 자동입찰
+      purchaseGoalId: null,
+      managedByPurchaseAgent: false,
     },
     finalPrice: status === 'ENDED' && a.bids.length > 0 ? currentPriceOf(a) : null,
   }
@@ -651,6 +655,8 @@ export function toLive(a: MockAuction): AuctionLive {
     myAutoBidStatus: autoBid?.status ?? null,
     myCap: autoBid?.maxAmount ?? null,
     minCapAmount: minNextBidOf(a),
+    // 입찰 내역은 최신순이라 처음 나오는 내 입찰이 마지막 입찰
+    myLastBidAmount: a.bids.find((b) => b.isMine)?.amount ?? null,
   }
 }
 
@@ -658,27 +664,37 @@ export function toBid(b: MockBid, index: number): Bid {
   return { ...b, bidAt: kst(b.bidAt), isHighest: index === 0 }
 }
 
-export function toSimilar(a: MockAuction): SimilarAuction {
+/** 목록 · 인기 · 추천 · 마이페이지 목록의 경매 카드 */
+export function toCard(a: MockAuction): AuctionCard {
   return {
-    productId: a.productId,
     auctionId: a.auctionId,
+    productId: a.productId,
     brand: a.product.brand,
     name: a.product.name,
-    thumbnailUrl: a.product.imageUrls[0],
-    price: currentPriceOf(a),
+    thumbnailUrl: a.product.imageUrls[0] ?? null,
+    status: statusOf(a),
+    grade: a.product.grade,
+    startPrice: a.startPrice,
+    currentPrice: currentPriceOf(a),
     likeCount: a.likeCount,
     isLiked: a.isLiked,
-    status: statusOf(a), // [ASSUMED]
-    grade: a.product.grade, // [ASSUMED]
   }
 }
 
-/** [ASSUMED] 명세에 없는 경매 목록 항목 */
-export function toListItem(a: MockAuction): AuctionListItem {
+export function toSimilar(a: MockAuction): SimilarAuction {
+  const card = toCard(a)
+  return { ...card, brand: a.product.brand, price: card.currentPrice }
+}
+
+/** 추천 항목. endAt은 명세대로 오프셋 없는 서울 시각, 대체 추천이라 similarity는 null */
+export function toRecommended(a: MockAuction): RecommendedAuction {
   return {
-    ...toSimilar(a),
-    startsAt: kst(a.startsAt),
-    endsAt: kst(a.endsAt),
+    ...toCard(a),
+    model: a.product.subName,
+    colorway: null,
+    sizeKr: null,
+    endAt: kst(a.endsAt).replace('+09:00', ''),
+    similarity: null,
   }
 }
 

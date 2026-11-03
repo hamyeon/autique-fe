@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { useState } from 'react'
+import { usePressed } from '@/hooks/use-pressed'
 import { cn } from '@/lib/utils'
 import { Icon } from './icon'
 
@@ -14,16 +15,20 @@ export interface LoadMoreButtonProps {
   className?: string
 }
 
-/** 다른 화면으로 넘어가 자세히 보는 행 버튼. 같은 자리에서 펼치려면 LoadMoreDownButton. */
+/** 다른 화면으로 넘어가 자세히 보는 행 버튼. 같은 자리에서 펼치려면 LoadMoreDownButton. 눌림은 gray0 바탕. */
 export function LoadMoreButton({ children, onClick, className }: LoadMoreButtonProps) {
+  const { pressed, handlers } = usePressed()
+
   return (
     <button
       type="button"
       onClick={onClick}
+      data-pressed={pressed ? '' : undefined}
+      {...handlers}
       className={cn(
         BOX,
         FOCUS,
-        'text-body03 p-space-12 items-center justify-between text-left',
+        'text-body03 p-space-12 data-pressed:bg-gray0 items-center justify-between text-left',
         className,
       )}
     >
@@ -55,6 +60,7 @@ export function LoadMoreDownButton({
 }: LoadMoreDownButtonProps) {
   const [openState, setOpenState] = useState(defaultOpen)
   const open = openProp ?? openState
+  const { pressed, handlers } = usePressed()
 
   const toggle = () => {
     if (openProp === undefined) setOpenState(!open)
@@ -68,9 +74,11 @@ export function LoadMoreDownButton({
         type="button"
         aria-expanded={open}
         onClick={toggle}
+        data-pressed={pressed ? '' : undefined}
+        {...handlers}
         className={cn(
           FOCUS,
-          'text-body03 text-black0 p-space-12 flex w-full items-center justify-between rounded-sm text-left',
+          'text-body03 text-black0 p-space-12 data-pressed:bg-gray0 flex w-full items-center justify-between rounded-sm text-left',
         )}
       >
         <span>{title}</span>

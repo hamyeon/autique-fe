@@ -7,6 +7,7 @@ import {
   Divider,
   FloatingActionButton,
   ImagePlaceholder,
+  KakaoLoginButton,
   LoadMoreButton,
   LoadMoreDownButton,
 } from '@/components/ds'
@@ -24,9 +25,9 @@ const VARIANT_LABEL: Record<(typeof VARIANTS)[number], string> = {
 const LAYOUT_DESC: Record<BarLayout, string> = {
   single: 'primary 1개 (78px)',
   double: 'primary + secondary 가로',
-  triple: 'primary / secondary + danger (144px)',
+  triple: 'secondary + danger / primary (144px, primary가 아래)',
   secondary: 'outline 1개 (예전 layout4)',
-  primaryDanger: 'primary / danger 세로 (144px, 예전 layout5)',
+  primaryDanger: 'danger / primary 세로 (144px, primary가 아래, 예전 layout5)',
 }
 
 export function ActionsSection() {
@@ -38,6 +39,7 @@ export function ActionsSection() {
       <FloatingActionButtonDemo />
       <LoadMoreButtonDemo />
       <LoadMoreDownButtonDemo />
+      <KakaoLoginButtonDemo />
     </Section>
   )
 }
@@ -46,7 +48,7 @@ function ButtonMatrixDemo() {
   return (
     <Demo
       title="Button · variant × 상태"
-      description="54px, radius-md, head03. 눌림(primary)은 누르는 동안 + 최소 150ms, 비활성은 disabled. outline·danger의 눌림/비활성 모양은 Figma에 없습니다. DS 원본의 neutral은 쓰는 화면이 없어 뺐습니다."
+      description="54px, radius-md, head03. 눌림(primary)은 누르는 동안 + 최소 150ms, 비활성은 disabled. outline·danger의 눌림은 gray0 바탕(흰 바탕 요소 공통 규칙, Figma에 없음), 비활성 모양은 Figma에 없습니다. DS 원본의 neutral은 쓰는 화면이 없어 뺐습니다."
     >
       <div className="gap-space-12 grid grid-cols-2">
         <Caption>기본</Caption>
@@ -251,6 +253,36 @@ function LoadMoreDownButtonDemo() {
         >
           {open ? '닫기' : '열기'}
         </Button>
+      </div>
+    </Demo>
+  )
+}
+
+function KakaoLoginButtonDemo() {
+  const [count, setCount] = useState(0)
+
+  return (
+    <Demo
+      title="KakaoLoginButton"
+      description="카카오 브랜드 가이드 값(DS 예외, Figma 948:6233): 높이 45, 반경 6, #FEE500, 15px SemiBold 85% 검정. 로고는 왼쪽 14 고정, 문구는 가운데. 눌림(조금 어둡게)·비활성 모양은 Figma에 없어 정했습니다."
+    >
+      <div className="gap-space-8 flex flex-col">
+        <Caption>기본 · 눌러 보세요 (누른 횟수 {count}회)</Caption>
+        <KakaoLoginButton onClick={() => setCount((c) => c + 1)} />
+      </div>
+      <div className="gap-space-8 flex flex-col">
+        <Caption>disabled (로그인 요청 중 등)</Caption>
+        <KakaoLoginButton disabled onClick={() => setCount((c) => c + 1)} />
+      </div>
+      <div className="gap-space-8 flex flex-col">
+        <Caption>label 변경</Caption>
+        <KakaoLoginButton label="카카오로 시작하기" onClick={() => setCount((c) => c + 1)} />
+      </div>
+      <div className="gap-space-8 flex flex-col">
+        <Caption>Figma 폭 320 (로그인 화면 배치 예시)</Caption>
+        <div className="flex justify-center">
+          <KakaoLoginButton className="w-80" onClick={() => setCount((c) => c + 1)} />
+        </div>
       </div>
     </Demo>
   )

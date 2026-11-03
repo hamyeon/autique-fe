@@ -12,6 +12,9 @@ const BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '')
 
 /*
  * 화면 주소의 ?mock= 시나리오.
+ * - all: 목 데이터로 보기. passthrough를 무시하고 로그인(/api/auth/*) 말고는 모두 목으로 처리합니다.
+ *   실서버에서 만들기 어려운 상태(낙찰 · 차순위 · 결제 기한 만료 등)를 목 경매로 확인할 때 씁니다.
+ *   다른 시나리오와 함께 쓸 수 있고, 탭을 닫거나 ?mock=off 를 붙일 때까지 유지됩니다.
  * - empty / error: 그 페이지에서만. 목으로 처리하는 엔드포인트가 빈 응답 / 명세 오류를 돌려줍니다.
  * - slow / analysis-fail / submit-fail: 경매 등록 흐름 확인용. 여러 화면을 거쳐야 해서 탭을 닫거나
  *   ?mock=off 를 붙일 때까지 유지됩니다. 이 시나리오일 때만 해당 요청을 목으로 처리하고(passthrough여도),
@@ -21,6 +24,8 @@ const BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '')
  *   autobid-outbid: 제출하는 순간 현재가가 상한가 위로 올라감(CAP_TOO_LOW, 경매마다 한 번)
  *   autobid-ended: 제출하는 순간 경매가 끝남(AUCTION_CLOSED)
  *   autobid-error: 첫 제출이 서버 오류(500), 다시 시도하면 성공. ?mock=error는 상세 조회부터 실패해 시트를 열 수 없어 따로 둡니다.
+ * - photo-mismatch: 경매 등록 1/6 확인용. 그 페이지에서만, 사진 업로드가 목으로 처리되고 밑창 칸이 촬영 면 불일치(MISMATCH)로 판정됩니다.
+ *   분석 화면에서는 실서버가 목 photoId를 모르므로(40409) 사진을 다시 올려 분석합니다.
  * - ending / busy / quiet / bid-outbid: 실시간 경매 확인용. 그 페이지에서만 적용됩니다.
  *   ending: 페이지를 연 뒤 30초 후 종료 · busy: 다른 입찰이 1초마다 · quiet: 다른 입찰 없음
  *   bid-outbid: 직접 입찰을 제출하는 순간 이미 더 높은 입찰이 있음(BID_AMOUNT_TOO_LOW, 경매마다 한 번)
@@ -39,6 +44,7 @@ export type MockScenario =
   | 'busy'
   | 'quiet'
   | 'bid-outbid'
+  | 'photo-mismatch'
 
 const PAGE_SCENARIOS = [
   'empty',
@@ -50,10 +56,25 @@ const PAGE_SCENARIOS = [
   'busy',
   'quiet',
   'bid-outbid',
+  'photo-mismatch',
 ] as const
 
 const STICKY_SCENARIOS = ['slow', 'analysis-fail', 'submit-fail'] as const
 const SCENARIO_KEY = 'autique-mock-scenario'
+const MOCK_ALL_KEY = 'autique-mock-all'
+
+/** 저장된 '목 데이터로 보기' 상태만 읽습니다(주소는 보지 않음). */
+export function isMockAllOn() {
+  return sessionAppStorage.getItem(MOCK_ALL_KEY) === '1'
+}
+
+/** 지금 주소의 ?mock=all · ?mock=off를 기록하고, 켜져 있는지 돌려줍니다(탭 단위로 유지). */
+export function mockAllEnabled() {
+  const value = new URLSearchParams(window.location.search).get('mock')
+  if (value === 'all') sessionAppStorage.setItem(MOCK_ALL_KEY, '1')
+  if (value === 'off') sessionAppStorage.removeItem(MOCK_ALL_KEY)
+  return isMockAllOn()
+}
 
 const isSticky = (value: string | null): value is (typeof STICKY_SCENARIOS)[number] =>
   (STICKY_SCENARIOS as readonly (string | null)[]).includes(value)
@@ -126,7 +147,10 @@ export function mockEndpoint<E extends EndpointDef>(def: E, mock: MockDef<E>) {
 
   return http[method](url, async ({ request, params }) => {
     const scenario = currentScenario()
-    const forced = scenario !== null && (mock.mockIn?.includes(scenario) ?? false)
+    const forced =
+      (scenario !== null && (mock.mockIn?.includes(scenario) ?? false)) ||
+      // 목 데이터로 보기. 로그인 토큰은 실서버 것이라 재발급 · 로그아웃은 계속 실서버로
+      (mockAllEnabled() && !def.path.startsWith('/api/auth/'))
     if (passthrough.includes(key) && !forced) return sendToNetwork()
 
     await delay()

@@ -1,4 +1,5 @@
 import { Outlet, ScrollRestoration } from 'react-router'
+import { Toaster } from '@/components/feedback'
 
 /**
  * 모든 페이지를 감싸는 모바일 레이아웃.
@@ -7,6 +8,7 @@ import { Outlet, ScrollRestoration } from 'react-router'
  * - safe-area와 화면 여백은 각 페이지의 Screen이 맡습니다.
  * - Screen의 sticky 헤더·하단 바가 동작하도록 overflow-hidden/auto를 두지 않습니다.
  * - ScrollRestoration: 뒤로 가기로 돌아오면 이전 스크롤 위치를, 새로 이동하면 맨 위를 보여줍니다.
+ * - Toaster: showToast()로 띄우는 짧은 안내. 모든 화면이 함께 씁니다.
  */
 export function MobileLayout() {
   return (
@@ -17,6 +19,7 @@ export function MobileLayout() {
         </main>
       </div>
       <ScrollRestoration />
+      <Toaster />
     </div>
   )
 }

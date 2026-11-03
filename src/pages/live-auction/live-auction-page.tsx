@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
+import { useAuctionDetailQuery } from '@/api/auctions'
 import { isApiError } from '@/api/client'
 import type { AuctionLive, Bid } from '@/api/schemas/auctions'
 import type { AuctionStatusCardProps, InfoRowData } from '@/components/ds'
@@ -8,6 +9,7 @@ import { AuctionStatusCard, BottomButtonBar, Button, Header, InfoBanner } from '
 import { EmptyState, ErrorState, Skeleton } from '@/components/feedback'
 import type { MyAutoBid } from '@/features/auction/auto-bid'
 import { toMyAutoBid } from '@/features/auction/auto-bid'
+import { AgentManagedBottom } from '@/features/auction/agent-managed'
 import { AutoBidCancelSheet } from '@/features/auction/auto-bid-cancel-sheet'
 import { AutoBidSheet } from '@/features/auction/auto-bid-sheet'
 import { DirectBidSheet } from '@/features/auction/direct-bid-sheet'
@@ -52,13 +54,9 @@ function LiveAuction({ auctionId, valid }: { auctionId: number; valid: boolean }
       <Screen header={header} className="justify-center">
         <EmptyState
           title="경매를 찾을 수 없어요"
-          description="경매가 삭제되었거나 주소가 잘못되었어요."
+          description="경매가 삭제되었거나 주소가 잘못되었어요"
           action={
-            <Button
-              variant="outline"
-              block={false}
-              onClick={() => navigate('/', { replace: true })}
-            >
+            <Button block={false} onClick={() => navigate('/', { replace: true })}>
               홈으로
             </Button>
           }
@@ -91,7 +89,7 @@ function LiveAuction({ auctionId, valid }: { auctionId: number; valid: boolean }
         <EmptyState
           title={data.status === 'SCHEDULED' ? '아직 경매가 시작되지 않았어요' : '취소된 경매예요'}
           description={
-            data.status === 'SCHEDULED' ? '경매가 시작되면 실시간 상황을 볼 수 있어요.' : undefined
+            data.status === 'SCHEDULED' ? '경매가 시작되면 실시간 상황을 볼 수 있어요' : undefined
           }
           action={
             <Button variant="outline" block={false} onClick={toDetail}>
@@ -144,9 +142,14 @@ function LiveContent({
   const [cancelTarget, setCancelTarget] = useState<MyAutoBid | null>(null)
 
   const myAutoBid = toMyAutoBid(live.myAutoBidStatus, live.myCap)
-  const myBids = (bids ?? []).filter((bid) => bid.isMine)
-  /* 내 자동 입찰이 있거나, 내 입찰이 있거나, 내가 최고가면 참여 중 */
-  const participated = myAutoBid !== null || myBids.length > 0 || live.isMine
+  /* 내 자동 입찰이 있거나, 실제로 입찰한 적이 있거나(myLastBidAmount), 내가 최고가면 참여 중 */
+  const participated = myAutoBid !== null || live.myLastBidAmount != null || live.isMine
+  /*
+   * 구매 에이전트가 관리 중인지는 실시간 응답에 없어 상세로 확인합니다(명세).
+   * 에이전트는 자동입찰로만 참여하므로 내 자동 입찰이 있을 때만 불러옵니다.
+   */
+  const detail = useAuctionDetailQuery(live.auctionId, { enabled: myAutoBid !== null })
+  const managed = myAutoBid !== null && (detail.data?.myState.managedByPurchaseAgent ?? false)
   const view: LiveView = !participated ? 'watching' : live.isMine ? 'leading' : 'exceeded'
   const capReached = myAutoBid?.status === 'CAP_REACHED'
   const isSeller = live.cannotBidReason === 'SELLER_CANNOT_BID'
@@ -161,6 +164,7 @@ function LiveContent({
           view={view}
           myAutoBid={myAutoBid}
           isSeller={isSeller}
+          managed={managed}
           timeUp={timeUp}
           onAutoBid={() => setSheet('auto')}
           onDirectBid={() => setSheet('direct')}
@@ -175,7 +179,7 @@ function LiveContent({
         <AuctionStatusCard
           /* 상태가 바뀌어도 카드는 그대로 두고 색만 부드럽게 바꿉니다. */
           className="transition-colors duration-300"
-          {...statusCardProps({ view, live, myAutoBid, myBids, remaining })}
+          {...statusCardProps({ view, live, myAutoBid, remaining })}
         />
 
         <section className="gap-space-8 flex flex-col">
@@ -193,7 +197,7 @@ function LiveContent({
           {bidsState === 'ready' && bids && bids.length === 0 && (
             <EmptyState
               title="아직 입찰이 없어요"
-              description="첫 입찰자가 되어 보세요."
+              description="첫 입찰자가 되어 보세요"
               className="py-space-24"
             />
           )}
@@ -245,13 +249,11 @@ function statusCardProps({
   view,
   live,
   myAutoBid,
-  myBids,
   remaining,
 }: {
   view: LiveView
   live: AuctionLive
   myAutoBid: MyAutoBid | null
-  myBids: Bid[]
   remaining: string
 }): AuctionStatusCardProps {
   const price = formatPrice(live.currentPrice)
@@ -294,9 +296,8 @@ function statusCardProps({
     ]
   } else if (myAutoBid) {
     extraRows = [{ label: '내 자동 입찰 상한가', value: formatPrice(myAutoBid.maxAmount) }]
-  } else if (myBids.length > 0) {
-    const myTop = Math.max(...myBids.map((bid) => bid.amount))
-    extraRows = [{ label: '내 최고 입찰가', value: formatPrice(myTop) }]
+  } else if (live.myLastBidAmount != null) {
+    extraRows = [{ label: '내 마지막 입찰가', value: formatPrice(live.myLastBidAmount) }]
   }
   return {
     status: 'exceeded',
@@ -347,11 +348,13 @@ function LiveBanner({
  * - 참여 전 · 직접 입찰만 한 경우: '자동 입찰하기' / '직접 입찰하기'
  * - 자동 입찰 중(참여 후): triple '자동 입찰 상한가 수정' / '직접 입찰하기' · '입찰 중단하기'
  * - 카운트다운이 0이면 서버 종료 확인 전까지 비활성, 판매자 본인은 비활성
+ * - 구매 에이전트가 관리 중이면 비활성(명세 40917)
  */
 function LiveBottom({
   view,
   myAutoBid,
   isSeller,
+  managed,
   timeUp,
   onAutoBid,
   onDirectBid,
@@ -360,6 +363,7 @@ function LiveBottom({
   view: LiveView
   myAutoBid: MyAutoBid | null
   isSeller: boolean
+  managed: boolean
   timeUp: boolean
   onAutoBid: () => void
   onDirectBid: () => void
@@ -371,6 +375,7 @@ function LiveBottom({
   if (isSeller) {
     return <BottomButtonBar layout="single" primaryLabel="내가 등록한 경매예요" primaryDisabled />
   }
+  if (managed) return <AgentManagedBottom />
   if (view !== 'watching' && myAutoBid) {
     return (
       <BottomButtonBar

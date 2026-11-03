@@ -5,6 +5,7 @@ import {
   createProductFieldsSchema,
   createProductRequestSchema,
   isAuctionLongEnough,
+  photoCheckSchema,
 } from '@/api/schemas/products'
 import type { ComponentStatus } from '@/api/schemas/common'
 import type { CreateProductRequest, ProductAnalysis } from '@/api/schemas/products'
@@ -25,7 +26,7 @@ export function registerPath(step: RegisterStep | 'complete') {
 
 /* ───────── 1/6 사진 ───────── */
 
-/** Figma 1/6 칸 순서. 앞면 · 측면 · 밑창은 필수, 하자는 선택(명세 등록은 3~4장). 서버에는 방향 구분 없이 보냅니다. */
+/** Figma 1/6 칸 순서. 앞면 · 측면 · 밑창은 필수, 하자는 선택(명세 등록은 3~4장). 업로드할 때 칸을 함께 보냅니다(toApiPhotoSlot). */
 export const PHOTO_SLOTS = ['side', 'front', 'outsole', 'defect'] as const
 export type PhotoSlot = (typeof PHOTO_SLOTS)[number]
 export const REQUIRED_PHOTO_SLOTS = [
@@ -41,11 +42,26 @@ export const PHOTO_LABELS: Record<PhotoSlot, string> = {
   defect: '하자',
 }
 
-/** 고른 사진의 정보. 파일 자체는 분석 요청 전까지 IndexedDB에 둡니다(src/lib/file-store.ts). */
+export function toApiPhotoSlot(slot: PhotoSlot) {
+  return slot.toUpperCase() as Uppercase<PhotoSlot>
+}
+
+/**
+ * 고른 사진의 정보. 파일은 고를 때 POST /api/products/photos로 올리고, 다시 올릴 때를 위해 IndexedDB에도 둡니다(src/lib/file-store.ts).
+ * photoId는 분석에 한 번 쓰면(used) 다시 쓸 수 없어, 다음 분석(가격 재계산 · 사진 일부 변경) 때 파일을 다시 올려 새 ID를 받습니다.
+ */
 export const photoMetaSchema = z.object({
   name: z.string(),
   type: z.string(),
   size: z.number(),
+  /** 없으면(이전 버전에서 고른 사진 등) 분석 직전에 올립니다. */
+  photoId: z.number().int().optional(),
+  /** 분석 요청에 보냈음 */
+  used: z.boolean().optional(),
+  /** 촬영 면 판정. MISMATCH여도 분석에 쓸 수 있어 '다음'을 막지 않고 안내만 합니다. */
+  check: photoCheckSchema.nullish(),
+  /** 촬영 면이 다를 때 서버 안내 문구 */
+  message: z.string().nullish(),
 })
 export type PhotoMeta = z.infer<typeof photoMetaSchema>
 
@@ -61,8 +77,8 @@ export const photosStepSchema = z.object({
 /* ───────── analyzing: 업로드 + AI 분석 ───────── */
 
 /**
- * 분석 세션 ID만 저장합니다. 분석 결과의 imageUrls는 6시간짜리 서명 URL이라 저장하지 않고,
- * 등록할 때 GET /api/products/analyze/{taskId}로 다시 받습니다(명세).
+ * 분석 세션 ID만 저장합니다. 등록할 때 서버가 이 세션에 저장한 사진을 상품 이미지로 쓰므로
+ * 이미지 주소는 보내지 않습니다(명세).
  */
 export const analysisStepSchema = z.object({
   analysisId: analyzeProductResponseSchema.shape.analysisId,
@@ -70,19 +86,18 @@ export const analysisStepSchema = z.object({
 
 /* ───────── 2/6 AI 결과 확인 ───────── */
 
-/** AI 값으로 채우고 사용자가 고칩니다. conditionGrade는 AI 값 그대로(UNKNOWN 포함, 화면에서 고르지 않음) */
-export const productInfoStepSchema = createProductFieldsSchema
-  .pick({
-    brand: true,
-    modelName: true,
-    color: true,
-    size: true,
-    conditionGrade: true,
-  })
-  .extend({
-    /** 2/6 '상태'. AI 분석 확인용이라 등록 요청에는 보내지 않습니다(사용자 결정). 분석 결과 conditionDescription */
-    conditionDescription: z.string().nullish(),
-  })
+/**
+ * AI 값으로 채우고 사용자가 고칩니다. conditionGrade는 AI 값 그대로(UNKNOWN 포함, 화면에서 고르지 않음).
+ * conditionDescription(2/6 '상태')은 고친 값을 등록 요청에 보냅니다(사용자 결정, 2026-11-03).
+ */
+export const productInfoStepSchema = createProductFieldsSchema.pick({
+  brand: true,
+  modelName: true,
+  color: true,
+  size: true,
+  conditionGrade: true,
+  conditionDescription: true,
+})
 export type ProductInfoForm = z.infer<typeof productInfoStepSchema>
 
 /** AI 분석 결과 → 2/6 기본값. 사진을 다시 분석하면 이 값으로 덮어씁니다. */
@@ -134,12 +149,17 @@ export const extraInfoStepSchema = extraInfoFormSchema.extend({ priceResult: pri
 
 /**
  * 기준가를 고치는 단위 · 6/6 '최소 입찰 단위'.
- * [ASSUMED] 등록 요청에 입찰 단위 필드가 없어 서버가 정함. 상품 · 경매 조회 응답의 bidIncrement 예시 값(5,000)
+ * 등록 요청에 입찰 단위 필드가 없고 서버가 5,000으로 정합니다(명세 POST /api/products).
  */
 export const REGISTER_BID_INCREMENT = 5000
 
-/** 기준가. 등록 때 sellingPrice와 auctionStartPrice에 같은 값으로 들어갑니다(사용자 결정). */
-export const startPriceStepSchema = createProductFieldsSchema.pick({ sellingPrice: true })
+/**
+ * 기준가. 등록 때 sellingPrice와 auctionStartPrice에 같은 값으로 들어가므로 경매 시작가 규칙(0원 초과)을 따릅니다.
+ * 시세가 없어 AI 기준가가 0원이면 4/6에서 직접 정해야 넘어갑니다(사용자 결정, 2026-11-03).
+ */
+export const startPriceStepSchema = z.object({
+  sellingPrice: createProductFieldsSchema.shape.auctionStartPrice,
+})
 
 /* ───────── 5/6 일정 ───────── */
 
@@ -196,15 +216,12 @@ export function canEnterStep(step: RegisterStep, draft: RegisterDraft, completed
 
 /**
  * 모은 값을 POST /api/products 요청으로 바꿉니다. 필드 이름은 단계 스키마와 같습니다.
- * imageUrls는 등록 직전에 분석 조회로 다시 받은 값(서명 URL 만료 때문).
+ * 이미지는 서버가 분석 세션의 사진을 쓰므로 imageUrls는 보내지 않습니다.
  */
-export function buildCreateProductRequest(
-  draft: RegisterDraft,
-  imageUrls: string[],
-): CreateProductRequest {
+export function buildCreateProductRequest(draft: RegisterDraft): CreateProductRequest {
   const { priceResult } = draft
   return createProductRequestSchema.parse({
-    imageUrls,
+    analysisId: draft.analysisId,
     brand: draft.brand,
     modelName: draft.modelName,
     color: draft.color,
@@ -218,6 +235,7 @@ export function buildCreateProductRequest(
     sellingPrice: draft.sellingPrice,
     auctionStartPrice: draft.sellingPrice,
     sellerDescription: draft.sellerDescription,
+    conditionDescription: draft.conditionDescription,
     auctionStartAt: draft.auctionStartAt,
     auctionEndAt: draft.auctionEndAt,
   })

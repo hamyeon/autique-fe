@@ -45,6 +45,11 @@ export function formatDateTime(date: Date, { relative = true, now = new Date() }
 
 const pad2 = (n: number) => String(n).padStart(2, '0')
 
+/** Date → '7월 21일' (이용 제한 기간 등 날짜만) */
+export function formatMonthDay(date: Date) {
+  return `${date.getMonth() + 1}월 ${date.getDate()}일`
+}
+
 /** Date → '2026.09.21' (경매 일정 입력 · 확인) */
 export function formatDotDate(date: Date) {
   return `${date.getFullYear()}.${pad2(date.getMonth() + 1)}.${pad2(date.getDate())}`

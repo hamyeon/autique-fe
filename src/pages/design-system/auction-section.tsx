@@ -8,6 +8,7 @@ import {
   BiddingListItem,
   Button,
   Divider,
+  Icon,
   InfoRow,
   PriceCard,
   ProductCard,
@@ -169,11 +170,31 @@ function SellerProfileDemo() {
   return (
     <Demo
       title="SellerProfile"
-      description="48px 원형 사진 + 닉네임(body04 gray7) · 보조 정보(label01 gray4), 사이 12. 사진 없으면 gray1 원."
+      description="사진과 글 사이 12, 이름·보조 정보 한 줄 말줄임, 사진 없으면 gray1 원(Figma 971:3808). md 48px · 이름 body04 gray7 · 보조 caption01 gray5(상품 상세 판매자). lg 60px · 이름 head03 black0 · 보조 caption01 gray4(마이페이지 프로필)."
     >
+      <Caption>size="md" (기본)</Caption>
       <SellerProfile name="mmaybei" meta="누적 판매 건수 4회" />
       <SellerProfile name="sneaker_collector_seoul_2026_official" meta="누적 판매 건수 128회" avatar={shoeFront} />
       <SellerProfile name="보조 정보 없음" />
+      <Divider />
+      <Caption>size="lg"</Caption>
+      <SellerProfile size="lg" name="hamyeon님 안녕하세요!" meta="hamyeon@ewha.ac.kr" />
+      <SellerProfile
+        size="lg"
+        name="sneaker_collector_seoul_2026_official님 안녕하세요!"
+        meta="sneaker.collector.seoul.2026.official@gmail.com"
+        avatar={shoeFront}
+      />
+      <Caption>lg · 오른쪽 화살표와 함께(마이페이지 프로필 행) · 긴 이름이 화살표 앞에서 말줄임</Caption>
+      <div className="flex items-center justify-between">
+        <SellerProfile
+          size="lg"
+          name="아주아주아주긴닉네임을가진사용자님 안녕하세요!"
+          meta="very.long.email.address.for.testing@gmail.com"
+          className="flex-1"
+        />
+        <Icon name="ArrowRight" size={36} />
+      </div>
     </Demo>
   )
 }
@@ -441,20 +462,22 @@ function RemainingTimeDemo() {
   return (
     <Demo
       title="남은 시간 표기 (src/lib/remaining-time.ts)"
-      description="getRemainingMs(endAt, now) → formatRemaining(ms, style). clock은 카운트다운, short는 '경매 시작까지 3시간' 같은 대략 표기."
+      description="getRemainingMs(endAt, now) → formatRemaining(ms, style). clock은 카운트다운, short는 '경매 시작까지 3시간' 같은 대략 표기, duration은 상품 상세 '경매 시작까지'(초 단위)."
     >
       <div className="border-gray2 p-card-padding gap-card-row flex flex-col rounded-sm border">
-        <div className="text-body03 text-black0 grid grid-cols-3">
+        <div className="text-body03 text-black0 grid grid-cols-4">
           <span>남은 시간</span>
           <span>clock</span>
           <span>short</span>
+          <span>duration</span>
         </div>
         <Divider />
         {REMAINING_SAMPLES.map(({ label, ms }) => (
-          <div key={label} className="text-body05 text-black0 grid grid-cols-3">
+          <div key={label} className="text-body05 text-black0 grid grid-cols-4">
             <span className="text-gray5">{label}</span>
             <span>{formatRemaining(ms, 'clock')}</span>
             <span>{formatRemaining(ms, 'short')}</span>
+            <span>{formatRemaining(ms, 'duration')}</span>
           </div>
         ))}
       </div>

@@ -93,7 +93,7 @@ function SegmentItem({
       {...handlers}
       className={cn(
         /* 40px 칸(Figma) + 위아래 2px 보이지 않는 터치 영역으로 44px */
-        'text-body05 border-gray2 bg-white0 text-black0 focus-visible:outline-primary1 data-pressed:bg-gray2 relative h-10 min-w-0 flex-1 truncate rounded-sm border p-2.5 before:absolute before:inset-x-0 before:-inset-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2',
+        'text-body05 border-gray2 bg-white0 text-black0 focus-visible:outline-primary1 data-pressed:bg-gray0 relative h-10 min-w-0 flex-1 truncate rounded-sm border p-2.5 before:absolute before:inset-x-0 before:-inset-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2',
         invalid && !selected && 'border-error1',
         /* 선택 색은 Figma(gray6)와 달리 black0으로 정했습니다. */
         selected && 'border-black0 bg-black0 text-white0',
