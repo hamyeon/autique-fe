@@ -30,9 +30,10 @@ export function useMyProfileQuery() {
   })
 }
 
-export function usePenaltiesQuery() {
+export function usePenaltiesQuery({ enabled = true }: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: meKeys.penalties(),
     queryFn: ({ signal }) => getMyPenalties(signal),
+    enabled,
   })
 }

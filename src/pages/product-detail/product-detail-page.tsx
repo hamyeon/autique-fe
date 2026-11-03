@@ -31,6 +31,7 @@ import { AGENT_MANAGED_NOTICE, AgentManagedBottom } from '@/features/auction/age
 import { AutoBidSheet } from '@/features/auction/auto-bid-sheet'
 import { useNow } from '@/hooks/use-now'
 import { Screen } from '@/layouts/screen'
+import { useAuthStore } from '@/stores/auth-store'
 import { formatDateTime, formatGrade, formatPrice } from '@/lib/format'
 import { formatRemaining } from '@/lib/remaining-time'
 import { DetailBodySkeleton, DetailTopSkeleton } from '@/pages/product-detail/detail-skeleton'
@@ -64,6 +65,7 @@ function ProductDetail({ auctionId, valid }: { auctionId: number; valid: boolean
   const detail = useAuctionDetailQuery(auctionId, { enabled: valid })
   const toggleLike = useToggleAuctionLikeMutation()
 
+  const loggedIn = useAuthStore((s) => s.accessToken !== null || s.refreshToken !== null)
   const notFound =
     !valid || (detail.isError && isApiError(detail.error) && detail.error.status === 404)
   const data = notFound ? undefined : detail.data
@@ -120,7 +122,9 @@ function ProductDetail({ auctionId, valid }: { auctionId: number; valid: boolean
     <Screen
       header={header}
       top="none"
-      bottom={loaded && hasBottomAction(data) ? <DetailBottom detail={data} /> : undefined}
+      bottom={
+        loaded && hasBottomAction(data, loggedIn) ? <DetailBottom detail={data} /> : undefined
+      }
     >
       <ImageCarousel images={data.product.imageUrls} alt={data.product.name} />
       <div className="mt-layout-section gap-layout-section flex flex-col">
@@ -404,11 +408,13 @@ function SimilarSection({ auctionId }: { auctionId: number }) {
 }
 
 /**
- * 경매 종료에는 할 수 있는 행동이 없어 하단 버튼을 두지 않습니다(DESIGN-CHANGES.md).
+ * 경매 종료는 자동 입찰 대신 내 경매 결과로 가는 버튼만 둡니다(로그인했을 때, DESIGN-CHANGES.md).
  * 내가 등록한 경매도 자동 입찰을 할 수 없어 두지 않습니다(사용자 결정, 2026-11-03).
  */
-function hasBottomAction(detail: AuctionDetail) {
+function hasBottomAction(detail: AuctionDetail, loggedIn: boolean) {
   if (detail.myState.isSeller) return false
+  /* 종료: 로그인했으면 내 결과(낙찰 · 패찰 등) 화면으로 가는 버튼(명세: 상세에 내 결과가 없어 /result로 확인) */
+  if (detail.status === 'ENDED') return loggedIn
   return detail.status === 'SCHEDULED' || detail.status === 'LIVE'
 }
 
@@ -419,9 +425,22 @@ function hasBottomAction(detail: AuctionDetail) {
  * - 경매 중 설정 후(Figma 없음): '상한가 수정' / '자동 입찰 중단'
  */
 function DetailBottom({ detail }: { detail: AuctionDetail }) {
+  if (detail.status === 'ENDED') return <ResultBottom auctionId={detail.auctionId} />
   /* 구매 에이전트가 관리 중이면 상한 수정 · 중단을 막습니다(명세 40917). canBid · canModify만으로는 판단하지 않습니다. */
   if (detail.myState.managedByPurchaseAgent) return <AgentManagedBottom />
   return <AutoBidBottom detail={detail} />
+}
+
+/** 종료된 경매: 내 경매 결과로 */
+function ResultBottom({ auctionId }: { auctionId: number }) {
+  const navigate = useNavigate()
+  return (
+    <BottomButtonBar
+      layout="single"
+      primaryLabel="내 경매 결과 보기"
+      onPrimary={() => navigate(`/auctions/${auctionId}/result`)}
+    />
+  )
 }
 
 function AutoBidBottom({ detail }: { detail: AuctionDetail }) {

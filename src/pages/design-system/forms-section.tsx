@@ -22,6 +22,8 @@ import shoeFront from '@/assets/illustrations/img_shoe_front.svg'
 import shoeSide from '@/assets/illustrations/img_shoe_side.svg'
 import { formatNumber } from '@/lib/format'
 import { Caption, Demo, OptionGroup, Section } from './showcase'
+import kakaoPayBadge from '@/assets/illustrations/img_kakao_pay.png'
+import naverPayBadge from '@/assets/illustrations/img_naver_pay.png'
 
 export function FormsSection() {
   return (
@@ -294,9 +296,12 @@ function RadioListDemo() {
         <RadioList
           label="배지 있음"
           defaultValue="kakao"
-          options={PAYMENTS.slice(0, 2).map((o) => ({ ...o, badge: shoeSide }))}
+          options={[
+            { ...PAYMENTS[1], badge: kakaoPayBadge },
+            { ...PAYMENTS[2], badge: naverPayBadge },
+          ]}
         />
-        <Caption>badge: 42×24 이미지(실제 결제사 로고는 소비 측이 제공, 여기선 임시 이미지)</Caption>
+        <Caption>badge: 42×24 이미지(결제 화면과 같은 img_kakao_pay · img_naver_pay). 배지–라벨 사이 4</Caption>
       </div>
       <div className="gap-stack-tight flex flex-col">
         <ErrorUntilSelected>
