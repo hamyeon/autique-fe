@@ -5,18 +5,23 @@ import { MobileLayout } from '@/layouts/mobile-layout'
 import { AuctionListPage } from '@/pages/auction-list/auction-list-page'
 import {
   LikedAuctionsPage,
-  MyEndedAuctionsPage,
-  MyOngoingAuctionsPage,
+  MyParticipatingAuctionsPage,
+  MySellingAuctionsPage,
 } from '@/pages/auction-list/my-auction-list-pages'
 import { AuctionResultPage } from '@/pages/auction-result/auction-result-page'
+import { BackupOfferPage } from '@/pages/backup-offer/backup-offer-page'
 import { HomePage } from '@/pages/home/home-page'
 import { KakaoCallbackPage } from '@/pages/login/kakao-callback-page'
 import { LoginPage } from '@/pages/login/login-page'
 import { LiveAuctionPage } from '@/pages/live-auction/live-auction-page'
 import { MyPage } from '@/pages/my/my-page'
 import { NotFoundPage } from '@/pages/not-found-page'
+import { NotificationsPage } from '@/pages/notifications/notifications-page'
+import { OrderCompletePage } from '@/pages/order/order-complete-page'
+import { OrderPage } from '@/pages/order/order-page'
 import { ProductDetailPage } from '@/pages/product-detail/product-detail-page'
 import { SearchPage } from '@/pages/search/search-page'
+import { RelistPage } from '@/pages/relist/relist-page'
 import { RegisterAnalyzingPage } from '@/pages/register/register-analyzing-page'
 import { RegisterCompletePage } from '@/pages/register/register-complete-page'
 import { RegisterLayout } from '@/pages/register/register-layout'
@@ -64,9 +69,16 @@ export const router = createBrowserRouter([
         element: <RequireAuth />,
         children: [
           { path: '/my', element: <MyPage /> },
-          { path: '/my/auctions/ongoing', element: <MyOngoingAuctionsPage /> },
-          { path: '/my/auctions/ended', element: <MyEndedAuctionsPage /> },
+          { path: '/my/selling', element: <MySellingAuctionsPage /> },
+          { path: '/my/participating', element: <MyParticipatingAuctionsPage /> },
           { path: '/my/likes', element: <LikedAuctionsPage /> },
+          // 낙찰 이후: 본인 결과 · 주문 · 차순위 제안이라 모두 로그인이 필요합니다.
+          { path: '/auctions/:id/result', element: <AuctionResultPage /> },
+          { path: '/orders/:id', element: <OrderPage /> },
+          { path: '/orders/:id/complete', element: <OrderCompletePage /> },
+          { path: '/backup-offers/:id', element: <BackupOfferPage /> },
+          { path: '/notifications', element: <NotificationsPage /> },
+          { path: '/products/:id/relist', element: <RelistPage /> },
           {
             // 경매 등록. /register 와 없는 단계는 RegisterLayout이 첫 미완료 단계로 보냅니다.
             path: '/register',
@@ -91,7 +103,6 @@ export const router = createBrowserRouter([
       { path: '/login/kakao', element: <KakaoCallbackPage /> },
       { path: '/products/:id', element: <ProductDetailPage /> },
       { path: '/auctions/:id/live', element: <LiveAuctionPage /> },
-      { path: '/auctions/:id/result', element: <AuctionResultPage /> },
       ...devRoutes,
       { path: '*', element: <NotFoundPage /> },
     ],

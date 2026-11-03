@@ -27,6 +27,8 @@ interface MockAnalysis {
   imageUrls: string[]
   priced: boolean
   cancelled?: boolean
+  /** 상품 등록에 썼음(다시 등록 · 취소하면 40003) */
+  registered?: boolean
   /** Vision 분석에 걸리는 시간 */
   visionMs: number
   /** 이 시간(Vision 시작 기준)이 지나면 실패 */
@@ -117,6 +119,11 @@ export function findAnalysis(analysisId: number) {
 
 export function markPriced(analysis: MockAnalysis) {
   analysis.priced = true
+  saveAnalyses()
+}
+
+export function markRegistered(analysis: MockAnalysis) {
+  analysis.registered = true
   saveAnalyses()
 }
 

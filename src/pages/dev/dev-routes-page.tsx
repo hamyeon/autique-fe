@@ -1,8 +1,12 @@
 import { Link } from 'react-router'
-import { Header } from '@/components/ds'
+import { Header, InfoBanner } from '@/components/ds'
 import { Screen } from '@/layouts/screen'
+import { isMockAllOn } from '@/mocks/define'
 
-/* 개발 모드 전용(/dev/routes): 모든 화면 · 상태로 바로 가는 링크 모음. 상세 링크의 id는 src/mocks/data/auctions.ts 기준 */
+/*
+ * 개발 모드 전용(/dev/routes): 모든 화면 · 상태로 바로 가는 링크 모음. 상세 링크의 id는 src/mocks/data/auctions.ts 기준.
+ * 경매 · 주문 API는 실서버로 가므로(src/mocks/config.ts passthrough) 목 경매 링크는 '목 데이터로 보기'를 켜고 엽니다.
+ */
 
 interface RouteLink {
   to: string
@@ -14,6 +18,52 @@ interface RouteLink {
 }
 
 const GROUPS: { title: string; links: RouteLink[] }[] = [
+  {
+    title: '목 데이터로 보기(?mock=all)',
+    links: [
+      {
+        to: '/dev/routes?mock=all',
+        label: '켜기: 이 탭에서 로그인 말고는 모두 목으로',
+        reload: true,
+      },
+      { to: '/dev/routes?mock=off', label: '끄기: 실서버로 되돌리기', reload: true },
+    ],
+  },
+  {
+    title: '낙찰 이후(목 데이터로 보기를 켜고)',
+    links: [
+      { to: '/auctions/13/result', label: '결과 · 낙찰 · 결제 대기(결제 · 구매 포기)' },
+      { to: '/auctions/14/result', label: '결과 · 패찰 · 차순위 후보' },
+      { to: '/auctions/15/result', label: '결과 · 차순위 제안 받음 → 차순위 구매 기회로' },
+      { to: '/auctions/16/result', label: '결과 · 결제 기한 만료(노쇼)' },
+      { to: '/auctions/4/result', label: '결과 · 참여하지 않은 경매' },
+      { to: '/auctions/19/result', label: '결과 · 유찰' },
+      { to: '/auctions/999/result', label: '결과 · 없는 경매' },
+      { to: '/auctions/13/result?mock=error', label: '결과 · 에러' },
+      { to: '/orders/50', label: '결제(주문 50) → 결제 완료' },
+      { to: '/orders/51', label: '결제 · 기한 만료 주문' },
+      { to: '/backup-offers/90', label: '차순위 구매 기회(구매 · 포기)' },
+      { to: '/products/4', label: '종료된 상품 상세 → 내 경매 결과 보기' },
+      {
+        to: '/dev/routes?mock=reset',
+        label: '목 상태 초기화(결제 · 포기한 것 되돌리기)',
+        reload: true,
+      },
+    ],
+  },
+  {
+    title: '알림 · 판매자 관리(목 데이터로 보기를 켜고)',
+    links: [
+      { to: '/notifications', label: '알림 목록(안 읽은 3개, 누르면 해당 화면으로)' },
+      { to: '/notifications?mock=empty', label: '알림 · 비어 있음' },
+      { to: '/notifications?mock=error', label: '알림 · 에러' },
+      { to: '/products/18', label: '내 경매 · 예정(경매 취소 · 시작가 수정)' },
+      { to: '/products/19', label: '내 경매 · 유찰(재경매 등록)' },
+      { to: '/products/17', label: '내 경매 · 진행 중(하단 없음)' },
+      { to: '/products/19/relist', label: '재경매 등록 화면' },
+      { to: '/products/2/relist', label: '재경매 · 할 수 없는 경매' },
+    ],
+  },
   {
     title: '홈',
     links: [
@@ -37,10 +87,10 @@ const GROUPS: { title: string; links: RouteLink[] }[] = [
       { to: '/my', label: '마이페이지' },
       { to: '/my?mock=empty', label: '마이페이지 · 이메일 없는 계정(목록은 비어 있음)' },
       { to: '/my?mock=error', label: '마이페이지 · 에러(프로필 자리만)' },
-      { to: '/my/auctions/ongoing', label: '현재 경매 중인 상품(내 경매 17 · 18)' },
-      { to: '/my/auctions/ended', label: '과거 경매했던 상품(내 경매 19)' },
-      { to: '/my/likes', label: '관심 목록(처음엔 비어 있음 · 하트를 누르면 추가)' },
-      { to: '/my/likes?mock=error', label: '관심 목록 · 에러' },
+      { to: '/my/selling', label: '내가 판매했던 상품(목: 진행 중 17 · 18 → 종료 19)' },
+      { to: '/my/participating', label: '내가 참여했던 상품(진행 중 → 종료)' },
+      { to: '/my/likes', label: '위시리스트(처음엔 비어 있음 · 하트를 누르면 추가)' },
+      { to: '/my/likes?mock=error', label: '위시리스트 · 에러' },
       { to: '/login', label: '로그인(로그인 상태면 홈으로)' },
       { to: '/login/kakao?error=access_denied', label: '카카오 콜백 · 동의 취소(로그인 화면으로)' },
       { to: '/login/kakao?code=x&state=x', label: '카카오 콜백 · 요청 만료(state 불일치)' },
@@ -98,7 +148,6 @@ const GROUPS: { title: string; links: RouteLink[] }[] = [
       { to: '/auctions/2/live?mock=empty', label: '입찰 내역 없음' },
       { to: '/auctions/12/live', label: '시작 전 경매' },
       { to: '/auctions/999/live', label: '없는 경매' },
-      { to: '/auctions/2/result', label: '결과(준비 중 자리)' },
       { to: '/dev/routes?mock=reset', label: '목 상태 초기화', reload: true },
     ],
   },
@@ -132,9 +181,15 @@ const GROUPS: { title: string; links: RouteLink[] }[] = [
 ]
 
 export function DevRoutesPage() {
+  const mockAll = isMockAllOn()
   return (
     <Screen header={<Header title="개발용 경로" showBack={false} />}>
       <div className="gap-layout-section flex flex-col">
+        <InfoBanner tone={mockAll ? 'error' : 'default'}>
+          {mockAll
+            ? '목 데이터로 보기가 켜져 있어요. 이 탭에서는 로그인 말고 모두 목 데이터예요.'
+            : '목 데이터로 보기가 꺼져 있어요. 경매 · 주문은 실서버 데이터예요.'}
+        </InfoBanner>
         {GROUPS.map((group) => (
           <section key={group.title} className="gap-section-title flex flex-col">
             <h2 className="text-head03 text-black0">{group.title}</h2>

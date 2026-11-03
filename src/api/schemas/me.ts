@@ -26,11 +26,12 @@ export type MyPenalties = z.infer<typeof myPenaltiesSchema>
 
 /* ───────── GET /api/me ───────── */
 
-// [ASSUMED] 명세에 사용자 정보 API가 없습니다(카카오 로그인 응답도 토큰만). 마이페이지 프로필(Figma 957:1951)에 필요해 만들었습니다.
+/** 로그인한 나. 프로필 사진 조회 · 수정은 제공하지 않습니다. */
 export const myProfileSchema = z.object({
-  userId: z.number().int(), // [ASSUMED] JWT sub와 같은 값
-  nickname: z.string(), // [ASSUMED] 입찰 내역 · 판매자 정보의 닉네임과 같은 값
-  email: z.string().nullable(), // [ASSUMED] 카카오 계정 이메일. 동의하지 않았으면 null
-  profileImageUrl: z.string().nullable(), // [ASSUMED] 없으면 null(회색 원)
+  userId: z.number().int(),
+  /** 가입 때 받지 못했으면 '회원-' + 임의 8자 */
+  nickname: z.string(),
+  /** 카카오 이메일에 동의하지 않았거나 이메일이 없는 계정이면 null */
+  email: z.string().nullish(),
 })
 export type MyProfile = z.infer<typeof myProfileSchema>

@@ -1,6 +1,6 @@
 import type { AuctionResult, AuctionResultType } from '@/api/schemas/auctions'
 import type { BackupOffer, BackupOfferStatus } from '@/api/schemas/backup-offers'
-import type { Order, OrderStatus } from '@/api/schemas/orders'
+import type { Order, OrderStatus, OrderType } from '@/api/schemas/orders'
 import { findAuction, toProductSummary } from '@/mocks/data/auctions'
 import { DAY, HOUR, SHIPPING_FEE, fromNow, kst } from '@/mocks/data/common'
 
@@ -12,6 +12,7 @@ interface MockOrder {
   orderId: number
   auctionId: number
   status: OrderStatus
+  orderType: OrderType
   purchasePrice: number
   paymentDeadline: number
   paidAt: number | null
@@ -23,6 +24,7 @@ export const orders: MockOrder[] = [
     orderId: 50,
     auctionId: 13,
     status: 'PAYMENT_PENDING',
+    orderType: 'WINNER',
     purchasePrice: 105000,
     paymentDeadline: fromNow(21 * HOUR),
     paidAt: null,
@@ -32,6 +34,7 @@ export const orders: MockOrder[] = [
     orderId: 51,
     auctionId: 16,
     status: 'PAYMENT_EXPIRED',
+    orderType: 'WINNER',
     purchasePrice: 85000,
     paymentDeadline: fromNow(-2 * DAY),
     paidAt: null,
@@ -44,11 +47,13 @@ export function findOrder(orderId: number) {
   return orders.find((o) => o.orderId === orderId)
 }
 
+/** 차순위 수락으로 만드는 주문 */
 export function createOrder(auctionId: number, purchasePrice: number) {
   const order: MockOrder = {
     orderId: nextOrderId++,
     auctionId,
     status: 'PAYMENT_PENDING',
+    orderType: 'BACKUP_ACCEPT',
     purchasePrice,
     paymentDeadline: fromNow(24 * HOUR),
     paidAt: null,
@@ -70,6 +75,7 @@ export function toOrder(o: MockOrder): Order {
     paymentDeadline: kst(o.paymentDeadline),
     serverTime: kst(Date.now()),
     paidAt: o.paidAt ? kst(o.paidAt) : null,
+    orderType: o.orderType,
   }
 }
 
@@ -134,7 +140,9 @@ export function toResult(auctionId: number): AuctionResult | null {
   const derived: AuctionResultType = !a.bids.length ? 'NO_BIDS' : a.bids[0].isMine ? 'WON' : 'LOST'
   const result = resultOverrides[auctionId] ?? derived
 
-  const order = result === 'WON' ? orders.find((o) => o.auctionId === auctionId) : undefined
+  // 내 주문(차순위 수락으로 새로 만든 주문이 있으면 그것)
+  const myOrder = orders.findLast((o) => o.auctionId === auctionId)
+  const order = result === 'WON' ? myOrder : undefined
   const backupOffer =
     result === 'BACKUP_WAITING' ? backupOffers.find((o) => o.auctionId === auctionId) : undefined
 
@@ -143,7 +151,8 @@ export function toResult(auctionId: number): AuctionResult | null {
     result,
     product: toProductSummary(a),
     rank,
-    finalPrice,
+    // 낙찰이면 내 주문 금액(차순위 수락자는 원 경매 최고가가 아니라 구매 가능 금액)
+    finalPrice: order?.purchasePrice ?? finalPrice,
     myLastBidAmount: myLast?.amount ?? null,
     shippingFee: order ? SHIPPING_FEE : null,
     totalAmount: order ? order.purchasePrice + SHIPPING_FEE : null,
@@ -152,5 +161,6 @@ export function toResult(auctionId: number): AuctionResult | null {
     orderId: order?.orderId ?? null,
     backupOfferId: backupOffer?.backupOfferId ?? null,
     backupEligible: rank === 2,
+    orderStatus: myOrder?.status ?? null,
   }
 }

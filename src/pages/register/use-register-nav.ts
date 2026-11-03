@@ -9,6 +9,8 @@ import { useRegisterStore } from '@/stores/register-store'
 export interface RegisterNavState {
   from?: NumberedStep
   registered?: boolean
+  /** 등록된 경매 ID. 완료 화면의 '완료'가 이 경매 상세로 갑니다. */
+  auctionId?: number
   /** 나가기 확인 시트 없이 이동(분석 완료 · 나중에 확인하기 등 화면이 직접 정한 이동) */
   skipBlock?: boolean
 }
@@ -81,17 +83,17 @@ export function useRegisterNav(step: NumberedStep) {
    * 등록 완료 화면으로. 등록을 시작한 기록 위치까지 되돌린 뒤 완료 화면으로 바꿔 넣어(RegisterLayout),
    * 완료 화면에서 뒤로 가기를 누르면 등록 단계가 아니라 등록 전 화면으로 갑니다.
    */
-  const goComplete = () => {
+  const goComplete = (auctionId: number) => {
     const idx = currentHistoryIdx()
     const entry = registerEntryIdx()
     if (idx !== null && entry !== null && idx > entry) {
-      useRegisterStore.getState().setCompleting(true)
+      useRegisterStore.getState().setCompleting(auctionId)
       void navigate(entry - idx)
       return
     }
     void navigate(registerPath('complete'), {
       replace: true,
-      state: { registered: true, skipBlock: true } satisfies RegisterNavState,
+      state: { registered: true, auctionId, skipBlock: true } satisfies RegisterNavState,
     })
   }
 

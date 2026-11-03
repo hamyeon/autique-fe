@@ -50,9 +50,9 @@ export function RegisterReviewStep() {
   const submitting = useRef(false)
   const submitMutation = useMutation({
     mutationFn: submitRegistration,
-    onSuccess: () => {
+    onSuccess: ({ auctionId }) => {
       void queryClient.invalidateQueries({ queryKey: auctionKeys.lists() })
-      goComplete()
+      goComplete(auctionId)
     },
     onError: (error) => setFailure(toRegisterFailure(error)),
     onSettled: () => {

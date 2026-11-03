@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router'
 import { useLogoutMutation } from '@/api/auth'
 import { useMyProfileQuery } from '@/api/me'
+import { useHasUnreadNotifications } from '@/api/notifications'
 import {
   Divider,
   Header,
@@ -27,6 +28,7 @@ const notifyPreparing = showPreparingToast
 export function MyPage() {
   const navigate = useNavigate()
   const logout = useLogoutMutation()
+  const hasUnread = useHasUnreadNotifications()
   const handleLogout = () => {
     navigate('/', { replace: true })
     logout.mutate()
@@ -35,17 +37,19 @@ export function MyPage() {
   return (
     <Screen
       top="none"
-      header={<Header title="마이페이지" showBack={false} trailing="actions" />}
+      header={
+        <Header title="마이페이지" showBack={false} trailing="actions" actions={{ hasUnread }} />
+      }
       bottom={<TabBar active="mypage" />}
     >
       <div className="-mx-layout-gutter gap-space-12 flex flex-col">
         <ProfileSection />
         <MyPageMenuSection title="나의 경매">
-          <MyPageListButton href="/my/auctions/ongoing">현재 경매 중인 상품</MyPageListButton>
-          <MyPageListButton href="/my/auctions/ended">과거 경매했던 상품</MyPageListButton>
+          <MyPageListButton href="/my/selling">내가 판매했던 상품</MyPageListButton>
+          <MyPageListButton href="/my/participating">내가 참여했던 상품</MyPageListButton>
         </MyPageMenuSection>
         <MyPageMenuSection title="쇼핑">
-          <MyPageListButton href="/my/likes">관심 목록</MyPageListButton>
+          <MyPageListButton href="/my/likes">위시리스트</MyPageListButton>
           <MyPageListButton onClick={notifyPreparing}>경매 AI Agent 설정</MyPageListButton>
         </MyPageMenuSection>
         <MyPageMenuSection title="고객센터">
@@ -59,7 +63,7 @@ export function MyPage() {
   )
 }
 
-/** 프로필 행(위아래 20 · 왼쪽 20 · 오른쪽 8, SellerProfile lg + 화살표 36) + 8px 띠. [ASSUMED] GET /api/me */
+/** 프로필 행(위아래 20 · 왼쪽 20 · 오른쪽 8, SellerProfile lg + 화살표 36) + 8px 띠. 프로필 사진은 API에 없어 늘 회색 원 */
 function ProfileSection() {
   const profile = useMyProfileQuery()
   const { pressed, handlers } = usePressed()
@@ -88,7 +92,7 @@ function ProfileSection() {
       />
     )
   } else {
-    const { nickname, email, profileImageUrl } = profile.data
+    const { nickname, email } = profile.data
     row = (
       <button
         type="button"
@@ -101,7 +105,6 @@ function ProfileSection() {
           size="lg"
           name={`${nickname}님 안녕하세요!`}
           meta={email ?? undefined}
-          avatar={profileImageUrl ?? undefined}
           className="flex-1"
         />
         <Icon name="ArrowRight" size={36} />

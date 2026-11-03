@@ -72,14 +72,15 @@ export const productSummarySchema = z.object({
   productId: z.number().int(),
   name: z.string(),
   subName: z.string(),
-  imageUrl: z.string(),
+  /** 대표 이미지 서명 URL. 이미지가 없으면 null */
+  imageUrl: z.string().nullish(),
 })
 export type ProductSummary = z.infer<typeof productSummarySchema>
 
 /* ───────── 오류 코드 (공통 오류 코드표) ───────── */
 
 export const API_ERROR_CODE = {
-  INVALID_REQUEST: 40001,
+  INVALID_REQUEST: 40001, // 검증 실패 · 잘못된 JSON/본문 타입 · 경로 변수/쿼리 타입 오류(2026-11 전에는 500/50001로 오던 형식 오류 포함)
   IDEMPOTENCY_KEY_MISSING: 40004,
   UNAUTHORIZED: 40101,
   SELLER_CANNOT_BID: 40301,
@@ -107,12 +108,15 @@ export const API_ERROR_CODE = {
   BID_NOT_ALIGNED: 40913,
   ALREADY_PAID: 40914,
   ORDER_CANCELED: 40915,
+  AGENT_MANAGED_AUCTION: 40917, // 구매 에이전트가 관리 중인 경매에 직접 입찰 · 자동입찰 수정 · 중단
+  METHOD_NOT_ALLOWED: 40501, // 경로는 있지만 메서드를 지원하지 않음(Allow 헤더에 허용 메서드)
+  UNSUPPORTED_MEDIA_TYPE: 41501, // 지원하지 않는 Content-Type
 
   // [ASSUMED] 아래 이름은 각 엔드포인트 페이지에 코드·메시지만 있고 symbolic 이름이 없어 메시지를 보고 붙였습니다.
-  IMAGE_FILE_MISSING: 40002,
+  IMAGE_FILE_MISSING: 40002, // 업로드 이미지 없음, 또는 등록할 때 분석 세션의 사진이 3~4장이 아님
   ANALYSIS_SESSION_NOT_FOUND: 40408, // 공통 오류 코드표 변경 사항(2026-10-07): 분석 세션 없음 40402 → 40408
   INTERNAL_SERVER_ERROR: 50001, // 가격 계산 중 서버 오류(분석 세션은 PRICING_FAILED)
-  ANALYSIS_STATUS_INVALID: 40003,
+  ANALYSIS_STATUS_INVALID: 40003, // 가격 계산 불가 상태, 취소됐거나 이미 등록에 쓴 분석 세션의 재사용
   AUCTION_TIME_INVALID: 40006,
   PHOTO_REQUEST_INVALID: 40007, // 분석 photoIds 누락 · 중복 · 필수 칸 누락
   PHOTO_NOT_FOUND: 40409, // 없거나 다른 사용자의 photoId

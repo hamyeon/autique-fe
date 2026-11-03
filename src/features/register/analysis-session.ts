@@ -41,11 +41,20 @@ export function currentAnalysisIds(): number[] {
 
 /**
  * 더 쓰지 않을 분석 세션을 뒤에서 취소합니다(POST /api/products/analyze/{taskId}/cancel).
- * 기다리지 않고, 실패해도(이미 등록 확정 · 세션 없음 등) 등록 흐름에는 영향이 없어 콘솔에만 남깁니다.
+ * 기다리지 않고, 실패해도 등록 흐름에는 영향이 없어 콘솔에만 남깁니다.
+ * 이미 등록에 쓴 세션(40003) · 없는 세션(40408)은 취소할 것이 없는 정상 상황이라 남기지 않습니다.
  */
 export function cancelAnalysesQuietly(ids: readonly number[]) {
   for (const id of ids) {
-    cancelAnalysis(id).catch((error: unknown) => console.warn('[분석 취소] 실패', id, error))
+    cancelAnalysis(id).catch((error: unknown) => {
+      if (
+        isApiError(error) &&
+        (error.code === API_ERROR_CODE.ANALYSIS_STATUS_INVALID ||
+          error.code === API_ERROR_CODE.ANALYSIS_SESSION_NOT_FOUND)
+      )
+        return
+      console.warn('[분석 취소] 실패', id, error)
+    })
   }
 }
 

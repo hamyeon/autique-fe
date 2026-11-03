@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type { SimilarAuction } from '@/api/schemas/auctions'
+import type { AuctionCard } from '@/api/schemas/auctions'
 import type { AuctionStatus } from '@/api/schemas/common'
 import type { ProductCardProps } from '@/components/ds'
 import { ProductCard } from '@/components/ds'
@@ -13,13 +13,13 @@ const CARD_STATUS: Record<AuctionStatus, Pick<ProductCardProps, 'status' | 'stat
 }
 
 export interface AuctionGridProps {
-  items: SimilarAuction[]
-  onToggleLike: (item: SimilarAuction) => void
+  items: AuctionCard[]
+  onToggleLike: (item: AuctionCard) => void
   /** 그리드 끝에 덧붙일 칸(다음 페이지 스켈레톤 등) */
   children?: ReactNode
 }
 
-/** 경매 카드 목록(홈 목록 · 비슷한 상품) → ProductCard 2열 그리드(열 12 · 행 20). 카드를 누르면 /products/:auctionId */
+/** 경매 카드 목록(홈 · 상품 찾기 · 비슷한 상품 · 마이페이지 목록) → ProductCard 2열 그리드(열 12 · 행 20). 카드를 누르면 /products/:auctionId */
 export function AuctionGrid({ items, onToggleLike, children }: AuctionGridProps) {
   return (
     <ul className="gap-x-space-12 gap-y-space-20 grid grid-cols-2">
@@ -28,11 +28,11 @@ export function AuctionGrid({ items, onToggleLike, children }: AuctionGridProps)
           <ProductCard
             {...CARD_STATUS[item.status]}
             href={`/products/${item.auctionId}`}
-            image={item.thumbnailUrl}
-            grade={formatGrade(item.grade)}
-            brand={item.brand}
+            image={item.thumbnailUrl ?? undefined}
+            grade={item.grade ? formatGrade(item.grade) : undefined}
+            brand={item.brand ?? ''}
             name={item.name}
-            price={formatPrice(item.price)}
+            price={formatPrice(item.currentPrice)}
             meta={`관심 ${formatNumber(item.likeCount)}`}
             favorited={item.isLiked}
             onFavorite={() => onToggleLike(item)}

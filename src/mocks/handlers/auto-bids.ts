@@ -129,6 +129,8 @@ export const autoBidHandlers = [
         serverTime: kst(Date.now()),
         canModify: editable,
         canCancel: editable,
+        purchaseGoalId: null,
+        managedByPurchaseAgent: false,
       })
     },
   }),

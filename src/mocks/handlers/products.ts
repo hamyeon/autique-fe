@@ -15,6 +15,7 @@ import {
   markCancelled,
   markPhotosUsed,
   markPriced,
+  markRegistered,
   toAnalysis,
 } from '@/mocks/data/products'
 import { idParam, mockEndpoint } from '@/mocks/define'
@@ -92,13 +93,14 @@ export const productHandlers = [
     },
   }),
 
-  /** 등록 확정 전이면 언제나 취소. 이미 취소했어도 200. 세션이 목에만 있는 시나리오에서만 목(평소엔 실서버) */
+  /** 등록 확정 전이면 언제나 취소. 이미 취소했어도 200, 등록에 쓴 세션은 40003. 세션이 목에만 있는 시나리오에서만 목(평소엔 실서버) */
   mockEndpoint(endpoints.cancelAnalysis, {
     error: mockErrors.ANALYSIS_NOT_FOUND('999'),
     mockIn: ['slow', 'analysis-fail'],
     resolve: ({ params, ok, fail }) => {
       const analysis = findAnalysis(idParam(params, 'taskId'))
       if (!analysis) return fail(mockErrors.ANALYSIS_NOT_FOUND(params.taskId))
+      if (analysis.registered) return fail(mockErrors.ANALYSIS_SESSION_USED)
       markCancelled(analysis)
       return ok({ analysisId: analysis.analysisId, status: 'CANCELLED' })
     },
@@ -121,13 +123,23 @@ export const productHandlers = [
     },
   }),
 
-  /** 상품 + 첫 경매(SCHEDULED)를 함께 만들고 홈 목록에도 보이게 합니다. ?mock=submit-fail 이면 500 */
+  /**
+   * 상품 + 첫 경매(SCHEDULED)를 함께 만들고 홈 목록에도 보이게 합니다. ?mock=submit-fail 이면 500.
+   * 이미지는 요청의 imageUrls가 아니라 분석 세션에 저장된 사진을 씁니다(명세).
+   */
   mockEndpoint(endpoints.createProduct, {
     error: mockErrors.AUCTION_TIME_INVALID,
     invalid: invalidAuctionTime,
     mockIn: ['submit-fail'],
     resolve: ({ body, ok, fail, scenario }) => {
       if (scenario === 'submit-fail') return fail(mockErrors.INTERNAL_SERVER_ERROR)
+      const analysis = findAnalysis(body.analysisId)
+      if (!analysis) return fail(mockErrors.ANALYSIS_NOT_FOUND(String(body.analysisId)))
+      if (analysis.cancelled || analysis.registered) return fail(mockErrors.ANALYSIS_SESSION_CLOSED)
+      const { imageUrls } = analysis
+      if (imageUrls.length < 3 || imageUrls.length > 4)
+        return fail(mockErrors.SESSION_IMAGE_COUNT(imageUrls.length))
+      markRegistered(analysis)
       const productId = createProductId()
       const auctionId = createAuctionId()
       const startsAt = Date.parse(body.auctionStartAt)
@@ -141,7 +153,7 @@ export const productHandlers = [
           brand: body.brand,
           subName: `${body.brand} ${body.modelName} ${body.color}`,
           grade: body.conditionGrade,
-          imageUrls: body.imageUrls,
+          imageUrls,
         },
         description: body.sellerDescription ?? '',
         startPrice: body.auctionStartPrice,
@@ -160,7 +172,7 @@ export const productHandlers = [
       return ok({
         id: productId,
         sellerId: ME.userId,
-        imageUrls: body.imageUrls,
+        imageUrls,
         brand: body.brand,
         modelName: body.modelName,
         color: body.color,

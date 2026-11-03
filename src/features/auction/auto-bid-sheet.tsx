@@ -13,6 +13,7 @@ import {
   isRetryableError,
 } from '@/features/auction/auto-bid'
 import { BidAmountSheet } from '@/features/auction/bid-amount-sheet'
+import { AGENT_MANAGED_NOTICE } from '@/features/auction/agent-managed'
 import { formatNumber, formatPrice } from '@/lib/format'
 import { createUuid } from '@/lib/uuid'
 
@@ -134,6 +135,10 @@ export function AutoBidSheet({
     }
     if (hasErrorCode(e, 'PENALTY_RESTRICTED')) {
       setError({ target: 'request', message: '지금은 경매 참여가 제한돼 있어요.', retry: false })
+      return
+    }
+    if (hasErrorCode(e, 'AGENT_MANAGED_AUCTION')) {
+      setError({ target: 'request', message: AGENT_MANAGED_NOTICE, retry: false })
       return
     }
     const offline = isApiError(e) && (e.kind === 'network' || e.kind === 'timeout')

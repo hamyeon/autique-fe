@@ -7,6 +7,11 @@ import { Icon } from './icon'
 
 export interface AmountStepperProps {
   label?: string
+  /**
+   * 라벨 모양. sheet(기본) = body04 gray7(바텀시트, Figma 원본),
+   * field = head03 black0(TextField · TimeInput과 같은 입력 필드 라벨, 화면 폼에 함께 둘 때) (DS 확장)
+   */
+  labelStyle?: 'sheet' | 'field'
   /** 제어형 값(원) */
   value?: number
   /** 비제어형 초기값. 없으면 min */
@@ -36,6 +41,7 @@ export interface AmountStepperProps {
 export const AmountStepper = forwardRef<HTMLDivElement, AmountStepperProps>(function AmountStepper(
   {
     label,
+    labelStyle = 'sheet',
     value,
     defaultValue,
     onChange,
@@ -62,7 +68,10 @@ export const AmountStepper = forwardRef<HTMLDivElement, AmountStepperProps>(func
   return (
     <div className={cn('gap-form-label flex w-full flex-col', className)}>
       {label && (
-        <span id={labelId} className="text-body04 text-gray7">
+        <span
+          id={labelId}
+          className={labelStyle === 'field' ? 'text-head03 text-black0' : 'text-body04 text-gray7'}
+        >
           {label}
         </span>
       )}

@@ -3,6 +3,7 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tansta
 import { request } from '@/api/client'
 import { endpoints } from '@/api/endpoints'
 import type {
+  AuctionCard,
   AuctionDetail,
   AuctionList,
   AuctionListQuery,
@@ -11,9 +12,11 @@ import type {
   BidListQuery,
   LikedAuctionListQuery,
   MyAuctionListQuery,
+  MyAuctionState,
   PlaceBidRequest,
+  PopularAuctions,
+  RecommendedAuctions,
   RelistAuctionRequest,
-  SimilarAuction,
   SimilarAuctions,
   UpdateStartPriceRequest,
 } from '@/api/schemas/auctions'
@@ -21,15 +24,23 @@ import { meKeys } from '@/api/me'
 
 export const auctionKeys = {
   all: ['auctions'] as const,
+  /** 카드 목록 전부. 관심 등록이 바로 반영되도록 카드 목록은 모두 이 키 아래에 둡니다. */
   lists: () => [...auctionKeys.all, 'list'] as const,
-  /** 한 페이지만 (홈 '나에게 딱 맞는 상품') */
-  list: (query: AuctionListQuery) => [...auctionKeys.lists(), 'page', query] as const,
-  /** 무한 스크롤 (홈 '지금 인기 있는 경매') */
+  /** 상품 찾기 최신순(무한 스크롤) */
   infiniteList: (query: Omit<AuctionListQuery, 'page'>) =>
     [...auctionKeys.lists(), 'infinite', query] as const,
-  /** 내가 올린 경매(마이페이지). 관심 등록이 바로 반영되도록 목록 키 아래에 둡니다. */
-  myList: (query: Omit<MyAuctionListQuery, 'page'>) =>
-    [...auctionKeys.lists(), 'mine', query] as const,
+  /** 인기 경매(홈 4개 · 상품 찾기 인기순 20개) */
+  popular: (limit: number) => [...auctionKeys.lists(), 'popular', limit] as const,
+  /** 추천 경매(홈 '나에게 딱 맞는 상품') */
+  recommended: (limit: number) => [...auctionKeys.lists(), 'recommended', limit] as const,
+  /** 검색 결과(무한 스크롤) */
+  search: (keyword: string) => [...auctionKeys.lists(), 'search', keyword] as const,
+  /** 내가 참여한 경매(마이페이지) */
+  participatingList: (query: Omit<MyAuctionListQuery, 'page'>) =>
+    [...auctionKeys.lists(), 'participating', query] as const,
+  /** 내가 판매 등록한 경매(마이페이지) */
+  sellingList: (query: Omit<MyAuctionListQuery, 'page'>) =>
+    [...auctionKeys.lists(), 'selling', query] as const,
   /** 관심 목록(마이페이지) */
   likedList: (query: Omit<LikedAuctionListQuery, 'page'> = {}) =>
     [...auctionKeys.lists(), 'liked', query] as const,
@@ -50,17 +61,30 @@ const LIVE_POLL_MS = 3000
 
 /* ───────── API 함수 ───────── */
 
-/** [ASSUMED] 명세에 없는 경매 목록 API (홈) */
+/** 예정 · 진행 중 경매(최신순). page는 0부터 */
 export function getAuctions(query: AuctionListQuery = {}, signal?: AbortSignal) {
   return request(endpoints.getAuctions, { query, signal })
 }
 
-/** [ASSUMED] 명세에 없는 내 경매 목록 API (마이페이지) */
+export function getPopularAuctions(limit: number, signal?: AbortSignal) {
+  return request(endpoints.getPopularAuctions, { query: { limit }, signal })
+}
+
+export function getRecommendedAuctions(limit: number, signal?: AbortSignal) {
+  return request(endpoints.getRecommendedAuctions, { query: { limit }, signal })
+}
+
+/** 내가 구매자로 참여한 경매 */
 export function getMyAuctions(query: MyAuctionListQuery, signal?: AbortSignal) {
   return request(endpoints.getMyAuctions, { query, signal })
 }
 
-/** [ASSUMED] 명세에 없는 관심 목록 API (마이페이지) */
+/** 내가 판매 등록한 경매 */
+export function getMySellingAuctions(query: MyAuctionListQuery, signal?: AbortSignal) {
+  return request(endpoints.getMySellingAuctions, { query, signal })
+}
+
+/** 관심 목록 */
 export function getLikedAuctions(query: LikedAuctionListQuery = {}, signal?: AbortSignal) {
   return request(endpoints.getLikedAuctions, { query, signal })
 }
@@ -120,15 +144,7 @@ export function updateStartPrice(auctionId: number, body: UpdateStartPriceReques
 
 /* ───────── 조회 훅 ───────── */
 
-/** [ASSUMED] 명세에 없는 경매 목록 API (홈). page는 0부터 */
-export function useAuctionsQuery(query: AuctionListQuery = {}) {
-  return useQuery({
-    queryKey: auctionKeys.list(query),
-    queryFn: ({ signal }) => getAuctions(query, signal),
-  })
-}
-
-/** [ASSUMED] 명세에 없는 경매 목록 API (홈). page는 0부터, 페이지 방식은 입찰 이력과 같음 */
+/** 상품 찾기 최신순. page는 0부터 */
 export function useAuctionsInfiniteQuery(query: Omit<AuctionListQuery, 'page'> = {}) {
   return useInfiniteQuery({
     queryKey: auctionKeys.infiniteList(query),
@@ -138,17 +154,119 @@ export function useAuctionsInfiniteQuery(query: Omit<AuctionListQuery, 'page'> =
   })
 }
 
-/** [ASSUMED] 명세에 없는 내 경매 목록 API (마이페이지). page는 0부터 */
-export function useMyAuctionsInfiniteQuery(query: Omit<MyAuctionListQuery, 'page'>) {
+/** 홈 '지금 인기 있는 경매' */
+export function usePopularAuctionsQuery(limit: number) {
+  return useQuery({
+    queryKey: auctionKeys.popular(limit),
+    queryFn: ({ signal }) => getPopularAuctions(limit, signal),
+  })
+}
+
+/**
+ * 상품 찾기 인기순. 인기 API는 페이지가 없어(최대 20개) 한 페이지짜리 목록으로 바꿔
+ * 최신순과 같은 목록 화면(무한 스크롤 쿼리)을 그대로 씁니다.
+ */
+export function usePopularAuctionsInfiniteQuery(limit: number) {
   return useInfiniteQuery({
-    queryKey: auctionKeys.myList(query),
-    queryFn: ({ pageParam, signal }) => getMyAuctions({ ...query, page: pageParam }, signal),
+    queryKey: [...auctionKeys.popular(limit), 'infinite'],
+    queryFn: async ({ signal }): Promise<AuctionList> => {
+      const { items } = await getPopularAuctions(limit, signal)
+      return { items, page: 0, size: limit, hasNext: false }
+    },
+    initialPageParam: 0,
+    getNextPageParam: () => undefined,
+  })
+}
+
+/** 홈 '나에게 딱 맞는 상품'. 로그인 상태에 따라 개인화 · 대체 추천이 달라집니다. */
+export function useRecommendedAuctionsQuery(limit: number) {
+  return useQuery({
+    queryKey: auctionKeys.recommended(limit),
+    queryFn: ({ signal }) => getRecommendedAuctions(limit, signal),
+  })
+}
+
+/** 검색에서 한 번에 훑는 경매 수(목록 API 최대) */
+const SEARCH_SCAN_SIZE = 50
+
+/** 브랜드 · 상품 표시명에 검색어가 들어 있는지(대소문자 · 띄어쓰기 무시) */
+function matchesKeyword(item: AuctionCard, keyword: string) {
+  const normalize = (text: string) => text.toLowerCase().replace(/\s+/g, '')
+  const target = normalize(keyword)
+  return [item.brand ?? '', item.name].some((text) => normalize(text).includes(target))
+}
+
+/**
+ * 검색. 서버에 검색 API가 없어(명세: 검색 기능 없음) 상품 찾기 목록(GET /api/auctions)을 훑으며 화면에서 거릅니다.
+ * 한 번 부를 때 결과가 1개 이상 나오거나 목록 끝까지 서버 페이지를 이어 읽고, page에는 마지막으로 읽은 서버 페이지를 담습니다.
+ * 목록 API가 예정 · 진행 중 경매만 주므로 끝난 경매는 검색되지 않습니다.
+ */
+export function useAuctionSearchInfiniteQuery(keyword: string) {
+  return useInfiniteQuery({
+    queryKey: auctionKeys.search(keyword),
+    queryFn: async ({ pageParam, signal }): Promise<AuctionList> => {
+      let page = pageParam
+      for (;;) {
+        const result = await getAuctions({ page, size: SEARCH_SCAN_SIZE }, signal)
+        const items = result.items.filter((item) => matchesKeyword(item, keyword))
+        if (items.length > 0 || !result.hasNext) return { ...result, items }
+        page += 1
+      }
+    },
     initialPageParam: 0,
     getNextPageParam: (last) => (last.hasNext ? last.page + 1 : undefined),
   })
 }
 
-/** [ASSUMED] 명세에 없는 관심 목록 API (마이페이지). page는 0부터 */
+/** 진행 중 → 종료 순으로 이어 읽을 다음 위치 */
+interface StatePageParam {
+  state: MyAuctionState
+  page: number
+}
+
+/** 한 번 불러온 결과 + 다음에 읽을 위치(없으면 끝) */
+type ChainedAuctionList = AuctionList & { next: StatePageParam | null }
+
+/**
+ * 마이페이지 판매 · 참여 목록: 진행 중(state=current)을 끝까지 읽은 뒤 종료(state=past)를 이어 읽어 한 목록으로 보여줍니다.
+ * 빈 페이지가 나오면(진행 중이 하나도 없는 등) 같은 호출에서 다음 위치를 이어 읽어, 화면이 빈 목록으로 멈추지 않게 합니다.
+ */
+function useChainedStateInfiniteQuery(
+  queryKey: readonly unknown[],
+  fetchPage: (query: MyAuctionListQuery, signal: AbortSignal) => Promise<AuctionList>,
+  size: number,
+) {
+  return useInfiniteQuery({
+    queryKey,
+    queryFn: async ({ pageParam, signal }): Promise<ChainedAuctionList> => {
+      let at = pageParam
+      for (;;) {
+        const result = await fetchPage({ ...at, size }, signal)
+        const next: StatePageParam | null = result.hasNext
+          ? { state: at.state, page: at.page + 1 }
+          : at.state === 'current'
+            ? { state: 'past', page: 0 }
+            : null
+        if (result.items.length > 0 || !next) return { ...result, hasNext: next !== null, next }
+        at = next
+      }
+    },
+    initialPageParam: { state: 'current', page: 0 } as StatePageParam,
+    getNextPageParam: (last) => last.next ?? undefined,
+  })
+}
+
+/** 내가 참여한 경매(마이페이지). 진행 중 → 종료 순 */
+export function useMyAuctionsInfiniteQuery({ size = 20 }: { size?: number } = {}) {
+  return useChainedStateInfiniteQuery(auctionKeys.participatingList({ size }), getMyAuctions, size)
+}
+
+/** 내가 판매 등록한 경매(마이페이지). 진행 중 → 종료 순 */
+export function useMySellingAuctionsInfiniteQuery({ size = 20 }: { size?: number } = {}) {
+  return useChainedStateInfiniteQuery(auctionKeys.sellingList({ size }), getMySellingAuctions, size)
+}
+
+/** 관심 목록(마이페이지). page는 0부터 */
 export function useLikedAuctionsInfiniteQuery(query: Omit<LikedAuctionListQuery, 'page'> = {}) {
   return useInfiniteQuery({
     queryKey: auctionKeys.likedList(query),
@@ -161,7 +279,11 @@ export function useLikedAuctionsInfiniteQuery(query: Omit<LikedAuctionListQuery,
 /** 목록 · 비슷한 상품 캐시에서 이 경매의 카드 정보를 찾습니다(상세를 열 때 먼저 그릴 값). */
 export function findAuctionPreview(queryClient: QueryClient, auctionId: number) {
   const cached = queryClient.getQueriesData<
-    AuctionList | InfiniteData<AuctionList> | SimilarAuctions
+    | AuctionList
+    | InfiniteData<AuctionList>
+    | PopularAuctions
+    | RecommendedAuctions
+    | SimilarAuctions
   >({
     predicate: ({ queryKey }) =>
       queryKey[0] === 'auctions' && ['list', 'similar'].includes(queryKey[1] as string),
@@ -179,22 +301,22 @@ export function findAuctionPreview(queryClient: QueryClient, auctionId: number) 
  * 카드 정보로 만든 임시 상세. isPlaceholderData일 때 화면은 상단(이미지 · 칩 · 상품명)만 이 값으로 그리고
  * 나머지는 스켈레톤으로 둡니다. 카드에 없는 필드는 빈 값이라 화면에서 읽지 않습니다.
  */
-function previewToDetail(preview: SimilarAuction): AuctionDetail {
+function previewToDetail(preview: AuctionCard): AuctionDetail {
   return {
     auctionId: preview.auctionId,
     status: preview.status,
     product: {
       productId: preview.productId,
       name: preview.name,
-      brand: preview.brand,
+      brand: preview.brand ?? '',
       subName: '',
-      grade: preview.grade,
-      imageUrls: [preview.thumbnailUrl],
+      grade: preview.grade ?? 'UNKNOWN',
+      imageUrls: preview.thumbnailUrl ? [preview.thumbnailUrl] : [],
     },
     seller: { sellerId: 0, nickname: '', profileImageUrl: null, completedSalesCount: 0 },
     description: '',
-    startPrice: 0,
-    currentPrice: preview.price,
+    startPrice: preview.startPrice,
+    currentPrice: preview.currentPrice,
     bidIncrement: 0,
     minNextBidAmount: 0,
     minCapAmount: 0,
@@ -204,7 +326,12 @@ function previewToDetail(preview: SimilarAuction): AuctionDetail {
     bidCount: 0,
     isLiked: preview.isLiked,
     likeCount: preview.likeCount,
-    myState: { isSeller: false, isHighestBidder: false, canBid: false },
+    myState: {
+      isSeller: false,
+      isHighestBidder: false,
+      canBid: false,
+      managedByPurchaseAgent: false,
+    },
   }
 }
 
@@ -346,6 +473,10 @@ export function usePlaceBidMutation(auctionId: number) {
   })
 }
 
+interface CardList {
+  items: AuctionCard[]
+}
+
 interface LikeState {
   isLiked: boolean
   likeCount: number
@@ -364,7 +495,8 @@ function setLikeInCaches(
     return { ...item, ...next(item) }
   }
 
-  queryClient.setQueriesData<AuctionList | InfiniteData<AuctionList>>(
+  // 목록 · 인기 · 추천 · 검색 캐시는 모두 카드 목록({ items })이거나 그 무한 스크롤 페이지들입니다.
+  queryClient.setQueriesData<CardList | InfiniteData<CardList>>(
     { queryKey: auctionKeys.lists() },
     (data) => {
       if (!data) return data

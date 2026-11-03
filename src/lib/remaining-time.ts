@@ -15,7 +15,7 @@ export type RemainingStyle =
   | 'clock'
   /** 시작·마감까지 대략: '2일', '3시간', '45분', '1분 미만' */
   | 'short'
-  /** 상품 상세 '경매 시작까지': '3시간 00분', '45분', 하루 이상이면 '2일 3시간' */
+  /** 상품 상세 '경매 시작까지'(1초마다 갱신): '3시간 05분 09초', '45분 09초', '9초', 하루 이상이면 '2일 3시간 05분 09초' */
   | 'duration'
 
 /** 남은 ms를 표기로. 0이면 endedLabel(기본 '종료') */
@@ -23,12 +23,17 @@ export function formatRemaining(ms: number, style: RemainingStyle = 'clock', end
   if (ms <= 0) return endedLabel
 
   if (style === 'duration') {
-    const days = Math.floor(ms / DAY)
-    const hours = Math.floor((ms % DAY) / HOUR)
-    const minutes = Math.floor((ms % HOUR) / MINUTE)
-    if (days > 0) return `${days}일 ${hours}시간`
-    if (hours > 0) return `${hours}시간 ${String(minutes).padStart(2, '0')}분`
-    return minutes > 0 ? `${minutes}분` : '1분 미만'
+    /* clock과 같이 남은 초를 올림해 0초가 되는 순간에만 endedLabel이 보이게 합니다. */
+    const total = Math.ceil(ms / SECOND)
+    const days = Math.floor(total / 86400)
+    const hours = Math.floor((total % 86400) / 3600)
+    const minutes = Math.floor((total % 3600) / 60)
+    const seconds = total % 60
+    const pad = (n: number) => String(n).padStart(2, '0')
+    if (days > 0) return `${days}일 ${hours}시간 ${pad(minutes)}분 ${pad(seconds)}초`
+    if (hours > 0) return `${hours}시간 ${pad(minutes)}분 ${pad(seconds)}초`
+    if (minutes > 0) return `${minutes}분 ${pad(seconds)}초`
+    return `${seconds}초`
   }
 
   if (style === 'short') {

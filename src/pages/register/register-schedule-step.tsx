@@ -1,19 +1,11 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import type { Control, FieldPath } from 'react-hook-form'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { z } from 'zod'
-import { TimeInput } from '@/components/ds'
 import { scheduleStepSchema } from '@/features/register/schemas'
-import {
-  defaultSchedule,
-  toDateInputValue,
-  toTimeInputValue,
-  withDate,
-  withTime,
-} from '@/features/register/schedule'
-import { formatDotDate, formatMeridiemClock } from '@/lib/format'
-import { openNativePicker } from '@/lib/picker'
+import { defaultSchedule } from '@/features/register/schedule'
+import { ScheduleField } from '@/features/register/schedule-field'
 import { RegisterStepScreen } from '@/pages/register/register-step-page'
 import { useRegisterNav } from '@/pages/register/use-register-nav'
 import { useRegisterStore } from '@/stores/register-store'
@@ -75,15 +67,15 @@ export function RegisterScheduleStep() {
   return (
     <RegisterStepScreen step="5" nextDisabled={!isValid} onNext={() => void onNext()}>
       <div className="gap-form-field flex flex-col">
-        <ScheduleField control={control} name="auctionStartAt" label="시작 시간" />
-        <ScheduleField control={control} name="auctionEndAt" label="종료 시간" />
+        <ScheduleControl control={control} name="auctionStartAt" label="시작 시간" />
+        <ScheduleControl control={control} name="auctionEndAt" label="종료 시간" />
       </div>
     </RegisterStepScreen>
   )
 }
 
-/** TimeInput + 숨긴 기기 날짜 · 시간 입력. 칸을 누르면 선택 창을 열고, 고른 값으로 ISO를 바꿉니다. */
-function ScheduleField({
+/** 폼 값과 일정 칸을 잇습니다. */
+function ScheduleControl({
   control,
   name,
   label,
@@ -92,53 +84,19 @@ function ScheduleField({
   name: FieldPath<ScheduleForm>
   label: string
 }) {
-  const dateRef = useRef<HTMLInputElement>(null)
-  const timeRef = useRef<HTMLInputElement>(null)
-
   return (
     <Controller
       control={control}
       name={name}
-      render={({ field, fieldState }) => {
-        const date = new Date(field.value)
-        return (
-          <div>
-            <TimeInput
-              ref={field.ref}
-              label={label}
-              date={formatDotDate(date)}
-              time={formatMeridiemClock(date)}
-              onDateClick={() => openNativePicker(dateRef.current)}
-              onTimeClick={() => openNativePicker(timeRef.current)}
-              error={fieldState.error?.message}
-            />
-            {/* 선택 창만 쓰는 입력이라 화면과 보조 기술에서 숨깁니다(값은 위 TimeInput이 읽어 줌). */}
-            <input
-              ref={dateRef}
-              type="date"
-              tabIndex={-1}
-              aria-hidden
-              className="sr-only"
-              min={toDateInputValue(new Date())}
-              value={toDateInputValue(date)}
-              onChange={(e) =>
-                e.target.value && field.onChange(withDate(field.value, e.target.value))
-              }
-            />
-            <input
-              ref={timeRef}
-              type="time"
-              tabIndex={-1}
-              aria-hidden
-              className="sr-only"
-              value={toTimeInputValue(date)}
-              onChange={(e) =>
-                e.target.value && field.onChange(withTime(field.value, e.target.value))
-              }
-            />
-          </div>
-        )
-      }}
+      render={({ field, fieldState }) => (
+        <ScheduleField
+          ref={field.ref}
+          label={label}
+          value={field.value}
+          onChange={field.onChange}
+          error={fieldState.error?.message}
+        />
+      )}
     />
   )
 }

@@ -36,8 +36,14 @@ export const myAutoBidSchema = z.object({
   minCapAmount: z.number().int(),
   startsAt: dateTimeSchema,
   serverTime: dateTimeSchema,
+  /** 지금은 늘 true. 에이전트 관리 제한은 반영하지 않으므로 managedByPurchaseAgent를 함께 봅니다. */
   canModify: z.boolean(),
+  /** 지금은 늘 true. 에이전트 관리 제한은 반영하지 않으므로 managedByPurchaseAgent를 함께 봅니다. */
   canCancel: z.boolean(),
+  /** 이 자동입찰을 만든 구매 목표 ID. 일반 자동입찰이면 null */
+  purchaseGoalId: z.number().int().nullish(),
+  /** 지금 구매 에이전트가 이 경매를 관리 중 */
+  managedByPurchaseAgent: z.boolean(),
 })
 export type MyAutoBid = z.infer<typeof myAutoBidSchema>
 

@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router'
 import {
-  useAuctionsInfiniteQuery,
-  useAuctionsQuery,
+  usePopularAuctionsQuery,
+  useRecommendedAuctionsQuery,
   useToggleAuctionLikeMutation,
 } from '@/api/auctions'
-import type { SimilarAuction } from '@/api/schemas/auctions'
+import { useHasUnreadNotifications } from '@/api/notifications'
+import type { AuctionCard } from '@/api/schemas/auctions'
 import {
   FloatingActionButton,
   HomeHeader,
@@ -13,61 +14,54 @@ import {
   PromoBanner,
   TabBar,
 } from '@/components/ds'
-import {
-  EmptyState,
-  ErrorState,
-  ProductCardSkeleton,
-  ProductGridSkeleton,
-} from '@/components/feedback'
-import { useInfiniteScroll } from '@/hooks/use-infinite-scroll'
+import { EmptyState, ErrorState, ProductGridSkeleton } from '@/components/feedback'
 import { Screen } from '@/layouts/screen'
 import { AuctionGrid } from '@/components/auction-grid'
 import { ImageCarousel } from '@/components/image-carousel'
 import promotionImage01 from '@/assets/illustrations/img_promotion_01.png'
 import promotionImage02 from '@/assets/illustrations/img_promotion_02.png'
 
-/** '지금 인기 있는 경매' 한 번에 불러올 개수(2열 × 4줄) */
-const POPULAR_PAGE_SIZE = 8
+/** 홈 섹션마다 보여줄 카드 수(2열 × 2줄). 명세: 홈은 limit=4 */
+const HOME_CARD_LIMIT = 4
 
-/** 홈 탭: 배너 → AI 추천 배너 → 나에게 딱 맞는 상품 → 지금 인기 있는 경매(무한 스크롤) + 상품 등록 버튼 + 탭바 (Figma 572:7790) */
+/**
+ * 홈 탭: 배너 → AI 추천 배너 → 나에게 딱 맞는 상품 → 지금 인기 있는 경매 + 상품 등록 버튼 + 탭바 (Figma 572:7790).
+ * 인기 API는 페이지가 없어 4개만 보여주고, 더 보기는 상품 찾기 탭으로 보냅니다.
+ * 서버가 끝난 경매를 빼고 채우지 않아 섹션마다 4개보다 적을 수 있습니다.
+ */
 export function HomePage() {
   const navigate = useNavigate()
-  const recommended = useAuctionsQuery({ sort: 'recommended', size: 4 })
-  const popular = useAuctionsInfiniteQuery({ sort: 'popular', size: POPULAR_PAGE_SIZE })
+  const recommended = useRecommendedAuctionsQuery(HOME_CARD_LIMIT)
+  const popular = usePopularAuctionsQuery(HOME_CARD_LIMIT)
   const toggleLike = useToggleAuctionLikeMutation()
+  const hasUnread = useHasUnreadNotifications()
 
-  const onToggleLike = (item: SimilarAuction) =>
+  const onToggleLike = (item: AuctionCard) =>
     toggleLike.mutate({ auctionId: item.auctionId, liked: !item.isLiked })
 
-  const loadMoreRef = useInfiniteScroll<HTMLDivElement>({
-    enabled: popular.hasNextPage && !popular.isFetchingNextPage && !popular.isFetchNextPageError,
-    onLoadMore: () => popular.fetchNextPage(),
-  })
-
   const recommendedItems = recommended.data?.items ?? []
-  const popularItems = popular.data?.pages.flatMap((page) => page.items) ?? []
+  const popularItems = popular.data?.items ?? []
 
   let content: ReactNode
   if (recommended.isPending || popular.isPending) {
     content = (
       <>
         <HomeSection title="나에게 딱 맞는 상품">
-          <ProductGridSkeleton />
+          <ProductGridSkeleton count={HOME_CARD_LIMIT} />
         </HomeSection>
         <HomeSection title="지금 인기 있는 경매">
-          <ProductGridSkeleton />
+          <ProductGridSkeleton count={HOME_CARD_LIMIT} />
         </HomeSection>
       </>
     )
-  } else if (recommended.isLoadingError || popular.isLoadingError) {
-    // 처음 불러오기 실패만 화면 전체 에러. 다음 페이지 실패는 목록 끝에서 따로 보여줍니다.
+  } else if (recommended.isError || popular.isError) {
     content = (
       <ErrorState
         title="경매 목록을 불러오지 못했어요"
         retrying={recommended.isRefetching || popular.isRefetching}
         onRetry={() => {
-          if (recommended.isLoadingError) recommended.refetch()
-          if (popular.isLoadingError) popular.refetch()
+          if (recommended.isError) recommended.refetch()
+          if (popular.isError) popular.refetch()
         }}
       />
     )
@@ -88,32 +82,10 @@ export function HomePage() {
         )}
         {popularItems.length > 0 && (
           <HomeSection title="지금 인기 있는 경매">
-            <AuctionGrid items={popularItems} onToggleLike={onToggleLike}>
-              {popular.isFetchingNextPage && (
-                <>
-                  <li>
-                    <ProductCardSkeleton />
-                  </li>
-                  <li>
-                    <ProductCardSkeleton />
-                  </li>
-                </>
-              )}
-            </AuctionGrid>
-            <div ref={loadMoreRef} aria-hidden />
-            {popular.isFetchNextPageError && (
-              <ErrorState
-                title="더 불러오지 못했어요"
-                description={null}
-                onRetry={() => popular.fetchNextPage()}
-                className="py-0"
-              />
-            )}
-            {!popular.hasNextPage && (
-              <LoadMoreButton onClick={() => navigate('/products')}>
-                더 많은 경매 보러가기
-              </LoadMoreButton>
-            )}
+            <AuctionGrid items={popularItems} onToggleLike={onToggleLike} />
+            <LoadMoreButton onClick={() => navigate('/products')}>
+              더 많은 경매 보러가기
+            </LoadMoreButton>
           </HomeSection>
         )}
       </>
@@ -123,7 +95,7 @@ export function HomePage() {
   return (
     <Screen
       top="none"
-      header={<HomeHeader />}
+      header={<HomeHeader hasUnread={hasUnread} />}
       bottom={
         <>
           {/* 탭바 위 오른쪽에 떠 있습니다. bottom 슬롯(sticky)을 기준으로 위치를 잡습니다. */}
