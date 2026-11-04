@@ -133,9 +133,16 @@ export function HomePage() {
 /** 상단 배너 이미지(로컬) */
 const BANNER_IMAGES = [promotionImage01, promotionImage02]
 
-/** 상단 배너: 화면 폭 정사각 이미지, 좌우 스와이프 + PageIndicator. 자동 넘김 · 링크 없음(Figma 프로토타입에 없음) */
+/**
+ * 배너 자동 넘김 간격. 두 줄 제목 + 설명을 읽을 시간(3초는 빠듯)이면서 넘어가는 걸 알아챌 수 있는 4초(사용자 위임, 2026-11-05)
+ */
+const BANNER_AUTOPLAY_MS = 4000
+
+/** 상단 배너: 화면 폭 정사각 이미지, 좌우 스와이프 + PageIndicator + 4초 자동 넘김. 링크 없음(Figma 프로토타입에 없음) */
 function HomeBanner() {
-  return <ImageCarousel images={BANNER_IMAGES} alt="프로모션 배너" />
+  return (
+    <ImageCarousel images={BANNER_IMAGES} alt="프로모션 배너" autoPlayMs={BANNER_AUTOPLAY_MS} />
+  )
 }
 
 /** 섹션 제목(head02) → 16 → 내용 */
