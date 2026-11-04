@@ -1,5 +1,6 @@
 import { Screen } from '@/layouts/screen'
 import { ActionsSection } from './actions-section'
+import { AgentSection } from './agent-section'
 import { AuctionSection } from './auction-section'
 import { FeedbackSection } from './feedback-section'
 import { FormsSection } from './forms-section'
@@ -15,6 +16,7 @@ const GROUPS = [
   { id: 'forms', title: 'Forms' },
   { id: 'navigation', title: 'Navigation' },
   { id: 'auction', title: 'Auction' },
+  { id: 'agent', title: 'Agent' },
   { id: 'overlay', title: 'Overlay' },
   { id: 'feedback', title: 'Feedback' },
 ] as const
@@ -55,6 +57,7 @@ export function DesignSystemPage() {
         <FormsSection />
         <NavigationSection />
         <AuctionSection />
+        <AgentSection />
         <OverlaySection />
         <FeedbackSection />
       </div>

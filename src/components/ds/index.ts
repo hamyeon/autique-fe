@@ -7,7 +7,8 @@ export { ImagePlaceholder } from './image-placeholder'
 export type { ImagePlaceholderProps } from './image-placeholder'
 
 /* Status */
-export { Chip } from './chip'
+export { Chip, AIChip } from './chip'
+export type { AIChipProps } from './chip'
 export type { ChipProps, ChipKind } from './chip'
 export { Tag } from './tag'
 export type { TagProps } from './tag'
@@ -26,7 +27,7 @@ export type { ButtonProps } from './button'
 export { BottomButtonBar } from './bottom-button-bar'
 export type { BottomButtonBarProps, BottomButtonBarLayout } from './bottom-button-bar'
 export { FloatingActionButton } from './floating-action-button'
-export type { FloatingActionButtonProps } from './floating-action-button'
+export type { FloatingAction, FloatingActionButtonProps } from './floating-action-button'
 export { LoadMoreButton, LoadMoreDownButton } from './load-more-button'
 export type { LoadMoreButtonProps, LoadMoreDownButtonProps } from './load-more-button'
 export { KakaoLoginButton } from './kakao-login-button'
@@ -75,3 +76,19 @@ export type { BiddingListItemProps } from './bidding-list-item'
 /* Overlay */
 export { BottomSheet } from './bottom-sheet'
 export type { BottomSheetProps } from './bottom-sheet'
+
+/* Agent */
+export {
+  AgentInput,
+  SendButton,
+  AgentBubble,
+  AgentTyping,
+  AgentMessageGroup,
+  AgentThread,
+} from './agent-chat'
+export type {
+  AgentInputProps,
+  SendButtonProps,
+  AgentBubbleProps,
+  AgentMessageGroupProps,
+} from './agent-chat'

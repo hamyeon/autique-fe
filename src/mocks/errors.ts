@@ -94,6 +94,17 @@ export const mockErrors = {
   BACKUP_OFFER_NOT_FOUND: error(404, 'BACKUP_OFFER_NOT_FOUND', '존재하지 않는 차순위 제안입니다.'),
   AUTO_BID_NOT_FOUND: error(404, 'AUTO_BID_NOT_FOUND', '등록된 자동입찰이 없습니다.'),
   NOTIFICATION_NOT_FOUND: error(404, 'NOTIFICATION_NOT_FOUND', '존재하지 않는 알림입니다.'),
+  PURCHASE_GOAL_NOT_FOUND: (goalId: number) =>
+    error(404, 'PURCHASE_GOAL_NOT_FOUND', `존재하지 않는 구매 목표입니다. goalId: ${goalId}`),
+  PURCHASE_GOAL_DEADLINE_PAST: (deadline: string) =>
+    error(400, 'PURCHASE_GOAL_INVALID', `마감 시각은 현재 이후여야 합니다. deadline: ${deadline}`),
+  INVALID_PURCHASE_GOAL_STATUS: (status: string) =>
+    error(
+      409,
+      'INVALID_PURCHASE_GOAL_STATUS',
+      `ACTIVE/ENGAGED 상태에서만 취소할 수 있습니다. 현재 상태: ${status}`,
+    ),
+  AI_CALL_FAILED: error(500, 'AI_CALL_FAILED', 'AI 호출에 실패했습니다.'),
 
   ALREADY_HIGHEST_BIDDER: error(409, 'ALREADY_HIGHEST_BIDDER', '이미 최고 입찰자입니다.'),
   AUCTION_NOT_STARTED: error(409, 'AUCTION_NOT_STARTED', '아직 시작되지 않은 경매입니다.'),

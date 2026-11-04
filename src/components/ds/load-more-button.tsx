@@ -15,7 +15,11 @@ export interface LoadMoreButtonProps {
   className?: string
 }
 
-/** 다른 화면으로 넘어가 자세히 보는 행 버튼. 같은 자리에서 펼치려면 LoadMoreDownButton. 눌림은 gray0 바탕. */
+/**
+ * 다른 화면으로 넘어가 자세히 보는 행 버튼(Figma LoadMoreButton 623:9348): black0 바탕, 패딩 12, radius-sm,
+ * body03 primary4 글자 + 오른쪽 ArrowRight 16(primary4). 눌림은 BottomButton primary와 같은 gray7(Figma에 없음).
+ * 같은 자리에서 펼치려면 LoadMoreDownButton.
+ */
 export function LoadMoreButton({ children, onClick, className }: LoadMoreButtonProps) {
   const { pressed, handlers } = usePressed()
 
@@ -26,14 +30,13 @@ export function LoadMoreButton({ children, onClick, className }: LoadMoreButtonP
       data-pressed={pressed ? '' : undefined}
       {...handlers}
       className={cn(
-        BOX,
         FOCUS,
-        'text-body03 p-space-12 data-pressed:bg-gray0 items-center justify-between text-left',
+        'bg-black0 text-primary4 text-body03 p-space-12 data-pressed:bg-gray7 flex w-full items-center justify-between rounded-sm text-left',
         className,
       )}
     >
       <span>{children}</span>
-      <Icon name="ArrowRight" size={16} />
+      <Icon name="ArrowRight" size={16} color="primary4" />
     </button>
   )
 }

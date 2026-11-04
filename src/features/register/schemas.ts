@@ -125,6 +125,8 @@ export const priceResultSchema = calculatePriceResponseSchema.pick({
   maxRecommendedPrice: true,
   priceRange: true,
   reason: true,
+  /* 6/6 확인 화면에 영문 브랜드 · 모델명 · 컬러와 함께 보여줍니다. */
+  nameKo: true,
 })
 export type PriceResult = z.infer<typeof priceResultSchema>
 

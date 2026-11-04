@@ -16,9 +16,9 @@ const TARGET: Record<NotificationType, (n: Notification) => string> = {
   AUCTION_WON: (n) => `/auctions/${n.auctionId}/result`,
   BACKUP_OFFER_CREATED: (n) => `/backup-offers/${n.resourceId}`,
   PAYMENT_EXPIRED: (n) => `/orders/${n.resourceId}`,
-  // 구매 목표 화면이 생기면(7단계) /purchase-goals/{resourceId}로 바꿉니다. 지금은 참여 경매 상세
-  PURCHASE_AGENT_ENGAGED: (n) => `/products/${n.auctionId}`,
-  PURCHASE_AGENT_LOST: (n) => `/products/${n.auctionId}`,
+  // resourceId = 구매 목표 ID. 목표별 화면 없이 PIKI 대화 하나에 모든 목표가 이어져 있어 대화로 갑니다.
+  PURCHASE_AGENT_ENGAGED: () => '/agent',
+  PURCHASE_AGENT_LOST: () => '/agent',
 }
 
 /**

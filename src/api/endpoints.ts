@@ -7,6 +7,7 @@ import * as me from '@/api/schemas/me'
 import * as notifications from '@/api/schemas/notifications'
 import * as orders from '@/api/schemas/orders'
 import * as products from '@/api/schemas/products'
+import * as purchaseGoals from '@/api/schemas/purchase-goals'
 
 /*
  * 엔드포인트 목록. 메서드·경로·스키마는 노션 명세 그대로입니다.
@@ -342,6 +343,44 @@ export const endpoints = {
     method: 'GET',
     path: '/api/notifications/unread-count',
     response: notifications.unreadNotificationCountSchema,
+    auth: 'required',
+  }),
+
+  /* ───────── 구매 목표 (경매 AI Agent · 쇼핑메이트 PIKI) ───────── */
+  /** 자연어 조건 → 초안. 저장하지 않음. AI 해석을 기다림(실서버 몇 초) */
+  parsePurchaseGoal: endpoint({
+    method: 'POST',
+    path: '/api/purchase-goals/parse',
+    request: purchaseGoals.parsePurchaseGoalRequestSchema,
+    response: purchaseGoals.purchaseGoalDraftSchema,
+    auth: 'required',
+    timeoutMs: SLOW_TIMEOUT_MS,
+  }),
+  /** 등록 직후 ACTIVE. Idempotency-Key 없음(명세) */
+  createPurchaseGoal: endpoint({
+    method: 'POST',
+    path: '/api/purchase-goals',
+    request: purchaseGoals.createPurchaseGoalRequestSchema,
+    response: purchaseGoals.purchaseGoalSchema,
+    auth: 'required',
+  }),
+  getPurchaseGoals: endpoint({
+    method: 'GET',
+    path: '/api/purchase-goals',
+    response: purchaseGoals.purchaseGoalListSchema,
+    auth: 'required',
+  }),
+  getPurchaseGoal: endpoint({
+    method: 'GET',
+    path: '/api/purchase-goals/{id}',
+    response: purchaseGoals.purchaseGoalDetailSchema,
+    auth: 'required',
+  }),
+  /** 탐색 중단(삭제 아님). 멱등 아님: 이미 취소 · 종료면 40916 */
+  cancelPurchaseGoal: endpoint({
+    method: 'DELETE',
+    path: '/api/purchase-goals/{id}',
+    response: purchaseGoals.cancelPurchaseGoalResponseSchema,
     auth: 'required',
   }),
 } as const

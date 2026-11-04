@@ -116,7 +116,7 @@ function StepHeaderDemo() {
   return (
     <Demo
       title="StepHeader"
-      description="단계(body06 gray5) · 제목(head01) + 정보 아이콘 · 설명(body05). 화면에서는 헤더 아래 layout-step(32)."
+      description="단계(body03 gray5) · 제목(head01) + AIChip lg(ai, 간격 8) 또는 정보 아이콘 · 8 · 설명(body05). 화면에서는 헤더 아래 layout-step(32)."
     >
       <div className="gap-layout-step flex flex-col">
         <div className="gap-space-8 flex flex-col">
@@ -128,6 +128,12 @@ function StepHeaderDemo() {
           />
           <Caption>onInfo 호출 {infoCount}회 (아이콘 주변 44px 어디를 눌러도 동작)</Caption>
         </div>
+        <StepHeader
+          step="4/6"
+          title="경매 시작가 설정"
+          ai
+          description="기준가는 유사 거래 데이터를 바탕으로 상품 상태를 보정하여 산출된 상품의 적정 가격이에요."
+        />
         <StepHeader
           step="1/6"
           title="상품 사진 등록"
@@ -145,9 +151,9 @@ function InfoFieldDemo() {
   return (
     <Demo
       title="InfoField"
-      description="라벨 body03 + 4 + 값 body02. 흰 카드 안에 16 간격으로 쌓습니다. onClick을 넘기면 항목 전체가 버튼이 되고(눌린 동안 흐려짐), 터치 영역은 위아래 8씩 넓어집니다."
+      description="라벨 body05 gray5 + 4 + 값 body04 black0. 흰 카드 안에 12(stack-related) 간격으로 쌓습니다. onClick을 넘기면 항목 전체가 버튼이 되고(눌린 동안 흐려짐), 터치 영역은 위아래 6씩 넓어집니다."
     >
-      <div className="border-gray2 gap-form-field p-card-padding flex flex-col rounded-sm border">
+      <div className="border-gray2 gap-stack-related p-card-padding flex flex-col rounded-sm border">
         <InfoField label="브랜드" value="나이키" />
         <InfoField label="모델명" value="Dunk Low Retro White Black" />
         <InfoField label="상태" value="보통 수준의 상태로, 일반적인 사용감이 있어요." />
@@ -158,7 +164,7 @@ function InfoFieldDemo() {
           }
         />
       </div>
-      <div className="border-gray2 gap-form-field p-card-padding flex flex-col rounded-sm border">
+      <div className="border-gray2 gap-stack-related p-card-padding flex flex-col rounded-sm border">
         <InfoField label="브랜드 (onClick)" value="나이키" onClick={() => setTapped('브랜드')} />
         <InfoField label="구성품 여부 (onClick)" value="일부 있음" onClick={() => setTapped('구성품 여부')} />
       </div>
@@ -175,7 +181,7 @@ function SegmentedControlDemo() {
   return (
     <Demo
       title="SegmentedControl"
-      description="40px 칸, body05. 선택 black0 채움(Figma는 gray6), 눌림 gray0(DS 원본 gray2, 흰 바탕 요소 공통 규칙), 비활성 gray2 + gray5 글자. Radix ToggleGroup: 탭으로 들어와 ←→로 이동, Space·Enter로 선택."
+      description="40px 칸, body04(Figma _SegmentItem 56:1275). 선택 black0 채움, 눌림 gray2, 비활성 gray2 + gray5 글자. Radix ToggleGroup: 탭으로 들어와 ←→로 이동, Space·Enter로 선택."
     >
       <div className="gap-form-field flex flex-col">
         <SegmentedControl label="비제어형 · defaultValue" options={PARTS} defaultValue="일부 있음" />
