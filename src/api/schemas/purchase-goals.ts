@@ -1,9 +1,9 @@
 import { z } from 'zod'
-import { dateTimeSchema } from '@/api/schemas/common'
+import { auctionStatusSchema, dateTimeSchema } from '@/api/schemas/common'
 
 /*
- * 구매 목표(경매 AI Agent). 명세 "구매 목표 관련 정보" · /api/purchase-goals*.
- * 아직 API를 연결하지 않아 스키마만 둡니다(endpoints.ts 등록 · 요청 함수 없음). 화면은 이 타입으로 데모 데이터를 만듭니다.
+ * 구매 목표(경매 AI Agent · 쇼핑메이트 PIKI). 명세 "구매 목표 관련 정보" · /api/purchase-goals*.
+ * GET /api/purchase-goals/{id}/matches(후보 평가 기록)는 명세상 화면에 필요 없으면 연동하지 않아도 돼서 두지 않습니다.
  */
 
 /** 목표 상태. 경매 상태(CANCELED)와 달리 CANCELLED로 씁니다. */
@@ -83,6 +83,28 @@ export const purchaseGoalSchema = z.object({
   wonCount: z.number().int(),
 })
 export type PurchaseGoal = z.infer<typeof purchaseGoalSchema>
+
+/** GET /api/purchase-goals 응답(배열, 생성 최신순 · 종료된 목표 포함) */
+export const purchaseGoalListSchema = z.array(purchaseGoalSchema)
+
+/* ───────── GET /api/purchase-goals/{id} ───────── */
+
+/** 참여 결과. WON = 본인 주문 생성(결제 완료 아님), LOST + CANCELED = 참여 경매 취소 */
+export const purchaseGoalParticipationStatusSchema = z.enum(['SCHEDULED', 'LIVE', 'WON', 'LOST'])
+
+export const purchaseGoalParticipationSchema = z.object({
+  auctionId: z.number().int(),
+  status: purchaseGoalParticipationStatusSchema,
+  auctionStatus: auctionStatusSchema,
+})
+export type PurchaseGoalParticipation = z.infer<typeof purchaseGoalParticipationSchema>
+
+/** 상품명 · 시작 시각 · 실제 상한은 없어서 참여 경매 ID로 경매 상세 · 결과를 따로 조회합니다. */
+export const purchaseGoalDetailSchema = purchaseGoalSchema.extend({
+  /** 자동입찰을 등록한 순서(오래된 것 먼저). 없으면 [] */
+  participations: z.array(purchaseGoalParticipationSchema),
+})
+export type PurchaseGoalDetail = z.infer<typeof purchaseGoalDetailSchema>
 
 /* ───────── DELETE /api/purchase-goals/{id} ───────── */
 

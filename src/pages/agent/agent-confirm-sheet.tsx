@@ -17,8 +17,10 @@ import {
   TextField,
   Textarea,
 } from '@/components/ds'
+import { hasErrorCode } from '@/features/auction/auto-bid'
 import { toOffsetIso } from '@/features/register/schedule'
 import { ScheduleField } from '@/features/register/schedule-field'
+import { showToast } from '@/stores/toast-store'
 import { conditionLabel } from './agent-messages'
 
 /** 예산 기본값 · 단위. 초안에 예산이 없을 때 시작값(사용자가 확인 후 등록) */
@@ -39,7 +41,6 @@ const CONDITION_OPTIONS = purchaseGoalConditionSchema.options.map((value) => ({
  * 사이즈는 글자로 받아 숫자로 바꿉니다(비우면 모든 사이즈). 마감은 지금 이후(명세 40005).
  */
 const confirmFormSchema = z.object({
-  modelQuery: z.string().trim().min(1, { message: '찾을 모델을 입력해 주세요.' }),
   minCondition: z.union([purchaseGoalConditionSchema, z.literal('')]).refine((v) => v !== '', {
     message: '최소 등급을 골라 주세요.',
   }),
@@ -66,7 +67,6 @@ function defaultDeadline() {
 
 function toFormValues(draft: PurchaseGoalDraft): ConfirmForm {
   return {
-    modelQuery: draft.modelQuery ?? '',
     minCondition: draft.minCondition ?? '',
     hardMaxAmount: draft.hardMaxAmount ?? DEFAULT_BUDGET,
     size: draft.sizeKr ? String(draft.sizeKr) : '',
@@ -81,7 +81,8 @@ export interface AgentConfirmSheetProps {
   draft: PurchaseGoalDraft | null
   onClose: () => void
   /** 확인한 조건(POST /api/purchase-goals 요청 모양) */
-  onConfirm: (values: CreatePurchaseGoalRequest) => void
+  /** 등록(POST /api/purchase-goals). 실패하면 throw — 지난 마감(40005)은 마감 칸 에러, 그 밖은 토스트 */
+  onConfirm: (values: CreatePurchaseGoalRequest) => Promise<void>
 }
 
 /**
@@ -94,7 +95,8 @@ export function AgentConfirmSheet({ open, draft, onClose, onConfirm }: AgentConf
     register,
     handleSubmit,
     reset,
-    formState: { errors },
+    setError,
+    formState: { errors, isSubmitting },
   } = useForm<ConfirmForm>({
     resolver: zodResolver(confirmFormSchema),
     defaultValues: draft ? toFormValues(draft) : undefined,
@@ -105,21 +107,29 @@ export function AgentConfirmSheet({ open, draft, onClose, onConfirm }: AgentConf
     if (open && draft) reset(toFormValues(draft))
   }, [open, draft, reset])
 
-  const submit = handleSubmit((values) => {
+  const submit = handleSubmit(async (values) => {
     if (!draft) return
-    const modelQuery = values.modelQuery.trim()
-    /* 모델명을 고치면 초안의 브랜드 · 카탈로그 키는 다른 모델일 수 있어 보내지 않습니다(프론트 규칙). */
-    const sameModel = modelQuery === draft.modelQuery
-    onConfirm({
-      brand: sameModel ? draft.brand : null,
-      modelKey: sameModel ? draft.modelKey : null,
-      modelQuery,
+    /* 모델은 초안 그대로(시세 카탈로그 키와 맞아야 탐색할 수 있어 시트에서 고치지 않음) */
+    const body: CreatePurchaseGoalRequest = {
+      brand: draft.brand,
+      modelKey: draft.modelKey,
+      modelQuery: draft.modelQuery ?? draft.modelKey ?? '',
       minCondition: purchaseGoalConditionSchema.parse(values.minCondition),
       hardMaxAmount: values.hardMaxAmount,
       sizeKr: values.size.trim() ? Number(values.size) : null,
       freeTextConditions: values.freeTextConditions.trim() || null,
       deadline: values.deadline,
-    })
+    }
+    try {
+      await onConfirm(body)
+    } catch (e) {
+      if (hasErrorCode(e, 'PURCHASE_GOAL_INVALID')) {
+        /* 등급은 목록에서만 고르므로 40005는 지난 마감입니다. */
+        setError('deadline', { message: '마감은 지금 이후로 정해 주세요.' }, { shouldFocus: true })
+      } else {
+        showToast('조건을 등록하지 못했어요. 잠시 후 다시 시도해 주세요')
+      }
+    }
   })
 
   return (
@@ -127,7 +137,13 @@ export function AgentConfirmSheet({ open, draft, onClose, onConfirm }: AgentConf
       open={open}
       onClose={onClose}
       title="찾을 조건을 확인해 주세요"
-      footer={<BottomButtonBar primaryLabel="이 조건으로 찾기" onPrimary={submit} />}
+      footer={
+        <BottomButtonBar
+          primaryLabel="이 조건으로 찾기"
+          primaryDisabled={isSubmitting}
+          onPrimary={submit}
+        />
+      }
     >
       <form
         onSubmit={(e) => {
@@ -138,12 +154,8 @@ export function AgentConfirmSheet({ open, draft, onClose, onConfirm }: AgentConf
       >
         {/* 명세: 등록 후에는 경매마다 다시 승인을 묻지 않으므로 확인 전에 알려 줍니다. */}
         <InfoBanner>{CONFIRM_NOTICE}</InfoBanner>
-        <TextField
-          label="모델"
-          placeholder="예: 아식스 노바블라스트 5"
-          error={errors.modelQuery?.message}
-          {...register('modelQuery')}
-        />
+        {/* 고칠 수 없는 칸: 다른 모델은 대화에서 문장을 새로 보내 찾습니다. */}
+        <TextField label="모델" value={draft?.modelQuery ?? ''} disabled readOnly />
         <Controller
           control={control}
           name="minCondition"
