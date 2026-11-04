@@ -17,6 +17,11 @@ export interface ScreenProps {
   children: ReactNode
   /** 헤더 아래 첫 콘텐츠 여백. 기본 top(16) */
   top?: keyof typeof TOP_CLASS
+  /**
+   * 화면 바탕. 기본 default(white0, MobileLayout 그대로).
+   * grad = Figma grad/background(white0 → primary3, 경매 AI Agent). 하단 sticky 영역은 바탕 없이 투명(Figma 그대로).
+   */
+  background?: 'default' | 'grad'
   /** 본문 영역에 더할 클래스(예: 가운데 정렬 화면의 justify-center) */
   className?: string
 }
@@ -30,9 +35,17 @@ export interface ScreenProps {
  * - safe-area: 위는 헤더 자리(pt-safe), 아래는 bottom 자리(pb-safe)가 맡습니다.
  * - sticky가 동작하려면 조상 요소에 overflow-hidden/auto가 없어야 합니다.
  */
-export function Screen({ header, bottom, children, top = 'top', className }: ScreenProps) {
+export function Screen({
+  header,
+  bottom,
+  children,
+  top = 'top',
+  background = 'default',
+  className,
+}: ScreenProps) {
+  const grad = background === 'grad'
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div className={cn('flex min-h-dvh flex-col', grad && 'bg-grad-background')}>
       {/* 헤더가 없어도 노치 영역을 덮도록 자리는 남깁니다. */}
       <div className="bg-white0 pt-safe sticky top-0 z-10">{header}</div>
 
@@ -47,7 +60,9 @@ export function Screen({ header, bottom, children, top = 'top', className }: Scr
       </div>
 
       {bottom ? (
-        <div className="bg-white0 pb-safe sticky bottom-0 z-10 mt-auto">{bottom}</div>
+        <div className={cn('pb-safe sticky bottom-0 z-10 mt-auto', !grad && 'bg-white0')}>
+          {bottom}
+        </div>
       ) : (
         <div className="pb-safe" />
       )}

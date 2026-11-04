@@ -75,3 +75,19 @@ export type { BiddingListItemProps } from './bidding-list-item'
 /* Overlay */
 export { BottomSheet } from './bottom-sheet'
 export type { BottomSheetProps } from './bottom-sheet'
+
+/* Agent */
+export {
+  AgentInput,
+  SendButton,
+  AgentBubble,
+  AgentTyping,
+  AgentMessageGroup,
+  AgentThread,
+} from './agent-chat'
+export type {
+  AgentInputProps,
+  SendButtonProps,
+  AgentBubbleProps,
+  AgentMessageGroupProps,
+} from './agent-chat'

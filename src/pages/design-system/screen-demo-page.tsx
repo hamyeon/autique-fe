@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import {
+  AgentInput,
   BottomButtonBar,
   Divider,
   Header,
@@ -13,8 +14,8 @@ import { BAR_LABELS, BAR_LAYOUTS } from './bar-demo-data'
 import type { BarLayout } from './bar-demo-data'
 import { Caption, OptionGroup } from './showcase'
 
-const BOTTOMS = [...BAR_LAYOUTS, 'TabBar', '없음'] as const
-type Bottom = BarLayout | 'TabBar' | '없음'
+const BOTTOMS = [...BAR_LAYOUTS, 'TabBar', 'AgentInput', '없음'] as const
+type Bottom = BarLayout | 'TabBar' | 'AgentInput' | '없음'
 
 /** 개발 모드 전용: Screen 골격(sticky 헤더·하단 바, safe-area, 여백) 확인 (/design-system/screen-demo) */
 export function ScreenDemoPage() {
@@ -23,14 +24,29 @@ export function ScreenDemoPage() {
   const [bottom, setBottom] = useState<Bottom>('single')
   const [primaryDisabled, setPrimaryDisabled] = useState<'false' | 'true'>('false')
   const [lastAction, setLastAction] = useState<string | null>(null)
+  const [background, setBackground] = useState<NonNullable<ScreenProps['background']>>('default')
+  const [agentText, setAgentText] = useState('')
 
   return (
     <Screen
       header={<Header title="Screen 데모" />}
       top={top}
+      background={background}
       bottom={
         bottom === 'TabBar' ? (
           <TabBar />
+        ) : bottom === 'AgentInput' ? (
+          /* Figma 경매 AI Agent 하단 Stack: 좌우 20 · 위아래 12 */
+          <div className="px-layout-gutter py-space-12">
+            <AgentInput
+              value={agentText}
+              onChange={(e) => setAgentText(e.target.value)}
+              onSend={(text) => {
+                setLastAction(`보내기: ${text}`)
+                setAgentText('')
+              }}
+            />
+          </div>
         ) : (
           bottom !== '없음' && (
           <BottomButtonBar
@@ -59,8 +75,14 @@ export function ScreenDemoPage() {
             value={top}
             onChange={setTop}
           />
+          <OptionGroup
+            label="background"
+            options={['default', 'grad'] as const}
+            value={background}
+            onChange={setBackground}
+          />
           <OptionGroup label="bottom" options={BOTTOMS} value={bottom} onChange={setBottom} />
-          {bottom !== '없음' && bottom !== 'TabBar' && (
+          {bottom !== '없음' && bottom !== 'TabBar' && bottom !== 'AgentInput' && (
             <OptionGroup
               label="primaryDisabled"
               options={['false', 'true'] as const}
