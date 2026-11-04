@@ -35,8 +35,10 @@ export const auctionDetailSchema = z.object({
   status: auctionStatusSchema,
   product: z.object({
     productId: z.number().int(),
+    /** 상품 표시명(명세 공통 표시명 규칙): 한국어명이 있으면 한국어 전체명, 없으면 영문 전체명 */
     name: z.string(),
     brand: z.string(),
+    /** 보조 표시명(명세 공통 표시명 규칙): 한국어명이 있으면 영문 전체명, 없으면 모델명 */
     subName: z.string(),
     /** 저장된 등급 그대로(A/B/C로 제한되지 않음). 없으면 null */
     grade: conditionGradeSchema.nullish(),
@@ -216,7 +218,7 @@ export const auctionCardSchema = z.object({
   auctionId: z.number().int(),
   productId: z.number().int(),
   brand: z.string().nullish(),
-  /** 상품 표시명 */
+  /** 상품 표시명(명세 공통 표시명 규칙): 한국어명이 있으면 한국어 전체명, 없으면 영문 전체명 */
   name: z.string(),
   /** 대표 이미지 서명 URL. 이미지가 없으면 null */
   thumbnailUrl: z.string().nullish(),

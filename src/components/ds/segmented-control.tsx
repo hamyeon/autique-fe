@@ -92,15 +92,19 @@ function SegmentItem({
       data-pressed={pressed && !disabled && !selected ? '' : undefined}
       {...handlers}
       className={cn(
-        /* 40px 칸(Figma) + 위아래 2px 보이지 않는 터치 영역으로 44px */
-        'text-body05 border-gray2 bg-white0 text-black0 focus-visible:outline-primary1 data-pressed:bg-gray0 relative h-10 min-w-0 flex-1 truncate rounded-sm border p-2.5 before:absolute before:inset-x-0 before:-inset-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2',
+        /*
+         * 40px 칸(Figma) + 위아래 2px 보이지 않는 터치 영역으로 44px.
+         * 위아래 padding을 두면 글자 줄 높이(22.4)가 남는 칸(40 - 테두리 2 - padding 20 = 18)보다 커서 아래로 넘쳐 처져 보입니다.
+         * 그래서 위아래는 flex 가운데 정렬로 맞추고, 말줄임은 안쪽 span이 맡습니다.
+         */
+        'text-body04 border-gray2 bg-white0 text-black0 focus-visible:outline-primary1 data-pressed:bg-gray2 relative flex h-10 min-w-0 flex-1 items-center justify-center rounded-sm border px-2.5 before:absolute before:inset-x-0 before:-inset-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2',
         invalid && !selected && 'border-error1',
-        /* 선택 색은 Figma(gray6)와 달리 black0으로 정했습니다. */
+        /* Figma _SegmentItem 56:1275: 글자 body04, 눌림 · 비활성 바탕 gray2, 선택 black0 채움 */
         selected && 'border-black0 bg-black0 text-white0',
         disabled && 'bg-gray2 text-gray5',
       )}
     >
-      {value}
+      <span className="min-w-0 truncate">{value}</span>
     </ToggleGroup.Item>
   )
 }

@@ -38,3 +38,28 @@ export function Chip({ kind = 'plan', children, className }: ChipProps) {
     </span>
   )
 }
+
+export interface AIChipProps {
+  /** md 높이 18(위아래 2, Figma 1108:2979) · lg 높이 22(위아래 4, Figma 1112:3013). 기본 md */
+  size?: 'md' | 'lg'
+  className?: string
+}
+
+/**
+ * AI 기능 표시(Figma AIChip 1112:3012): label01 + 좌우 8, radius-lg,
+ * 바탕 grad/primary(bg-grad-primary, 승인된 그라데이션 예외), 글자 white0 "AI".
+ * 예: md 마이페이지 '쇼핑메이트 PIKI' 옆, lg 경매 등록 StepHeader 제목 옆
+ */
+export function AIChip({ size = 'md', className }: AIChipProps) {
+  return (
+    <span
+      className={cn(
+        'bg-grad-primary text-label01 text-white0 px-space-8 inline-flex shrink-0 items-center rounded-lg whitespace-nowrap',
+        size === 'lg' ? 'py-1' : 'py-0.5',
+        className,
+      )}
+    >
+      AI
+    </span>
+  )
+}

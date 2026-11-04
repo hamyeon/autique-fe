@@ -42,6 +42,8 @@ export const ICON_SIZES = {
   User: [24],
   /** 회색 원 + 흰 X(색 고정). 36 사진 지우기(반투명 원), 24 입력 지우기(HeaderInput) */
   Close: [36, 24],
+  /** 채운 보내기 화살표(Figma SendButton 988:4879 안 Vector). SendButton에서 primary4로 씁니다. */
+  Send: [20],
 } as const satisfies Record<string, readonly IconSize[]>
 
 export type IconName = keyof typeof ICON_SIZES

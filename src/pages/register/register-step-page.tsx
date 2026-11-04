@@ -60,6 +60,7 @@ export function RegisterStepScreen({
       <StepHeader
         step={`${step}/6`}
         title={meta.title}
+        ai={'ai' in meta && meta.ai}
         description={meta.description.split('\n').map((line, i) => (
           <span key={i} className="block">
             {line}

@@ -2,6 +2,7 @@ import type { RouteObject } from 'react-router'
 import { createBrowserRouter } from 'react-router'
 import { RequireAuth } from '@/app/require-auth'
 import { MobileLayout } from '@/layouts/mobile-layout'
+import { AgentPage } from '@/pages/agent/agent-page'
 import { AuctionListPage } from '@/pages/auction-list/auction-list-page'
 import {
   LikedAuctionsPage,
@@ -78,6 +79,8 @@ export const router = createBrowserRouter([
           { path: '/orders/:id/complete', element: <OrderCompletePage /> },
           { path: '/backup-offers/:id', element: <BackupOfferPage /> },
           { path: '/notifications', element: <NotificationsPage /> },
+          // 경매 AI Agent: 구매 목표가 사용자별이라 로그인이 필요합니다.
+          { path: '/agent', element: <AgentPage /> },
           { path: '/products/:id/relist', element: <RelistPage /> },
           {
             // 경매 등록. /register 와 없는 단계는 RegisterLayout이 첫 미완료 단계로 보냅니다.

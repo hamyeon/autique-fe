@@ -247,6 +247,7 @@ export const PRICE_RESULT: CalculatePriceResponse = {
     '당근마켓·후르츠패밀리에 올라온 Dunk Low 중고 매물 116건을 근거로 계산했습니다. 실거래가 중앙값은 40,000원이고, 매물의 절반이 25,000원 ~ 81,000원 사이에 있습니다. 상품 상태 UNKNOWN(기타 상태)는 전체 매물 시세 대비 100% 수준으로 반영했습니다. 구성품이 모두 포함되어 있어 100% 반영률을 적용했습니다. 이를 바탕으로 최종 추천가는 40,000원이며, 판매 권장 범위는 실거래 분포를 따라 25,000원 ~ 81,000원입니다.',
   kreamMatches: [],
   ebayMatches: [],
+  nameKo: '나이키 덩크 로우 판다',
 }
 
 /** ?mock=empty: 시세 데이터 없음(명세 예시). 금액은 모두 0(사용자 결정: 그대로 0) */
@@ -262,4 +263,22 @@ export const PRICE_RESULT_EMPTY: CalculatePriceResponse = {
     '입력한 브랜드, 모델명, 색상, 사이즈와 일치하는 시세 데이터를 찾지 못했습니다. 추천 가격 산정을 위해서는 유사 거래 데이터가 추가로 필요합니다.',
   kreamMatches: [],
   ebayMatches: [],
+  nameKo: '나이키 덩크 로우 판다',
+}
+
+/**
+ * 목 한국어 상품명: 명세 예시(Nike Dunk Low Panda)만 한국어명을 만들고, 그 밖에는 서버가 만들지 못한 경우처럼 null.
+ * 가격 계산 · 등록 응답의 nameKo에 씁니다.
+ */
+export function mockNameKo({
+  brand,
+  modelName,
+  color,
+}: {
+  brand: string
+  modelName: string
+  color: string
+}) {
+  const key = [brand, modelName, color].map((v) => v.trim().toLowerCase()).join(' ')
+  return key === 'nike dunk low panda' ? '나이키 덩크 로우 판다' : null
 }

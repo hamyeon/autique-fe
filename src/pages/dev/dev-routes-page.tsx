@@ -65,6 +65,19 @@ const GROUPS: { title: string; links: RouteLink[] }[] = [
     ],
   },
   {
+    title: '쇼핑메이트 PIKI(경매 AI Agent)',
+    links: [
+      { to: '/agent', label: '실서버: 내 구매 목표로 만든 대화(없으면 온보딩)' },
+      {
+        to: '/agent',
+        label:
+          '목 데이터로 보기를 켜고: 낙찰 · 만료 · 진행 중 경매 · 예정 경매 · 탐색 중 목표 5개 (“취소” 입력 → 취소 버튼)',
+      },
+      { to: '/agent?mock=empty', label: '목 데이터로 보기를 켜고: 목표 없음(온보딩부터 하나씩)' },
+      { to: '/agent?mock=error', label: '목 데이터로 보기를 켜고: 목록 에러' },
+    ],
+  },
+  {
     title: '홈',
     links: [
       { to: '/', label: '홈' },

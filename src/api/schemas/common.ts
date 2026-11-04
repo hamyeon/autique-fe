@@ -70,7 +70,9 @@ export type CannotBidReason = z.infer<typeof cannotBidReasonSchema>
 /** 결과 · 주문 · 차순위 제안 화면의 상품 요약 */
 export const productSummarySchema = z.object({
   productId: z.number().int(),
+  /** 상품 표시명(명세 공통 표시명 규칙): 한국어명이 있으면 한국어 전체명, 없으면 영문 전체명 */
   name: z.string(),
+  /** 보조 표시명(명세 공통 표시명 규칙): 한국어명이 있으면 영문 전체명, 없으면 모델명 */
   subName: z.string(),
   /** 대표 이미지 서명 URL. 이미지가 없으면 null */
   imageUrl: z.string().nullish(),
@@ -108,6 +110,7 @@ export const API_ERROR_CODE = {
   BID_NOT_ALIGNED: 40913,
   ALREADY_PAID: 40914,
   ORDER_CANCELED: 40915,
+  INVALID_PURCHASE_GOAL_STATUS: 40916, // ACTIVE · ENGAGED가 아닌 구매 목표 취소
   AGENT_MANAGED_AUCTION: 40917, // 구매 에이전트가 관리 중인 경매에 직접 입찰 · 자동입찰 수정 · 중단
   METHOD_NOT_ALLOWED: 40501, // 경로는 있지만 메서드를 지원하지 않음(Allow 헤더에 허용 메서드)
   UNSUPPORTED_MEDIA_TYPE: 41501, // 지원하지 않는 Content-Type
@@ -132,5 +135,9 @@ export const API_ERROR_CODE = {
   S3_UPLOAD_FAILED: 50002,
   ANALYSIS_QUEUE_FAILED: 50004,
   KAKAO_API_FAILED: 50201,
+  PURCHASE_GOAL_INVALID: 40005, // 구매 목표 최소 등급 · 마감 시각 검증 실패(지난 마감)
+  PURCHASE_GOAL_ACCESS_DENIED: 40306, // 다른 사용자의 구매 목표
+  PURCHASE_GOAL_NOT_FOUND: 40406,
+  AI_CALL_FAILED: 50003, // 구매 조건 해석 등 AI 통신 실패
 } as const
 export type ApiErrorCodeName = keyof typeof API_ERROR_CODE

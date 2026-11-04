@@ -68,6 +68,12 @@ export const passthrough: EndpointKey[] = [
   'POST /api/auctions/{auctionId}/cancel',
   'PATCH /api/auctions/{auctionId}/start-price',
   'POST /api/auctions/{previousAuctionId}/relist',
+  // 경매 AI Agent · 쇼핑메이트 PIKI(2026-11-04, 실서버 응답 확인): 문장 해석 · 등록 · 목록 · 상세 · 취소
+  'POST /api/purchase-goals/parse',
+  'POST /api/purchase-goals',
+  'GET /api/purchase-goals',
+  'GET /api/purchase-goals/{id}',
+  'DELETE /api/purchase-goals/{id}',
 ]
 
 /** 개발: VITE_MOCK이 off가 아니면 켭니다. 빌드(배포): VITE_MOCK=on일 때만 켭니다. src/main.tsx와 같은 조건 */

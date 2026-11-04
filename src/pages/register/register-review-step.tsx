@@ -1,13 +1,8 @@
+import type { ReactNode } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { auctionKeys } from '@/api/auctions'
-import {
-  BottomButtonBar,
-  BottomSheet,
-  ImagePlaceholder,
-  InfoField,
-  SummaryCard,
-} from '@/components/ds'
+import { BottomButtonBar, BottomSheet, ImagePlaceholder, SummaryCard } from '@/components/ds'
 import { Skeleton } from '@/components/feedback'
 import type { PhotoSlot, RegisterStep } from '@/features/register/schemas'
 import {
@@ -19,6 +14,7 @@ import {
 import type { RegisterFailure } from '@/features/register/errors'
 import { toRegisterFailure } from '@/features/register/errors'
 import { submitRegistration } from '@/features/register/submit'
+import { usePressed } from '@/hooks/use-pressed'
 import { formatDotDateTime, formatPrice } from '@/lib/format'
 import { RegisterStepScreen } from '@/pages/register/register-step-page'
 import { useRegisterNav } from '@/pages/register/use-register-nav'
@@ -29,7 +25,8 @@ const EMPTY = '없음'
 
 /**
  * 6/6 경매 정보 확인(Figma 상품 정보 확인 551:2331).
- * README '정보 확인(6/6)': StepHeader → 사진 썸네일 줄 → SummaryCard → InfoField 목록 카드 → BottomButtonBar.
+ * StepHeader → 32 → [상품명(한국어 head02 + 영문 body05 gray5) → 12 → 사진 줄] → 24 → SummaryCard
+ * → 24 → 구성품 여부 · 상태 · 판매자 설명(각 제목 body03 → 4 → body05 gray6, 사이 12) → BottomButtonBar.
  * 항목을 누르면 그 단계로 가서 고치고, 고친 뒤 '다음'을 누르면 다시 여기로 돌아옵니다(use-register-nav).
  */
 export function RegisterReviewStep() {
@@ -80,6 +77,7 @@ export function RegisterReviewStep() {
     goTo(target.step)
   }
 
+  const englishName = [draft.brand, draft.modelName, draft.color].filter(Boolean).join(' ')
   const start = draft.auctionStartAt ? new Date(draft.auctionStartAt) : undefined
   const end = draft.auctionEndAt ? new Date(draft.auctionEndAt) : undefined
 
@@ -90,8 +88,20 @@ export function RegisterReviewStep() {
       nextDisabled={submitMutation.isPending}
       nextLabel={submitMutation.isPending ? '등록하는 중이에요' : undefined}
     >
-      <div className="gap-stack-related flex flex-col">
-        <PhotoThumbnails onClick={edit('1')} />
+      <div className="gap-layout-section flex flex-col">
+        <div className="gap-stack-related flex flex-col">
+          <Pressable onClick={edit('2')}>
+            {/* 가격 계산 응답의 한국어 상품명(한 줄 말줄임) + 영문 전체명. 서버가 한국어명을 못 만들었으면 영문 전체명만 크게 */}
+            <span className="text-head02 text-black0 block truncate">
+              {draft.priceResult?.nameKo || englishName || EMPTY}
+            </span>
+            {draft.priceResult?.nameKo && englishName && (
+              <span className="text-body05 text-gray5 block">{englishName}</span>
+            )}
+          </Pressable>
+
+          <PhotoThumbnails onClick={edit('1')} />
+        </div>
 
         <SummaryCard
           rows={[
@@ -118,23 +128,22 @@ export function RegisterReviewStep() {
           ]}
         />
 
-        <section className="border-gray2 bg-white0 gap-form-field p-card-padding flex flex-col rounded-sm border">
-          <InfoField label="브랜드" value={draft.brand || EMPTY} onClick={edit('2')} />
-          <InfoField label="모델명" value={draft.modelName || EMPTY} onClick={edit('2')} />
-          <InfoField label="컬러" value={draft.color || EMPTY} onClick={edit('2')} />
-          <InfoField label="사이즈" value={draft.size ?? EMPTY} onClick={edit('2')} />
-          <InfoField label="상태" value={draft.conditionDescription || EMPTY} onClick={edit('2')} />
-          <InfoField
-            label="구성품 여부"
-            value={draft.componentStatus ? COMPONENT_STATUS_LABELS[draft.componentStatus] : EMPTY}
-            onClick={edit('3')}
-          />
-          <InfoField
-            label="판매자 설명"
-            value={draft.sellerDescription || EMPTY}
-            onClick={edit('3')}
-          />
-        </section>
+        <div className="gap-stack-related flex flex-col">
+          <Pressable onClick={edit('3')}>
+            <TextSection title="구성품 여부">
+              {draft.componentStatus ? COMPONENT_STATUS_LABELS[draft.componentStatus] : EMPTY}
+            </TextSection>
+          </Pressable>
+          <Pressable onClick={edit('2')}>
+            <TextSection title="상태">{draft.conditionDescription || EMPTY}</TextSection>
+          </Pressable>
+          {/* 판매자 설명은 선택 항목이라 비어 있으면 안내 문구를 보여줍니다(사용자 결정). */}
+          <Pressable onClick={edit('3')}>
+            <TextSection title="판매자 설명">
+              {draft.sellerDescription?.trim() || '작성된 판매자 설명이 없습니다'}
+            </TextSection>
+          </Pressable>
+        </div>
       </div>
 
       <SubmitFailureSheet
@@ -144,6 +153,32 @@ export function RegisterReviewStep() {
         onFix={fix}
       />
     </RegisterStepScreen>
+  )
+}
+
+/** 제목(body03 black0) → 4 → 글(body05 gray6, 줄바꿈 유지). Figma 6/6 '구성품 여부' · '상태' · '판매자 설명' */
+function TextSection({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="gap-stack-tight flex flex-col text-left">
+      <h3 className="text-body03 text-black0">{title}</h3>
+      <p className="text-body05 text-gray6 break-words whitespace-pre-line">{children}</p>
+    </section>
+  )
+}
+
+/** 눌러서 해당 단계로 고치러 가는 덩어리. 눌린 동안 흐려집니다. */
+function Pressable({ onClick, children }: { onClick: () => void; children: ReactNode }) {
+  const { pressed, handlers } = usePressed()
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      data-pressed={pressed ? '' : undefined}
+      {...handlers}
+      className="focus-visible:outline-primary1 block w-full min-w-0 rounded-sm text-left focus-visible:outline-2 focus-visible:outline-offset-2 data-pressed:opacity-60"
+    >
+      {children}
+    </button>
   )
 }
 

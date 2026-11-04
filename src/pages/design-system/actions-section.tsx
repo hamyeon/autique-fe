@@ -168,14 +168,14 @@ function BottomButtonBarDemo() {
 }
 
 function FloatingActionButtonDemo() {
-  const [count, setCount] = useState(0)
+  const [last, setLast] = useState<string | null>(null)
 
   return (
     <Demo
       title="FloatingActionButton"
-      description="48px 알약, black0 + 흰 Add 20 + body03. 실제로는 TabBar 위 오른쪽, 가장자리에서 20px."
+      description="48px 원, grad/primary + 흰 Add 20. 누르면 Add가 45° 돌아 ×가 되고, 위로 8 띄워 흰 메뉴(AIChip md + 8 + body03, 칸 사이 4)가 나옵니다. 펼친 동안 화면 전체에 딤(black0 90%). 딤 · × · Esc · 메뉴 선택으로 닫힙니다. 실제로는 TabBar 위 오른쪽, 가장자리에서 20px."
     >
-      <div className="border-gray2 relative overflow-hidden rounded-sm border">
+      <div className="border-gray2 relative h-60 rounded-sm border">
         <ul className="gap-space-12 p-space-12 flex flex-col">
           {[0, 1, 2].map((i) => (
             <li key={i} className="gap-space-12 flex items-center">
@@ -187,17 +187,15 @@ function FloatingActionButtonDemo() {
             </li>
           ))}
         </ul>
-        <div className="h-space-32" />
         <FloatingActionButton
-          onClick={() => setCount((c) => c + 1)}
+          actions={[
+            { label: '상품 등록하기', onClick: () => setLast('상품 등록하기') },
+            { label: '쇼핑 메이트 PIKI', onClick: () => setLast('쇼핑 메이트 PIKI') },
+          ]}
           className="right-space-20 bottom-space-20 absolute"
         />
       </div>
-      <Caption>onClick 호출 {count}회</Caption>
-      <div className="flex">
-        <FloatingActionButton onClick={() => setCount((c) => c + 1)}>경매 열기</FloatingActionButton>
-      </div>
-      <Caption>children으로 라벨 변경</Caption>
+      <Caption>마지막으로 고른 메뉴: {last ?? '없음'}</Caption>
     </Demo>
   )
 }
@@ -208,7 +206,7 @@ function LoadMoreButtonDemo() {
   return (
     <Demo
       title="LoadMoreButton"
-      description="다른 화면으로 넘어가 자세히 보는 행 버튼. 오른쪽 16px 화살표."
+      description="다른 화면으로 넘어가 자세히 보는 행 버튼. black0 바탕 · body03 primary4 · 오른쪽 16px 화살표(primary4). 눌림 gray7."
     >
       <LoadMoreButton onClick={() => setCount((c) => c + 1)}>
         실시간 경매 상황 자세히 보기

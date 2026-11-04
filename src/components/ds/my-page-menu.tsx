@@ -10,6 +10,8 @@ export interface MyPageListButtonProps {
   /** 누르면 이동할 경로. 없으면 버튼으로 그려 onClick만 부릅니다. */
   href?: string
   onClick?: () => void
+  /** 문구 바로 오른쪽(간격 8)에 붙는 작은 표시. 예: <AIChip /> (Figma '쇼핑메이트 PIKI' 1108:2978, DS 확장) */
+  badge?: ReactNode
   /** 오른쪽 화살표. 다른 화면으로 가지 않는 행(로그아웃 등)은 false. 기본 true */
   showArrow?: boolean
   className?: string
@@ -24,6 +26,7 @@ export function MyPageListButton({
   children,
   href,
   onClick,
+  badge,
   showArrow = true,
   className,
 }: MyPageListButtonProps) {
@@ -34,7 +37,10 @@ export function MyPageListButton({
   )
   const content = (
     <>
-      <span className="min-w-0 truncate">{children}</span>
+      <span className="gap-space-8 flex min-w-0 items-center">
+        <span className="min-w-0 truncate">{children}</span>
+        {badge}
+      </span>
       {showArrow && <Icon name="ArrowRight" size={36} />}
     </>
   )
