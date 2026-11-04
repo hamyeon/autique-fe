@@ -14,3 +14,11 @@ export function openNativePicker(input: HTMLInputElement | null) {
   input.focus()
   input.click()
 }
+
+/**
+ * 손가락으로 쓰는 기기(휴대폰 · 태블릿)인지. 이런 기기는 기기 기본 선택 창(iOS 휠 · 안드로이드 달력)을 쓰고,
+ * 마우스로 쓰는 PC 웹은 앱이 그린 선택 시트를 씁니다.
+ */
+export function prefersNativePicker() {
+  return typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
+}
