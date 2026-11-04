@@ -7,7 +7,7 @@ export interface StepHeaderProps {
   /** 예: '2/6' */
   step?: string
   title: ReactNode
-  /** 제목 오른쪽(간격 8)에 AIChip lg. AI가 결과를 만든 단계에만(경매 등록 2/6 · 4/6) */
+  /** 제목 오른쪽(간격 8)에 AIChip md. AI가 결과를 만든 단계에만(경매 등록 2/6 · 4/6) */
   ai?: boolean
   /** 해요체 한두 문장 */
   description?: ReactNode
@@ -27,7 +27,7 @@ export function StepHeader({ step, title, ai, description, onInfo, className }: 
       <div className="gap-space-8 flex flex-col">
         <div className="gap-space-8 flex items-center">
           <h2 className="text-head01 text-black0">{title}</h2>
-          {ai && <AIChip size="lg" />}
+          {ai && <AIChip size="md" />}
           {onInfo && (
             /* 아이콘은 24px이지만 터치 영역은 44px. 음수 여백으로 배치는 원본과 같게 둡니다. */
             <button

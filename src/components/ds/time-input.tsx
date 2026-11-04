@@ -14,6 +14,9 @@ export interface TimeInputProps {
   onDateClick?: () => void
   /** 넘기면 시간 칸이 버튼이 됩니다. (DS 확장) */
   onTimeClick?: () => void
+  /** 날짜 · 시간 칸 위에 겹쳐 둘 요소(기기 선택 창을 여는 투명 입력 등). 칸과 같은 크기로 덮습니다. (DS 확장) */
+  dateOverlay?: ReactNode
+  timeOverlay?: ReactNode
   /** 에러 메시지 (DS 확장) */
   error?: ReactNode
   className?: string
@@ -27,7 +30,7 @@ const CELL =
  * ref는 날짜 칸(버튼일 때)으로 전달되어 setFocus·에러 포커스가 동작합니다.
  */
 export const TimeInput = forwardRef<HTMLButtonElement, TimeInputProps>(function TimeInput(
-  { label, date, time, onDateClick, onTimeClick, error, className },
+  { label, date, time, onDateClick, onTimeClick, dateOverlay, timeOverlay, error, className },
   ref,
 ) {
   const id = useId()
@@ -38,7 +41,20 @@ export const TimeInput = forwardRef<HTMLButtonElement, TimeInputProps>(function 
     'aria-describedby': error ? errorId : undefined,
   }
 
-  const cell = (value: string, unit: string, onClick?: () => void, cellRef?: typeof ref) => {
+  const cell = (
+    value: string,
+    unit: string,
+    onClick?: () => void,
+    overlay?: ReactNode,
+    cellRef?: typeof ref,
+  ) => (
+    <div className="relative flex min-w-0 flex-1">
+      {cellBox(value, unit, onClick, cellRef)}
+      {overlay}
+    </div>
+  )
+
+  const cellBox = (value: string, unit: string, onClick?: () => void, cellRef?: typeof ref) => {
     const content = (
       <>
         <span className="truncate">{value}</span>
@@ -70,8 +86,8 @@ export const TimeInput = forwardRef<HTMLButtonElement, TimeInputProps>(function 
       className={className}
     >
       <div className="gap-space-8 flex">
-        {cell(date, '날짜', onDateClick, ref)}
-        {cell(time, '시간', onTimeClick)}
+        {cell(date, '날짜', onDateClick, dateOverlay, ref)}
+        {cell(time, '시간', onTimeClick, timeOverlay)}
       </div>
     </FieldShell>
   )

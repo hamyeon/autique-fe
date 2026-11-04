@@ -40,22 +40,30 @@ export function Chip({ kind = 'plan', children, className }: ChipProps) {
 }
 
 export interface AIChipProps {
-  /** md 높이 18(위아래 2, Figma 1108:2979) · lg 높이 22(위아래 4, Figma 1112:3013). 기본 md */
-  size?: 'md' | 'lg'
+  /**
+   * sm 높이 18(label01 · 좌우 8 · 위아래 2, Figma 1108:2979) · md 높이 22(label01 · 좌우 8 · 위아래 4, Figma 1112:3013)
+   * · lg 높이 27(caption01 · 좌우 12 · 위아래 4, Figma 1116:4544). 기본 sm
+   */
+  size?: 'sm' | 'md' | 'lg'
   className?: string
 }
 
+const AI_CHIP_SIZE = {
+  sm: 'text-label01 px-space-8 py-0.5',
+  md: 'text-label01 px-space-8 py-1',
+  lg: 'text-caption01 px-space-12 py-1',
+} as const
+
 /**
- * AI 기능 표시(Figma AIChip 1112:3012): label01 + 좌우 8, radius-lg,
- * 바탕 grad/primary(bg-grad-primary, 승인된 그라데이션 예외), 글자 white0 "AI".
- * 예: md 마이페이지 '쇼핑메이트 PIKI' 옆, lg 경매 등록 StepHeader 제목 옆
+ * AI 기능 표시(Figma AIChip 1112:3012): radius-lg, 바탕 grad/primary(bg-grad-primary, 승인된 그라데이션 예외), 글자 white0 "AI".
+ * 예: sm 마이페이지 '쇼핑메이트 PIKI' 옆, md 경매 등록 StepHeader 제목 옆 · 플로팅 버튼 메뉴, lg 아직 쓰는 화면 없음
  */
-export function AIChip({ size = 'md', className }: AIChipProps) {
+export function AIChip({ size = 'sm', className }: AIChipProps) {
   return (
     <span
       className={cn(
-        'bg-grad-primary text-label01 text-white0 px-space-8 inline-flex shrink-0 items-center rounded-lg whitespace-nowrap',
-        size === 'lg' ? 'py-1' : 'py-0.5',
+        'bg-grad-primary text-white0 inline-flex shrink-0 items-center rounded-lg whitespace-nowrap',
+        AI_CHIP_SIZE[size],
         className,
       )}
     >

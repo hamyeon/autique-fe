@@ -18,9 +18,10 @@ export interface FloatingActionButtonProps {
 }
 
 /**
- * 떠 있는 48px 원형 버튼(Figma FloatingActionButton 1112:3129). 바탕 grad/primary + 흰 Add 20.
- * 누르면 Add가 45° 돌아 ×가 되고, 위로 8 띄워 메뉴(흰 칸, 패딩 12·8, radius-md, AIChip md + 8 + body03 black0, 칸 사이 4)가 나옵니다.
- * 펼친 동안 화면 전체에 딤(overlay/dim: black0 90%)을 깔고, 딤 · × · Esc · 메뉴 선택으로 닫힙니다.
+ * 떠 있는 56px 원형 버튼(Figma FloatingActionButton 1112:3129). 바탕 grad/primary + 흰 Add 32.
+ * 누르면 Add가 45° 돌아 ×가 되고(사용자 결정, Figma focused는 + 그대로), 위로 24 띄워 메뉴(흰 칸, 패딩 12·8, radius-md,
+ * AIChip md + 8 + body01 black0(사용자 결정, Figma head03), 칸 사이 8)가 나옵니다. 버튼에는 살짝 그림자(shadow-fab, DS 예외).
+ * 펼친 동안 화면 전체에 딤(black0 70%, BottomSheet의 overlay/dim 90%보다 연하게 — 사용자 결정)을 깔고, 딤 · × · Esc · 메뉴 선택으로 닫힙니다.
  * 딤은 position: fixed라 Screen bottom 슬롯(sticky z-10) 안에 두면 헤더 · 탭바까지 덮습니다.
  */
 export function FloatingActionButton({ actions, className }: FloatingActionButtonProps) {
@@ -41,14 +42,14 @@ export function FloatingActionButton({ actions, className }: FloatingActionButto
         <div
           aria-hidden
           onClick={() => setOpen(false)}
-          className="bg-black0/90 animate-in fade-in fixed inset-0 z-20 duration-200 motion-reduce:animate-none"
+          className="bg-black0/70 animate-in fade-in fixed inset-0 z-20 duration-200 motion-reduce:animate-none"
         />
       )}
-      <div className={cn('gap-space-8 z-30 flex flex-col items-end', className)}>
+      <div className={cn('gap-space-24 z-30 flex flex-col items-end', className)}>
         {open && (
           <ul
             id={menuId}
-            className="gap-space-4 animate-in fade-in slide-in-from-bottom-2 flex flex-col duration-200 motion-reduce:animate-none"
+            className="gap-space-8 animate-in fade-in slide-in-from-bottom-2 flex flex-col duration-200 motion-reduce:animate-none"
           >
             {actions.map((action, i) => (
               <li key={i} className="flex">
@@ -72,11 +73,11 @@ export function FloatingActionButton({ actions, className }: FloatingActionButto
           onClick={() => setOpen((o) => !o)}
           data-pressed={pressed ? '' : undefined}
           {...handlers}
-          className="bg-grad-primary focus-visible:outline-primary1 flex size-12 shrink-0 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 data-pressed:opacity-80"
+          className="bg-grad-primary shadow-fab focus-visible:outline-primary1 flex size-14 shrink-0 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 data-pressed:opacity-80"
         >
           <Icon
             name="Add"
-            size={20}
+            size={32}
             color="white0"
             className={cn(
               'transition-transform duration-200 motion-reduce:transition-none',
@@ -89,7 +90,7 @@ export function FloatingActionButton({ actions, className }: FloatingActionButto
   )
 }
 
-/** 메뉴 한 칸: AIChip md → 8 → body03. 눈에 보이는 높이는 38이라 위아래 2씩(칸 사이 4의 절반) 터치 영역을 넓힙니다. */
+/** 메뉴 한 칸: AIChip md → 8 → body01. 눈에 보이는 높이는 42라 위아래 2씩(칸 사이 8 안에서) 터치 영역을 넓혀 46으로. */
 function MenuItem({ onClick, children }: { onClick: () => void; children: ReactNode }) {
   const { pressed, handlers } = usePressed()
   return (
@@ -98,9 +99,9 @@ function MenuItem({ onClick, children }: { onClick: () => void; children: ReactN
       onClick={onClick}
       data-pressed={pressed ? '' : undefined}
       {...handlers}
-      className="bg-white0 text-body03 text-black0 px-space-12 py-space-8 gap-space-8 focus-visible:outline-primary1 data-pressed:bg-gray0 relative flex w-full items-center rounded-md text-left whitespace-nowrap before:absolute before:inset-x-0 before:-inset-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2"
+      className="bg-white0 text-body01 text-black0 px-space-12 py-space-8 gap-space-8 focus-visible:outline-primary1 data-pressed:bg-gray0 relative flex w-full items-center rounded-md text-left whitespace-nowrap before:absolute before:inset-x-0 before:-inset-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2"
     >
-      <AIChip />
+      <AIChip size="md" />
       {children}
     </button>
   )
