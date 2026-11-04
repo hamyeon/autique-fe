@@ -98,9 +98,13 @@ export function HomePage() {
       header={<HomeHeader hasUnread={hasUnread} />}
       bottom={
         <>
-          {/* 탭바 위 오른쪽에 떠 있습니다. bottom 슬롯(sticky)을 기준으로 위치를 잡습니다. */}
+          {/* 탭바 위 오른쪽에 떠 있습니다. bottom 슬롯(sticky)을 기준으로 위치를 잡습니다. 펼치면 딤이 헤더 · 탭바까지 덮습니다. */}
           <FloatingActionButton
-            onClick={() => navigate('/register')}
+            actions={[
+              // Figma 1112:3833 순서 · 문구 그대로
+              { label: '상품 등록하기', onClick: () => navigate('/register') },
+              { label: '쇼핑 메이트 PIKI', onClick: () => navigate('/agent') },
+            ]}
             className="right-layout-gutter mb-space-20 absolute bottom-full"
           />
           <TabBar active="home" />

@@ -56,6 +56,11 @@ Figma와 다르게 구현했거나 Figma에 없어서 새로 정한 부분을 �
   - Figma: 프레임 오른쪽 아래(스크롤해도 고정)
   - 구현: TabBar 위 20, 오른쪽 20(`layout-gutter`)에 고정
   - 이유: DS README "TabBar 위 오른쪽 20px"
+- **FloatingActionButton 펼침 메뉴** (2026-11-05, Figma FloatingActionButton 1112:3129 state=default · focused)
+  - Figma: 메뉴 "상품 등록하기" · "쇼핑 메이트 PIKI"(각 칸 앞에 AIChip md), 펼친 상태 한 장(딤 · 동작 없음)
+  - 구현: Figma 문구 · 순서 그대로 "상품 등록하기"(→ `/register`) · "쇼핑 메이트 PIKI"(→ `/agent`). 누르면 Add가 0.2초 동안 45° 돌아 ×, 메뉴는 아래에서 살짝 올라오며 나타남. 펼친 동안 화면 전체(헤더 · 탭바 포함)에 딤 black0 90%(BottomSheet와 같은 overlay/dim)를 깔고, 딤 · × · Esc · 메뉴 선택으로 닫힘
+  - 눌림: 원형 버튼 opacity 80%, 메뉴 칸 gray0 바탕(Figma에 없음). 메뉴 칸 높이는 38이라 칸 사이 4의 절반씩 터치 영역을 넓힘
+- **LoadMoreButton** (2026-11-05, Figma 623:9348): black0 바탕 · primary4 글자 · 화살표로 바뀜. 눌림은 gray7(BottomButton primary와 같게, Figma에 없음). 홈 "더 많은 경매 보러가기"와 상품 상세 "실시간 경매 상황 / 입찰 내역 자세히 보기"에 함께 적용
 - **HomeHeader 검색 · 알림 · 장바구니**
   - Figma: 버튼
   - 구현: 검색은 검색 화면(`/search`), 알림은 알림 화면(`/notifications`)으로 이동, 장바구니는 "준비 중" 안내
