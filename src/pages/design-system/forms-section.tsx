@@ -116,7 +116,7 @@ function StepHeaderDemo() {
   return (
     <Demo
       title="StepHeader"
-      description="단계(body03 gray5) · 제목(head01) + AIChip lg(ai, 간격 8) 또는 정보 아이콘 · 8 · 설명(body05). 화면에서는 헤더 아래 layout-step(32)."
+      description="단계(body03 gray5) · 제목(head01) + AIChip md(ai, 간격 8) 또는 정보 아이콘 · 8 · 설명(body05). 화면에서는 헤더 아래 layout-step(32)."
     >
       <div className="gap-layout-step flex flex-col">
         <div className="gap-space-8 flex flex-col">

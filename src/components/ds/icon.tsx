@@ -24,7 +24,7 @@ const ART_SVGS = loadSvgs(
 
 /** 이름별로 제공되는 크기. 첫 번째 값이 기본 크기입니다. */
 export const ICON_SIZES = {
-  Add: [24, 20],
+  Add: [24, 20, 32],
   Minus: [24, 20],
   Info: [24, 18],
   Search: [24],
@@ -47,7 +47,7 @@ export const ICON_SIZES = {
 } as const satisfies Record<string, readonly IconSize[]>
 
 export type IconName = keyof typeof ICON_SIZES
-export type IconSize = 16 | 18 | 20 | 24 | 36
+export type IconSize = 16 | 18 | 20 | 24 | 32 | 36
 type ArtName =
   | 'img_shoe_front'
   | 'img_shoe_side'
