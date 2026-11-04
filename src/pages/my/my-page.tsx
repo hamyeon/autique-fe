@@ -3,6 +3,7 @@ import { useLogoutMutation } from '@/api/auth'
 import { useMyProfileQuery } from '@/api/me'
 import { useHasUnreadNotifications } from '@/api/notifications'
 import {
+  AIChip,
   Divider,
   Header,
   Icon,
@@ -50,7 +51,9 @@ export function MyPage() {
         </MyPageMenuSection>
         <MyPageMenuSection title="쇼핑">
           <MyPageListButton href="/my/likes">위시리스트</MyPageListButton>
-          <MyPageListButton onClick={notifyPreparing}>경매 AI Agent 설정</MyPageListButton>
+          <MyPageListButton href="/agent" badge={<AIChip />}>
+            쇼핑메이트 PIKI
+          </MyPageListButton>
         </MyPageMenuSection>
         <MyPageMenuSection title="고객센터">
           <MyPageListButton onClick={notifyPreparing}>약관 및 정책</MyPageListButton>

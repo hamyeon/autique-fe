@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { ChipKind } from '@/components/ds'
 import {
+  AIChip,
   Chip,
   ImagePlaceholder,
   InfoBanner,
@@ -28,6 +29,7 @@ export function StatusSection() {
   return (
     <Section id="status" title="Status">
       <ChipDemo />
+      <AIChipDemo />
       <TagDemo />
       <PageIndicatorDemo />
       <ProgressBarDemo />
@@ -63,6 +65,20 @@ function ChipDemo() {
             </div>
           ))}
         </div>
+      </div>
+    </Demo>
+  )
+}
+
+function AIChipDemo() {
+  return (
+    <Demo
+      title="AIChip"
+      description="AI 기능 표시. 높이 18 · 좌우 8 · radius-lg, grad/primary 바탕 + white0 label01 'AI'(Figma 1108:2979). Chip(22)과 크기가 달라 따로 둡니다."
+    >
+      <div className="gap-space-8 flex items-center">
+        <span className="text-head03 text-black0">쇼핑메이트 PIKI</span>
+        <AIChip />
       </div>
     </Demo>
   )

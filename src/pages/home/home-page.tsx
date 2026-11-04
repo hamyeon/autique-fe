@@ -109,6 +109,7 @@ export function HomePage() {
     >
       <HomeBanner />
       <PromoBanner
+        href="/agent"
         className="-mx-layout-gutter w-auto"
         caption="꼭 실시간 경매를 보고 있지 않아도,"
         title={

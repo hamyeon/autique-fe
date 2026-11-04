@@ -2,6 +2,7 @@ import type { FormEvent, ReactNode } from 'react'
 import { useState } from 'react'
 import type { TabKey } from '@/components/ds'
 import {
+  AIChip,
   Header,
   HeaderActions,
   HeaderInput,
@@ -293,6 +294,16 @@ function MyPageListButtonDemo() {
       <FullBleed label="href (링크) · 누르면 /design-system/screen-demo로 이동">
         <MyPageListButton href="/design-system/screen-demo">관심 목록</MyPageListButton>
       </FullBleed>
+      <FullBleed label="badge · 문구 오른쪽 8에 AIChip (마이페이지 쇼핑메이트 PIKI)">
+        <MyPageListButton badge={<AIChip />} onClick={() => setCount((c) => c + 1)}>
+          쇼핑메이트 PIKI
+        </MyPageListButton>
+      </FullBleed>
+      <FullBleed label="badge + 긴 문구 · 문구만 말줄임, 칩은 그대로">
+        <MyPageListButton badge={<AIChip />} onClick={() => setCount((c) => c + 1)}>
+          쇼핑메이트 PIKI와 함께 원하는 상품 자동으로 찾기
+        </MyPageListButton>
+      </FullBleed>
       <FullBleed label="긴 문구 · 한 줄 말줄임, 화살표는 그대로">
         <MyPageListButton onClick={() => setCount((c) => c + 1)}>
           경매 AI Agent 설정과 자동 입찰 상한가 기본값 관리하기
@@ -326,7 +337,7 @@ function MyPageMenuSectionDemo() {
           </MyPageMenuSection>
           <MyPageMenuSection title="쇼핑">
             {item('관심 목록')}
-            {item('경매 AI Agent 설정')}
+            {item('쇼핑메이트 PIKI')}
           </MyPageMenuSection>
         </div>
       </FullBleed>

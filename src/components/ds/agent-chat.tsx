@@ -115,17 +115,30 @@ export interface AgentBubbleProps {
   children: ReactNode
   /** 넘기면 밑줄 링크 말풍선(예: '상품 상세 화면 바로 보러가기'). agent에서만 씁니다. */
   href?: string
+  /** 넘기면 밑줄 버튼 말풍선(예: '조건 확인하고 찾기 시작하기'). 링크와 모양이 같고 화면 이동 대신 동작합니다. (DS 확장) */
+  onClick?: () => void
   className?: string
 }
 
 /** 경매 AI Agent 대화 말풍선(Figma 경매 AI Agent 화면 989:5268 안 말풍선). 내용 폭에 맞고 묶음 폭을 넘지 않습니다. */
-export function AgentBubble({ from, children, href, className }: AgentBubbleProps) {
+export function AgentBubble({ from, children, href, onClick, className }: AgentBubbleProps) {
   const tone = from === 'agent' ? AGENT : USER
   if (href) {
     return (
       <Link to={href} className={cn(BUBBLE, tone, FOCUS, 'underline', className)}>
         {children}
       </Link>
+    )
+  }
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={cn(BUBBLE, tone, FOCUS, 'text-left underline', className)}
+      >
+        {children}
+      </button>
     )
   }
   return <p className={cn(BUBBLE, tone, className)}>{children}</p>

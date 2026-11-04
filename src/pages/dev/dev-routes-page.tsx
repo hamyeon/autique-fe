@@ -65,6 +65,21 @@ const GROUPS: { title: string; links: RouteLink[] }[] = [
     ],
   },
   {
+    title: '경매 AI Agent(API 연결 전 데모 · ?scenario=)',
+    links: [
+      { to: '/agent', label: '01 온보딩(말풍선 하나씩 → 조건 보내면 확인 시트)' },
+      { to: '/agent?scenario=confirm', label: '조건 확인 대기(버튼을 누르면 확인 시트)' },
+      { to: '/agent?scenario=searching', label: '02 탐색 중(“취소” 입력 → 바로 취소)' },
+      { to: '/agent?scenario=found', label: '03-1 경매 찾기 성공' },
+      { to: '/agent?scenario=bidding', label: '03-2 자동 입찰 중(“취소” 입력 → 취소 요청)' },
+      { to: '/agent?scenario=won', label: '03-3 낙찰 성공(결제 링크)' },
+      { to: '/agent?scenario=lost', label: '03-4 낙찰 실패 · 다시 탐색' },
+      { to: '/agent?scenario=not-found', label: '03-5 조건에 맞는 경매 없음' },
+      { to: '/agent?scenario=loading', label: '불러오는 중' },
+      { to: '/agent?scenario=error', label: '에러' },
+    ],
+  },
+  {
     title: '홈',
     links: [
       { to: '/', label: '홈' },

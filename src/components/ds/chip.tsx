@@ -38,3 +38,20 @@ export function Chip({ kind = 'plan', children, className }: ChipProps) {
     </span>
   )
 }
+
+/**
+ * AI 기능 표시(Figma AIChip 1108:2979): 높이 18(label01 + 위아래 2), 좌우 8, radius-lg,
+ * 바탕 grad/primary(bg-grad-primary, 승인된 그라데이션 예외), 글자 white0 "AI". 예: 마이페이지 '쇼핑메이트 PIKI' 옆
+ */
+export function AIChip({ className }: { className?: string }) {
+  return (
+    <span
+      className={cn(
+        'bg-grad-primary text-label01 text-white0 px-space-8 inline-flex shrink-0 items-center rounded-lg py-0.5 whitespace-nowrap',
+        className,
+      )}
+    >
+      AI
+    </span>
+  )
+}

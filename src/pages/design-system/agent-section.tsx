@@ -104,6 +104,8 @@ function AgentBubbleDemo() {
               상품 상세 화면 바로 보러가기
             </AgentBubble>
           </AgentMessageGroup>
+          <Caption>agent · 버튼 (누르면 동작, 링크와 같은 모양)</Caption>
+          <BubbleButtonDemo />
           <Caption>user</Caption>
           <AgentMessageGroup from="user">
             <AgentBubble from="user">30만원 이하 뉴발란스 530 찾아줘</AgentBubble>
@@ -182,5 +184,17 @@ function AgentThreadDemo() {
       </AgentBackdrop>
       <Caption>가짜 응답이에요. 실제 문장은 구매 목표 상태 · 참여 이력 · 알림으로 만들어요(명세).</Caption>
     </Demo>
+  )
+}
+
+function BubbleButtonDemo() {
+  const [count, setCount] = useState(0)
+  return (
+    <AgentMessageGroup from="agent">
+      <AgentBubble from="agent" onClick={() => setCount((n) => n + 1)}>
+        조건 확인하고 찾기 시작하기
+      </AgentBubble>
+      <Caption>누른 횟수: {count}</Caption>
+    </AgentMessageGroup>
   )
 }
