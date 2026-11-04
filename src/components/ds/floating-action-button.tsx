@@ -20,7 +20,7 @@ export interface FloatingActionButtonProps {
 /**
  * 떠 있는 56px 원형 버튼(Figma FloatingActionButton 1112:3129). 바탕 grad/primary + 흰 Add 32.
  * 누르면 Add가 45° 돌아 ×가 되고(사용자 결정, Figma focused는 + 그대로), 위로 24 띄워 메뉴(흰 칸, 패딩 12·8, radius-md,
- * AIChip md + 8 + head03 black0, 칸 사이 8)가 나옵니다. 버튼에는 살짝 그림자(shadow-fab, DS 예외).
+ * AIChip md + 8 + body01 black0(사용자 결정, Figma head03), 칸 사이 8)가 나옵니다. 버튼에는 살짝 그림자(shadow-fab, DS 예외).
  * 펼친 동안 화면 전체에 딤(black0 70%, BottomSheet의 overlay/dim 90%보다 연하게 — 사용자 결정)을 깔고, 딤 · × · Esc · 메뉴 선택으로 닫힙니다.
  * 딤은 position: fixed라 Screen bottom 슬롯(sticky z-10) 안에 두면 헤더 · 탭바까지 덮습니다.
  */
@@ -90,7 +90,7 @@ export function FloatingActionButton({ actions, className }: FloatingActionButto
   )
 }
 
-/** 메뉴 한 칸: AIChip md → 8 → head03. 눈에 보이는 높이는 42라 위아래 2씩(칸 사이 8 안에서) 터치 영역을 넓혀 46으로. */
+/** 메뉴 한 칸: AIChip md → 8 → body01. 눈에 보이는 높이는 42라 위아래 2씩(칸 사이 8 안에서) 터치 영역을 넓혀 46으로. */
 function MenuItem({ onClick, children }: { onClick: () => void; children: ReactNode }) {
   const { pressed, handlers } = usePressed()
   return (
@@ -99,7 +99,7 @@ function MenuItem({ onClick, children }: { onClick: () => void; children: ReactN
       onClick={onClick}
       data-pressed={pressed ? '' : undefined}
       {...handlers}
-      className="bg-white0 text-head03 text-black0 px-space-12 py-space-8 gap-space-8 focus-visible:outline-primary1 data-pressed:bg-gray0 relative flex w-full items-center rounded-md text-left whitespace-nowrap before:absolute before:inset-x-0 before:-inset-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2"
+      className="bg-white0 text-body01 text-black0 px-space-12 py-space-8 gap-space-8 focus-visible:outline-primary1 data-pressed:bg-gray0 relative flex w-full items-center rounded-md text-left whitespace-nowrap before:absolute before:inset-x-0 before:-inset-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2"
     >
       <AIChip size="md" />
       {children}

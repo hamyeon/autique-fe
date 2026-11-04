@@ -173,7 +173,7 @@ function FloatingActionButtonDemo() {
   return (
     <Demo
       title="FloatingActionButton"
-      description="56px 원, grad/primary + 흰 Add 32. 누르면 Add가 45° 돌아 ×가 되고, 위로 24 띄워 흰 메뉴(패딩 12·8, AIChip md + 8 + head03, 칸 사이 8)가 나옵니다. 버튼에 살짝 그림자(shadow-fab, DS 예외). 펼친 동안 화면 전체에 딤(black0 70%). 딤 · × · Esc · 메뉴 선택으로 닫힙니다. 실제로는 TabBar 위 오른쪽, 가장자리에서 20px."
+      description="56px 원, grad/primary + 흰 Add 32. 누르면 Add가 45° 돌아 ×가 되고, 위로 24 띄워 흰 메뉴(패딩 12·8, AIChip md + 8 + body01, 칸 사이 8)가 나옵니다. 버튼에 살짝 그림자(shadow-fab, DS 예외). 펼친 동안 화면 전체에 딤(black0 70%). 딤 · × · Esc · 메뉴 선택으로 닫힙니다. 실제로는 TabBar 위 오른쪽, 가장자리에서 20px."
     >
       <div className="border-gray2 relative h-60 rounded-sm border">
         <ul className="gap-space-12 p-space-12 flex flex-col">
