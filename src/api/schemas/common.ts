@@ -70,7 +70,9 @@ export type CannotBidReason = z.infer<typeof cannotBidReasonSchema>
 /** 결과 · 주문 · 차순위 제안 화면의 상품 요약 */
 export const productSummarySchema = z.object({
   productId: z.number().int(),
+  /** 상품 표시명(명세 공통 표시명 규칙): 한국어명이 있으면 한국어 전체명, 없으면 영문 전체명 */
   name: z.string(),
+  /** 보조 표시명(명세 공통 표시명 규칙): 한국어명이 있으면 영문 전체명, 없으면 모델명 */
   subName: z.string(),
   /** 대표 이미지 서명 URL. 이미지가 없으면 null */
   imageUrl: z.string().nullish(),

@@ -316,12 +316,12 @@ export function RegisterAnalyzingPage() {
         ) : undefined
       }
     >
-      <div className="gap-space-24 flex flex-col items-center" role="status" aria-live="polite">
+      <div className="gap-space-32 flex flex-col items-center" role="status" aria-live="polite">
         <LoadingIllustration />
         {/* 단계가 바뀔 때 글자만 부드럽게 바뀝니다(일러스트 움직임은 이어짐). */}
         <div
           key={timedOut ? 'timeout' : stage}
-          className="gap-stack-tight animate-in fade-in flex flex-col items-center text-center duration-300 motion-reduce:animate-none"
+          className="animate-in fade-in flex flex-col items-center text-center duration-300 motion-reduce:animate-none"
         >
           <p className="text-body01 text-black0">{copy.title}</p>
           <p className="text-body04 text-gray5">{copy.description}</p>

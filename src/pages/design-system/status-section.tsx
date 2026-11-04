@@ -74,11 +74,17 @@ function AIChipDemo() {
   return (
     <Demo
       title="AIChip"
-      description="AI 기능 표시. 높이 18 · 좌우 8 · radius-lg, grad/primary 바탕 + white0 label01 'AI'(Figma 1108:2979). Chip(22)과 크기가 달라 따로 둡니다."
+      description="AI 기능 표시. 좌우 8 · radius-lg, grad/primary 바탕 + white0 label01 'AI'(Figma 1112:3012). md 높이 18(마이페이지), lg 높이 22(경매 등록 StepHeader)."
     >
       <div className="gap-space-8 flex items-center">
         <span className="text-head03 text-black0">쇼핑메이트 PIKI</span>
         <AIChip />
+        <Caption>md</Caption>
+      </div>
+      <div className="gap-space-8 flex items-center">
+        <span className="text-head01 text-black0">AI 상품 분석</span>
+        <AIChip size="lg" />
+        <Caption>lg</Caption>
       </div>
     </Demo>
   )

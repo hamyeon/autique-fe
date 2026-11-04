@@ -146,17 +146,14 @@ export function RegisterExtraInfoStep() {
   )
 }
 
-/** AI 가격 로딩(Figma 694:2795): 분석 로딩과 같은 일러스트 + 문구, 가운데 정렬 */
+/** AI 가격 로딩(Figma 1112:3060): 분석 로딩과 같은 일러스트 + 32 + 문구(제목 · 보조 문구 사이 간격 없음), 가운데 정렬 */
 function PriceLoading() {
   return (
     <Screen className="items-center justify-center">
-      <div className="gap-space-24 flex flex-col items-center" role="status" aria-live="polite">
+      <div className="gap-space-32 flex flex-col items-center" role="status" aria-live="polite">
         <LoadingIllustration />
-        <div className="gap-stack-tight flex flex-col items-center text-center">
-          <p className="text-body01 text-black0">
-            <span className="block">상품 정보를 바탕으로</span>
-            <span className="block">AI 기준가를 설정하는 중이에요</span>
-          </p>
+        <div className="flex flex-col items-center text-center">
+          <p className="text-body01 text-black0">AI가 기준가를 설정하는 중이에요</p>
           <p className="text-body04 text-gray5">잠시만 기다려주세요</p>
         </div>
       </div>

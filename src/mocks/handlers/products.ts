@@ -16,6 +16,7 @@ import {
   markPhotosUsed,
   markPriced,
   markRegistered,
+  mockNameKo,
   toAnalysis,
 } from '@/mocks/data/products'
 import { idParam, mockEndpoint } from '@/mocks/define'
@@ -111,7 +112,7 @@ export const productHandlers = [
     error: mockErrors.ANALYSIS_STATUS_INVALID('VISION_PROCESSING'),
     // 분석을 목으로 하는 시나리오에서는 세션도 목에만 있으므로 가격 계산도 목으로
     mockIn: ['slow', 'analysis-fail'],
-    empty: ({ ok }) => ok(PRICE_RESULT_EMPTY),
+    empty: ({ body, ok }) => ok({ ...PRICE_RESULT_EMPTY, nameKo: mockNameKo(body) }),
     resolve: ({ body, ok, fail }) => {
       const analysis = findAnalysis(body.analysisId)
       if (!analysis) return fail(mockErrors.ANALYSIS_NOT_FOUND(String(body.analysisId)))
@@ -119,7 +120,7 @@ export const productHandlers = [
       if (status !== 'AWAITING_USER_CONFIRMATION')
         return fail(mockErrors.ANALYSIS_STATUS_INVALID(status))
       markPriced(analysis)
-      return ok(PRICE_RESULT)
+      return ok({ ...PRICE_RESULT, nameKo: mockNameKo(body) })
     },
   }),
 
@@ -144,14 +145,17 @@ export const productHandlers = [
       const auctionId = createAuctionId()
       const startsAt = Date.parse(body.auctionStartAt)
       const endsAt = Date.parse(body.auctionEndAt)
+      const nameKo = mockNameKo(body)
+      const englishName = `${body.brand} ${body.modelName} ${body.color}`
       auctions.unshift({
         auctionId,
         productId,
         sellerId: ME.userId,
         product: {
-          name: `${body.brand} ${body.modelName} ${body.color}`,
+          // 명세 공통 표시명 규칙: 한국어명이 있으면 한국어명 + 영문 전체명, 없으면 영문 전체명 + 모델명
+          name: nameKo ?? englishName,
           brand: body.brand,
-          subName: `${body.brand} ${body.modelName} ${body.color}`,
+          subName: nameKo ? englishName : body.modelName,
           grade: body.conditionGrade,
           imageUrls,
         },
@@ -175,6 +179,7 @@ export const productHandlers = [
         imageUrls,
         brand: body.brand,
         modelName: body.modelName,
+        nameKo,
         color: body.color,
         size: body.size,
         conditionGrade: body.conditionGrade,

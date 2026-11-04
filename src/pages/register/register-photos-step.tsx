@@ -163,7 +163,13 @@ export function RegisterPhotosStep() {
     PHOTO_SLOTS.map(mismatch).find(Boolean)
 
   return (
-    <RegisterStepScreen step="1" nextDisabled={!isValid || isBusy} onNext={goNext}>
+    <RegisterStepScreen
+      step="1"
+      nextDisabled={!isValid || isBusy}
+      // 사진을 올리는 동안 버튼이 왜 막혔는지 알려줍니다.
+      nextLabel={isBusy ? '이미지를 업로드 중이에요' : undefined}
+      onNext={goNext}
+    >
       <div className="gap-stack-tight flex flex-col">
         <div className="gap-space-8 grid grid-cols-2" aria-busy={isBusy || undefined}>
           {PHOTO_SLOTS.map((slot) => (

@@ -8,6 +8,7 @@ export type { ImagePlaceholderProps } from './image-placeholder'
 
 /* Status */
 export { Chip, AIChip } from './chip'
+export type { AIChipProps } from './chip'
 export type { ChipProps, ChipKind } from './chip'
 export { Tag } from './tag'
 export type { TagProps } from './tag'

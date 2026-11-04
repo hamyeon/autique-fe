@@ -181,6 +181,8 @@ export const calculatePriceResponseSchema = z.object({
   reason: z.string(),
   kreamMatches: z.array(priceMatchSchema),
   ebayMatches: z.array(priceMatchSchema),
+  /** 요청의 brand · modelName · color를 합친 한국어 상품명. 만들지 못하면 null */
+  nameKo: z.string().nullish(),
 })
 export type CalculatePriceResponse = z.infer<typeof calculatePriceResponseSchema>
 
@@ -247,6 +249,8 @@ export const createProductResponseSchema = z.object({
   imageUrls: z.array(z.string()),
   brand: z.string(),
   modelName: z.string(),
+  /** 서버가 brand · modelName · color로 정한 한국어 상품명. 만들지 못하면 null */
+  nameKo: z.string().nullish(),
   color: z.string(),
   size: z.number().int(),
   conditionGrade: conditionGradeSchema,

@@ -154,6 +154,7 @@ function TitleBlock({ detail }: { detail: AuctionDetail }) {
         <Chip kind={chip.kind}>{chip.label}</Chip>
         {grade && <Chip kind="level">{grade}</Chip>}
       </div>
+      {/* 명세 공통 표시명 규칙: 한국어명이 있으면 name = 한국어명, subName = 영문 전체명. 없으면 영문 전체명 + 모델명 */}
       <div className="flex flex-col">
         <h2 className="text-head02 text-black0">{detail.product.name}</h2>
         {detail.product.subName && (
