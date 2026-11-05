@@ -312,7 +312,7 @@
 }
 
 /* Figma 스타일 grad/background: 위 white0 → 아래 primary3 세로 선형(경매 AI Agent 화면 바탕).
-   팔레트 색만 쓰고, 화면(Screen 전체 높이)에 깔아 본문이 길면 함께 늘어납니다(Figma 1153 프레임도 같음). */
+   팔레트 색만 씁니다. Screen이 뷰포트에 고정된 층으로 깔아 스크롤해도 색이 그대로입니다(사용자 결정, 2026-11-05). */
 @utility bg-grad-background {
   background-image: linear-gradient(to bottom, var(--color-white0), var(--color-primary3));
 }

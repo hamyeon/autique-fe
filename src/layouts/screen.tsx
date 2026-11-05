@@ -20,6 +20,7 @@ export interface ScreenProps {
   /**
    * 화면 바탕. 기본 default(white0, MobileLayout 그대로).
    * grad = Figma grad/background(white0 → primary3, 경매 AI Agent). 하단 sticky 영역은 바탕 없이 투명(Figma 그대로).
+   * 그라데이션은 화면(뷰포트)에 고정돼 스크롤해도 색이 그대로입니다(사용자 결정, 2026-11-05).
    */
   background?: 'default' | 'grad'
   /** 본문 영역에 더할 클래스(예: 가운데 정렬 화면의 justify-center) */
@@ -45,7 +46,18 @@ export function Screen({
 }: ScreenProps) {
   const grad = background === 'grad'
   return (
-    <div className={cn('flex min-h-dvh flex-col', grad && 'bg-grad-background')}>
+    <div className={cn('flex min-h-dvh flex-col', grad && 'relative isolate')}>
+      {/*
+       * 고정 배경 층: 앱 폭(max-w-md)만큼 뷰포트에 붙여 스크롤해도 움직이지 않습니다.
+       * iOS Safari는 background-attachment: fixed를 무시해서 fixed 요소로 깝니다. isolate 안의 -z-10이라
+       * MobileLayout의 흰 바탕 위, 이 화면의 내용 아래에 그려집니다.
+       */}
+      {grad && (
+        <div
+          aria-hidden
+          className="bg-grad-background pointer-events-none fixed inset-y-0 left-1/2 -z-10 w-full max-w-md -translate-x-1/2"
+        />
+      )}
       {/* 헤더가 없어도 노치 영역을 덮도록 자리는 남깁니다. */}
       <div className="bg-white0 pt-safe sticky top-0 z-10">{header}</div>
 

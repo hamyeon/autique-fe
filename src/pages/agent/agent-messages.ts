@@ -82,7 +82,7 @@ export function userEntry(text: string): AgentEntry {
   return { id: nextId('user'), from: 'user', bubbles: [{ text }] }
 }
 
-/** 조건 해석 결과(POST /api/purchase-goals/parse 초안) + 확인 버튼. 마감은 초안에 없어 시트에서 정합니다. */
+/** 조건 해석 결과(POST /api/purchase-goals/parse 초안) + 확인 버튼. 기한이 없으면 시트에서 정합니다. */
 export function draftEntry(draft: PurchaseGoalDraft, draftId: string): AgentEntry {
   const unknown = '확인이 필요해요'
   const lines = [
@@ -91,11 +91,16 @@ export function draftEntry(draft: PurchaseGoalDraft, draftId: string): AgentEntr
     `최대 예산 · ${draft.hardMaxAmount ? formatPrice(draft.hardMaxAmount) : unknown}`,
     `사이즈 · ${draft.sizeKr ? `${draft.sizeKr}mm` : '모든 사이즈'}`,
   ]
+  if (draft.deadline) lines.push(`기한 · ${formatDateTime(new Date(draft.deadline))}까지`)
   if (draft.freeTextConditions) lines.push(`추가 희망 · ${draft.freeTextConditions}`)
   return agent('draft', [
     { text: '조건을 이렇게 정리했어요' },
     { text: lines.join('\n') },
-    { text: '언제까지 찾을지 정하고 확인해 주시면 바로 찾기 시작할게요' },
+    {
+      text: draft.deadline
+        ? '확인해 주시면 바로 찾기 시작할게요'
+        : '언제까지 찾을지 정하고 확인해 주시면 바로 찾기 시작할게요',
+    },
     { text: '조건 확인하고 찾기 시작하기', action: { type: 'confirm-draft', draftId } },
   ])
 }
