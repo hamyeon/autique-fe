@@ -57,7 +57,7 @@ const confirmFormSchema = z.object({
 })
 type ConfirmForm = z.input<typeof confirmFormSchema>
 
-/** 기본 마감: 7일 뒤 밤 11시 59분(초안에는 마감이 없음) */
+/** 기본 마감: 7일 뒤 밤 11시 59분. 문장에 기한이 없어 초안 deadline이 null일 때만 씁니다. */
 function defaultDeadline() {
   const d = new Date()
   d.setDate(d.getDate() + 7)
@@ -71,7 +71,9 @@ function toFormValues(draft: PurchaseGoalDraft): ConfirmForm {
     hardMaxAmount: draft.hardMaxAmount ?? DEFAULT_BUDGET,
     size: draft.sizeKr ? String(draft.sizeKr) : '',
     freeTextConditions: draft.freeTextConditions ?? '',
-    deadline: defaultDeadline(),
+    /* 서버가 문장에서 해석한 기한. 없거나 이미 지났으면 기본값(사용자가 시트에서 고침) */
+    deadline:
+      draft.deadline && Date.parse(draft.deadline) > Date.now() ? draft.deadline : defaultDeadline(),
   }
 }
 
