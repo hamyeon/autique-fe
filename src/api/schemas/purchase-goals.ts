@@ -29,7 +29,7 @@ export const parsePurchaseGoalRequestSchema = z.object({
 })
 export type ParsePurchaseGoalRequest = z.infer<typeof parsePurchaseGoalRequestSchema>
 
-/** 초안. 해석하지 못한 값은 null. deadline은 없습니다(사용자가 입력). */
+/** 초안. 해석하지 못한 값은 null. */
 export const purchaseGoalDraftSchema = z.object({
   modelQuery: z.string().nullish(),
   brand: z.string().nullish(),
@@ -37,6 +37,9 @@ export const purchaseGoalDraftSchema = z.object({
   minCondition: purchaseGoalConditionSchema.nullish(),
   hardMaxAmount: z.number().int().nullish(),
   sizeKr: z.number().int().nullish(),
+  // [MISMATCH] 명세는 "응답에 deadline은 없습니다". 실서버(11-05 확인)는 문장의 기한을 해석해
+  // 오프셋 포함 ISO-8601(시각은 23:59)로 주고, 기한이 없으면 null + warnings '기한이 없습니다…'를 줍니다.
+  deadline: dateTimeSchema.nullish(),
   freeTextConditions: z.string().nullish(),
   /** 0.0 ~ 1.0. 0.7 미만이면 확인 · 수정을 더 강조합니다. */
   confidence: z.number(),

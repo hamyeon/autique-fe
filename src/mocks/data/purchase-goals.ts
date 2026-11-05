@@ -186,7 +186,8 @@ const GRADE_WORDS: Record<string, PurchaseGoalCondition> = {
 
 /**
  * POST /api/purchase-goals/parse 목: 아주 단순한 규칙 해석.
- * 금액('30만원', '150,000원') · 등급('A급') · 사이즈(220~325, 5mm 단위) · 모델(카탈로그 목, 없으면 첫 마디)만 뽑고,
+ * 금액('30만원', '150,000원') · 등급('A급') · 사이즈(220~325, 5mm 단위) · 모델(카탈로그 목, 없으면 첫 마디)
+ * · 기한('11월 10일까지', '3일 안에', '내일', '일주일', 시각은 실서버처럼 23:59)만 뽑고,
  * 못 뽑은 값은 null + warnings(실서버 문구)로 돌려줍니다.
  */
 export function mockParse(text: string): PurchaseGoalDraft {
@@ -214,6 +215,7 @@ export function mockParse(text: string): PurchaseGoalDraft {
       .trim() || null
 
   const catalog = CATALOG.find((c) => c.pattern.test(text))
+  const deadline = mockParseDeadline(text)
 
   const warnings: string[] = []
   if (modelQuery && !catalog)
@@ -223,6 +225,7 @@ export function mockParse(text: string): PurchaseGoalDraft {
   if (!size)
     warnings.push('사이즈가 없습니다. 사이즈를 지정하지 않으면 모든 사이즈가 후보가 됩니다.')
   if (!minCondition) warnings.push('상태 등급 조건이 없습니다. 모든 등급이 후보가 됩니다.')
+  if (!deadline) warnings.push('기한이 없습니다. 언제까지 찾을지 정해 주세요.')
 
   return {
     modelQuery: catalog?.modelQuery ?? modelQuery,
@@ -231,8 +234,26 @@ export function mockParse(text: string): PurchaseGoalDraft {
     minCondition,
     hardMaxAmount,
     sizeKr: size ?? null,
+    deadline,
     freeTextConditions: null,
     confidence: warnings.length > 1 ? 0.5 : 0.9,
     warnings,
   }
+}
+
+/** 문장의 기한 → 그날 23:59(KST). 못 찾으면 null */
+function mockParseDeadline(text: string): string | null {
+  const day = new Date()
+  const date = text.match(/(\d{1,2})\s*월\s*(\d{1,2})\s*일/)
+  const inDays = text.match(/(\d+)\s*일\s*(안|내|이내|뒤|후)/)
+  if (date) {
+    day.setMonth(Number(date[1]) - 1, Number(date[2]))
+    if (day.getTime() < Date.now() - DAY) day.setFullYear(day.getFullYear() + 1)
+  } else if (inDays) day.setDate(day.getDate() + Number(inDays[1]))
+  else if (/모레/.test(text)) day.setDate(day.getDate() + 2)
+  else if (/내일/.test(text)) day.setDate(day.getDate() + 1)
+  else if (/일주일|한\s*주/.test(text)) day.setDate(day.getDate() + 7)
+  else return null
+  day.setHours(23, 59, 0, 0)
+  return kst(day)
 }
