@@ -13,7 +13,7 @@ const pad2 = (n: number) => String(n).padStart(2, '0')
 
 /** 흰 바탕 · gray2 테두리 · radius-md 상자(평면, 그림자 없음). 칸 아래 8에 붙습니다. */
 const PANEL =
-  'bg-white0 border-gray2 p-space-12 z-30 rounded-md border focus:outline-none data-[state=open]:animate-in data-[state=open]:fade-in data-[state=closed]:animate-out data-[state=closed]:fade-out motion-reduce:animate-none'
+  'bg-white0 border-gray2 p-space-12 z-60 rounded-md border focus:outline-none data-[state=open]:animate-in data-[state=open]:fade-in data-[state=closed]:animate-out data-[state=closed]:fade-out motion-reduce:animate-none'
 
 export interface SchedulePopoverProps {
   open: boolean
