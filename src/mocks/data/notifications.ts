@@ -27,7 +27,8 @@ const COPY: Record<NotificationType, { title: string; body: string }> = {
   // 명세 예시 문구
   PURCHASE_AGENT_ENGAGED: {
     title: '구매 대행이 입찰을 시작했습니다',
-    body: '설정하신 조건에 맞는 경매를 찾아 자동입찰을 등록했습니다.',
+    // 실서버 문구(시세 비교 · 최대 상한이 뒤에 붙음)
+    body: '설정하신 조건에 맞는 경매를 찾아 자동입찰을 등록했습니다. 다음 입찰가 30,000원은 AI 시세(20,000원)의 1.5배입니다. 최대 40,000원(시세의 2배)까지 자동으로 입찰합니다.',
   },
   PURCHASE_AGENT_LOST: {
     title: '구매 대행 경매에서 낙찰받지 못했어요',
