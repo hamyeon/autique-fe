@@ -30,6 +30,16 @@ const GROUPS: { title: string; links: RouteLink[] }[] = [
     ],
   },
   {
+    title: '개발용 로그인',
+    links: [
+      {
+        to: '/dev/routes?dev-login',
+        label: '.env.local 개발용 토큰으로 로그인(자동으로는 로그인하지 않음)',
+        reload: true,
+      },
+    ],
+  },
+  {
     title: '낙찰 이후(목 데이터로 보기를 켜고)',
     links: [
       { to: '/auctions/13/result', label: '결과 · 낙찰 · 결제 대기(결제 · 구매 포기)' },
