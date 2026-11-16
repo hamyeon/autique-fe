@@ -14,16 +14,29 @@ import { DAY, HOUR, ME, fromNow, kst } from '@/mocks/data/common'
  * 페이지를 새로 열면 처음 데이터로 돌아갑니다.
  */
 
-interface MockGoal extends Omit<PurchaseGoalDetail, 'createdAt' | 'deadline'> {
+interface MockGoal extends Omit<PurchaseGoalDetail, 'createdAt' | 'deadline' | 'capRatio'> {
   createdAt: number
   deadline: number
 }
+
+/** 서버 입찰 상한 배수 설정(명세 기본값) */
+const CAP_RATIO = 2.0
 
 const participation = (
   auctionId: number,
   status: PurchaseGoalParticipation['status'],
   auctionStatus: PurchaseGoalParticipation['auctionStatus'],
-): PurchaseGoalParticipation => ({ auctionId, status, auctionStatus })
+  {
+    estimatedPriceAtEngage,
+    autoBidCap,
+  }: { estimatedPriceAtEngage: number | null; autoBidCap: number },
+): PurchaseGoalParticipation => ({
+  auctionId,
+  status,
+  auctionStatus,
+  estimatedPriceAtEngage,
+  autoBidCap,
+})
 
 function goal(
   partial: Pick<MockGoal, 'id' | 'modelQuery' | 'minCondition' | 'hardMaxAmount' | 'status'> &
@@ -58,7 +71,9 @@ const goals: MockGoal[] = [
     status: 'FULFILLED',
     createdAt: fromNow(-4 * DAY),
     deadline: fromNow(3 * DAY),
-    participations: [participation(13, 'WON', 'ENDED')],
+    participations: [
+      participation(13, 'WON', 'ENDED', { estimatedPriceAtEngage: null, autoBidCap: 250000 }),
+    ],
   }),
   goal({
     id: 32,
@@ -69,7 +84,9 @@ const goals: MockGoal[] = [
     status: 'EXPIRED',
     createdAt: fromNow(-3 * DAY),
     deadline: fromNow(-HOUR),
-    participations: [participation(14, 'LOST', 'ENDED')],
+    participations: [
+      participation(14, 'LOST', 'ENDED', { estimatedPriceAtEngage: 70000, autoBidCap: 140000 }),
+    ],
   }),
   goal({
     id: 33,
@@ -79,7 +96,9 @@ const goals: MockGoal[] = [
     hardMaxAmount: 200000,
     status: 'ENGAGED',
     createdAt: fromNow(-2 * DAY),
-    participations: [participation(20, 'LIVE', 'LIVE')],
+    participations: [
+      participation(20, 'LIVE', 'LIVE', { estimatedPriceAtEngage: 60000, autoBidCap: 120000 }),
+    ],
   }),
   goal({
     id: 34,
@@ -89,7 +108,12 @@ const goals: MockGoal[] = [
     hardMaxAmount: 300000,
     status: 'ENGAGED',
     createdAt: fromNow(-5 * HOUR),
-    participations: [participation(12, 'SCHEDULED', 'SCHEDULED')],
+    participations: [
+      participation(12, 'SCHEDULED', 'SCHEDULED', {
+        estimatedPriceAtEngage: 100000,
+        autoBidCap: 120000,
+      }),
+    ],
   }),
   goal({
     id: 35,
@@ -105,11 +129,11 @@ const goals: MockGoal[] = [
 let nextGoalId = 100
 
 function toDetail(g: MockGoal): PurchaseGoalDetail {
-  return { ...g, createdAt: kst(g.createdAt), deadline: kst(g.deadline) }
+  return { ...g, createdAt: kst(g.createdAt), deadline: kst(g.deadline), capRatio: CAP_RATIO }
 }
 
 function toGoal(g: MockGoal): PurchaseGoal {
-  const { participations: _participations, ...rest } = toDetail(g)
+  const { participations: _participations, capRatio: _capRatio, ...rest } = toDetail(g)
   return rest
 }
 
@@ -238,6 +262,7 @@ export function mockParse(text: string): PurchaseGoalDraft {
     freeTextConditions: null,
     confidence: warnings.length > 1 ? 0.5 : 0.9,
     warnings,
+    capRatio: CAP_RATIO,
   }
 }
 

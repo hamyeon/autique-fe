@@ -1,0 +1,22 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="256.294" height="133.979" viewBox="0 0 256.294 133.979" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Group 1171276536" opacity="0.6">
+<ellipse id="Ellipse 211" cx="239.5" cy="52.5625" rx="2.625" ry="2.5625" fill="white" fill-opacity="0.53"/>
+<rect id="Rectangle 2860514" x="2.57253" y="91.875" width="12.2321" height="4.84532" transform="rotate(32.0684 2.57253 91.875)" fill="white" fill-opacity="0.6"/>
+<rect id="Rectangle 2860521" x="13" y="8.6685" width="12.2321" height="4.84532" transform="rotate(-45.1265 13 8.6685)" fill="white" fill-opacity="0.6"/>
+<rect id="Rectangle 2860518" x="182.602" y="127.392" width="10.4212" height="5.18371" transform="rotate(140.797 182.602 127.392)" fill="white"/>
+<rect id="Rectangle 2860520" x="254.597" y="116.06" width="10.4212" height="5.18371" transform="rotate(-160.888 254.597 116.06)" fill="white" fill-opacity="0.6"/>
+<rect id="Rectangle 2860519" x="58.125" y="36.8026" width="9.7409" height="4.84532" transform="rotate(-157.233 58.125 36.8026)" fill="white"/>
+<g id="Rectangle 2860516" filter="url(#filter0_f_0_22)">
+<rect x="207.375" y="61.8539" width="13.0864" height="5.18371" transform="rotate(-30.9433 207.375 61.8539)" fill="white" fill-opacity="0.5"/>
+</g>
+<rect id="Rectangle 2860517" x="216.525" y="10.5" width="13.0864" height="5.18371" transform="rotate(48.7893 216.525 10.5)" fill="white" fill-opacity="0.25"/>
+<ellipse id="Ellipse 212" cx="36.1875" cy="40.833" rx="2.5625" ry="2.4375" fill="white" fill-opacity="0.53"/>
+</g>
+<defs>
+<filter id="filter0_f_0_22" x="206.125" y="53.875" width="16.3893" height="13.6748" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="0.625" result="effect1_foregroundBlur_0_22"/>
+</filter>
+</defs>
+</svg>

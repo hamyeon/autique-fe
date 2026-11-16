@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useIsMutating, useQuery } from '@tanstack/react-query'
 import { auctionKeys, getAuctionBids, getAuctionLive, placeBidMutationKey } from '@/api/auctions'
 import { useNow } from '@/hooks/use-now'
@@ -37,7 +38,7 @@ export function useLiveAuction(auctionId: number, { enabled = true } = {}) {
       if (placing) return false
       const data = query.state.data
       if (data && data.status !== 'LIVE') return false
-      return timeUp(data, query.state.dataUpdatedAt, Date.now())
+      return isTimeUp(data, query.state.dataUpdatedAt, Date.now())
         ? LIVE_ENDING_POLL_MS
         : LIVE_POLL_MS
     },
@@ -54,14 +55,29 @@ export function useLiveAuction(auctionId: number, { enabled = true } = {}) {
   })
 
   const remainingMs = live.data ? remainingOf(live.data, live.dataUpdatedAt, now) : null
+  const timeUp = remainingMs !== null && remainingMs <= 0
+
+  /*
+   * 0초가 되는 순간 다음 폴링(최대 3초 뒤)을 기다리지 않고 바로 서버 상태를 다시 묻습니다(서버 안내 2026-11-16).
+   * 마감 직전 입찰로 연장됐으면 새 endsAt으로 카운트다운이 다시 흐르고, 종료가 확정되면(ENDED) 결과 화면으로 갑니다.
+   * 확정 전(아직 LIVE)이면 refetchInterval이 1초 간격으로 계속 묻습니다.
+   */
+  const { refetch: refetchLive } = live
+  const { refetch: refetchBids } = bids
+  const endsAt = live.data?.endsAt
+  useEffect(() => {
+    if (!timeUp || placing) return
+    void refetchLive()
+    void refetchBids()
+  }, [timeUp, endsAt, placing, refetchLive, refetchBids])
 
   return {
     live,
     bids,
     /** 서버 시각 기준 남은 시간(ms). 아직 모르면 null */
     remainingMs,
-    /** 카운트다운이 0이 됨. 서버가 종료(ENDED)를 확인하기 전까지는 연장될 수도 있습니다. */
-    timeUp: remainingMs !== null && remainingMs <= 0,
+    /** 카운트다운이 0이 됨. 서버가 종료(ENDED)를 확정하기 전까지는 '결과 집계 중'이고, 연장될 수도 있습니다. */
+    timeUp,
   }
 }
 
@@ -79,6 +95,6 @@ function remainingOf(clock: LiveClock, receivedAt: number, now: number) {
   return getRemainingMs(Date.parse(clock.endsAt), serverNow)
 }
 
-function timeUp(clock: LiveClock | undefined, receivedAt: number, now: number) {
+function isTimeUp(clock: LiveClock | undefined, receivedAt: number, now: number) {
   return !!clock && remainingOf(clock, receivedAt, now) <= 0
 }

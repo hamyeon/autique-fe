@@ -83,7 +83,7 @@ export function KakaoCallbackPage() {
 
   if (state.status === 'error') {
     return (
-      <LoginLayout>
+      <LoginLayout tone="plain">
         <ErrorState
           title={state.title}
           description={state.description}

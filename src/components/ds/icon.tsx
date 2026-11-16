@@ -56,6 +56,8 @@ type ArtName =
   | 'img_loading_magnifier'
   | 'img_complete_send'
   | 'autique-logo'
+  /** 로그인 화면 흰 로고(Figma img_logo_white 957:2895, 색 고정) */
+  | 'autique-logo-white'
   /** 카카오 로그인 버튼 말풍선(18, 검정 고정) */
   | 'kakao-symbol'
 

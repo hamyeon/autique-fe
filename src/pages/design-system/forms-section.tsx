@@ -340,7 +340,7 @@ function ImageUploadButtonDemo() {
   return (
     <Demo
       title="ImageUploadButton"
-      description="정사각 칸 가운데 일러스트(100×48) + head03 라벨. 칸을 누르면 사진 선택 창이 열리고, 고르면 미리보기로 채워집니다. 채워진 칸을 다시 누르면 다른 사진으로 바꿉니다. onRemove를 넘기면 사진 오른쪽 위에 Close(36, 터치 44) 버튼이 생겨 누르면 칸이 비워집니다. 2×2, 간격 8."
+      description="Figma 628:9569: primary4 바탕 · primary3 테두리 정사각 칸 가운데 3D 일러스트(100) + body03 gray7 라벨(사이 4). 빈 칸을 누르는 동안 primary3 바탕. 칸을 누르면 사진 선택 창이 열리고, 고르면 미리보기로 채워집니다. 채워진 칸을 다시 누르면 다른 사진으로 바꿉니다. onRemove를 넘기면 사진 오른쪽 위에 Close(36, 터치 44) 버튼이 생겨 누르면 칸이 비워집니다. 2×2, 간격 8."
     >
       <div key={resetKey} className="gap-space-8 grid grid-cols-2">
         <ImageUploadButton direction="front" onRemove={() => setRemoved((c) => c + 1)} />

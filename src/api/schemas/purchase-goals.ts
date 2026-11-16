@@ -37,13 +37,14 @@ export const purchaseGoalDraftSchema = z.object({
   minCondition: purchaseGoalConditionSchema.nullish(),
   hardMaxAmount: z.number().int().nullish(),
   sizeKr: z.number().int().nullish(),
-  // [MISMATCH] 명세는 "응답에 deadline은 없습니다". 실서버(11-05 확인)는 문장의 기한을 해석해
-  // 오프셋 포함 ISO-8601(시각은 23:59)로 주고, 기한이 없으면 null + warnings '기한이 없습니다…'를 줍니다.
+  /** 문장에서 해석한 기한(그날 23:59+09:00, 최대 한 달 뒤). 없거나 해석하지 못하면 null(이유는 warnings) */
   deadline: dateTimeSchema.nullish(),
   freeTextConditions: z.string().nullish(),
   /** 0.0 ~ 1.0. 0.7 미만이면 확인 · 수정을 더 강조합니다. */
   confidence: z.number(),
   warnings: z.array(z.string()),
+  /** 서버의 현재 입찰 상한 배수 설정(기본 2.0). '시세의 최대 N배' 안내용. 등록 요청에는 넣지 않습니다. */
+  capRatio: z.number(),
 })
 export type PurchaseGoalDraft = z.infer<typeof purchaseGoalDraftSchema>
 
@@ -99,11 +100,17 @@ export const purchaseGoalParticipationSchema = z.object({
   auctionId: z.number().int(),
   status: purchaseGoalParticipationStatusSchema,
   auctionStatus: auctionStatusSchema,
+  /** 참여 당시 상한 계산에 쓴 AI 시세(이후 바뀌어도 유지). 기능 도입 전 참여는 null */
+  estimatedPriceAtEngage: z.number().int().nullish(),
+  /** 이 참여에서 실제 등록한 자동입찰 상한(원). 조회 시 다시 계산하지 않음 */
+  autoBidCap: z.number().int(),
 })
 export type PurchaseGoalParticipation = z.infer<typeof purchaseGoalParticipationSchema>
 
 /** 상품명 · 시작 시각 · 실제 상한은 없어서 참여 경매 ID로 경매 상세 · 결과를 따로 조회합니다. */
 export const purchaseGoalDetailSchema = purchaseGoalSchema.extend({
+  /** 서버의 현재 입찰 상한 배수 설정(기본 2.0) */
+  capRatio: z.number(),
   /** 자동입찰을 등록한 순서(오래된 것 먼저). 없으면 [] */
   participations: z.array(purchaseGoalParticipationSchema),
 })

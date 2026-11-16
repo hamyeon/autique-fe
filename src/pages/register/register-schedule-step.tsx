@@ -14,7 +14,7 @@ type ScheduleForm = z.input<typeof scheduleStepSchema>
 
 /**
  * 5/6 경매 일정 설정(Figma 경매 설정 569:5385). 날짜 · 시간 칸을 누르면 기기 기본 선택 창이 열립니다.
- * 과거 시작 금지 · 1시간 이상(사용자 결정)을 어기면 해당 칸 아래에 바로 알립니다.
+ * 과거 시작 금지 · 2분 이상(명세 최소 진행 시간)을 어기면 해당 칸 아래에 바로 알립니다.
  */
 export function RegisterScheduleStep() {
   const { goNext } = useRegisterNav('5')
@@ -53,7 +53,7 @@ export function RegisterScheduleStep() {
         callback: ({ values, type }) => {
           if (type !== 'change') return
           update(values)
-          // 시작을 바꾸면 종료 칸의 '1시간 이상' 메시지도 함께 다시 검사합니다.
+          // 시작을 바꾸면 종료 칸의 '2분 이상' 메시지도 함께 다시 검사합니다.
           void trigger()
         },
       }),
