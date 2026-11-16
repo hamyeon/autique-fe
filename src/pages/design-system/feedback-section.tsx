@@ -38,7 +38,7 @@ function LoadingIllustrationDemo() {
   return (
     <Demo
       title="LoadingIllustration"
-      description="AI 분석 · 가격 로딩 일러스트(Figma LoadingImg). 120×120 상자에서 primary1 막대만 위→아래로 훑습니다: 0.2초 대기 → 1.2초 ease-out → 0.2초 대기 → 즉시 위로, 1.6초 무한 반복. 휴대폰 '동작 줄이기'가 켜져 있으면 막대가 위에 멈춥니다."
+      description="AI 분석 · 가격 로딩 일러스트. 120×120 자리에 3D 운동화 영상(video_shoe_loading.mp4, 5초)을 소리 없이 반복 재생합니다. 휴대폰 '동작 줄이기'가 켜져 있으면 첫 장면에 멈춥니다."
     >
       <div className="border-gray2 py-layout-step flex justify-center rounded-md border">
         <LoadingIllustration />
@@ -65,7 +65,7 @@ function CompleteIllustrationDemo() {
   return (
     <Demo
       title="CompleteIllustration"
-      description="등록 완료 일러스트(Figma CompleteImg). 120×120 상자에서 보내기 아이콘(80)이 왼쪽 아래 → 오른쪽 위(+40 · -40)로: 0.2초 대기 → 0.8초 ease-out → 0.2초 대기 → 즉시 제자리, 1.2초 무한 반복. 상자 밖으로 나간 부분은 잘립니다. '동작 줄이기'가 켜져 있으면 왼쪽 아래에 멈춥니다."
+      description="완료 일러스트(등록 완료 · 결제 완료). 120×120 자리에 로딩과 같은 3D 운동화 영상을 소리 없이 반복 재생합니다. '동작 줄이기'가 켜져 있으면 첫 장면에 멈춥니다."
     >
       <div className="border-gray2 py-layout-step gap-layout-section flex flex-col items-center rounded-md border">
         <CompleteIllustration />
