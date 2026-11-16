@@ -109,7 +109,7 @@ function EmptyStateDemo() {
   return (
     <Demo
       title="EmptyState"
-      description="목록이 비었을 때. 제목 head03 → 설명 body05 gray5 → 행동(선택), 가운데 정렬, 위아래 32. 아이콘은 두지 않습니다."
+      description="목록이 비었을 때. 3D 운동화(img_shoe_side_3d, 120) → 24 → 제목 head03 · 설명 body05 gray5(사이 0) → 16 → 행동(선택), 가운데 정렬, 위아래 32. 화면 가운데에 두려면 className='flex-1 justify-center'."
     >
       <OptionGroup label="행동 버튼" options={['없음', '있음'] as const} value={withAction} onChange={setWithAction} />
       <div className="border-gray2 rounded-md border">

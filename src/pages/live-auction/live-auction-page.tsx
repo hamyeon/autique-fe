@@ -179,14 +179,15 @@ function LiveContent({
         />
       }
     >
-      <div className="gap-layout-section flex flex-col">
+      {/* 입찰 내역이 비었을 때 안내를 남은 높이 가운데에 두도록 본문을 아래까지 늘립니다. */}
+      <div className="gap-layout-section flex flex-1 flex-col">
         <AuctionStatusCard
           /* 상태가 바뀌어도 카드는 그대로 두고 색만 부드럽게 바꿉니다. */
           className="transition-colors duration-300"
           {...statusCardProps({ view, live, myAutoBid, remaining })}
         />
 
-        <section className="gap-space-8 flex flex-col">
+        <section className="gap-space-8 flex flex-1 flex-col">
           <h2 className="text-body04 text-gray7">입찰 내역</h2>
           {bidsState === 'loading' && <BidRowsSkeleton />}
           {bidsState === 'error' && (
@@ -202,7 +203,7 @@ function LiveContent({
             <EmptyState
               title="아직 입찰이 없어요"
               description="첫 입찰자가 되어 보세요"
-              className="py-space-24"
+              className="py-space-24 flex-1 justify-center"
             />
           )}
           {bidsState === 'ready' && bids && bids.length > 0 && (

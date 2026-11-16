@@ -59,7 +59,8 @@ export function NotificationsPage() {
     content = (
       <EmptyState
         title="아직 알림이 없어요"
-        description="낙찰 · 결제 소식이 생기면 여기에서 알려드릴게요"
+        description="낙찰 · 결제 소식이 생기면 알려드릴게요"
+        className="flex-1 justify-center"
       />
     )
   } else {
