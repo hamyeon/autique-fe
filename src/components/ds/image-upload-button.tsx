@@ -1,22 +1,41 @@
-import type { ChangeEvent, InputHTMLAttributes } from 'react'
+import type { CSSProperties, ChangeEvent, InputHTMLAttributes } from 'react'
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
+import shoeDefect from '@/assets/illustrations/img_shoe_defect_3d.png'
+import shoeFront from '@/assets/illustrations/img_shoe_front_3d.png'
+import shoeOutsole from '@/assets/illustrations/img_shoe_outsole_3d.png'
+import shoeSide from '@/assets/illustrations/img_shoe_side_3d.png'
 import { usePressed } from '@/hooks/use-pressed'
 import { cn } from '@/lib/utils'
 import { Icon } from './icon'
 
-const DIRECTION = {
-  front: { art: 'img_shoe_front', label: '앞면' },
-  side: { art: 'img_shoe_side', label: '측면' },
-  outsole: { art: 'img_shoe_outsole', label: '밑창' },
-  defect: { art: 'img_shoe_defect', label: '하자' },
-} as const
+/**
+ * 방향별 3D 운동화 일러스트(Figma img_shoe_* 1150:4956~4959, 100×100).
+ * 앞면 · 밑창은 Figma에서 이미지를 칸 안에서 줄이거나 키워 배치해서, 그 위치(%)를 그대로 옮깁니다.
+ */
+const DIRECTION: Record<
+  'front' | 'side' | 'outsole' | 'defect',
+  { art: string; label: string; crop?: CSSProperties }
+> = {
+  front: {
+    art: shoeFront,
+    label: '앞면',
+    crop: { left: '4.11%', top: '4.18%', width: '92.5%', height: '92.5%' },
+  },
+  side: { art: shoeSide, label: '측면' },
+  outsole: {
+    art: shoeOutsole,
+    label: '밑창',
+    crop: { left: '-2.21%', top: '-1.31%', width: '104%', height: '104%' },
+  },
+  defect: { art: shoeDefect, label: '하자' },
+}
 
 export interface ImageUploadButtonProps extends Omit<
   InputHTMLAttributes<HTMLInputElement>,
   'type' | 'children'
 > {
   /** 촬영 방향: 앞면 · 측면 · 밑창 · 하자 */
-  direction?: keyof typeof DIRECTION
+  direction?: 'front' | 'side' | 'outsole' | 'defect'
   /** 기본은 방향 이름 */
   label?: string
   /** 이미 올라간 사진 URL. 있으면 고른 사진보다 우선합니다. */
@@ -28,7 +47,9 @@ export interface ImageUploadButtonProps extends Omit<
 }
 
 /**
- * 상품 사진 업로드 칸. 정사각 박스 안 일러스트 + 라벨을 누르면 사진 선택 창이 열리고,
+ * 상품 사진 업로드 칸(Figma ImageUploadButton 628:9569, 화면 1149:4739).
+ * primary4 바탕 · primary3 테두리 · radius-sm 정사각 박스 가운데에 3D 일러스트(100) + 라벨(body03 gray7, 사이 4).
+ * 칸을 누르면 사진 선택 창이 열리고,
  * 고르면 칸이 미리보기로 채워집니다. 채워진 칸을 다시 누르면 다른 사진을 고를 수 있습니다.
  * 숨긴 <input type="file">에 ref와 네이티브 속성이 그대로 전달되어 RHF register와 바로 연결됩니다(값은 FileList).
  * reset으로 값을 비울 때는 key를 바꿔 미리보기도 함께 지워 주세요.
@@ -50,7 +71,7 @@ export const ImageUploadButton = forwardRef<HTMLInputElement, ImageUploadButtonP
   ) {
     const [preview, setPreview] = useState<string | null>(null)
     const inputRef = useRef<HTMLInputElement>(null)
-    /* 빈 칸(흰 바탕)을 누르는 동안 gray0 바탕. 사진이 있으면 사진이 덮어 보이지 않습니다. */
+    /* 빈 칸(primary4 바탕)을 누르는 동안 primary3 바탕(Figma에 없음). 사진이 있으면 사진이 덮어 보이지 않습니다. */
     const { pressed, handlers } = usePressed()
     useImperativeHandle(ref, () => inputRef.current!, [])
     const meta = DIRECTION[direction]
@@ -83,8 +104,8 @@ export const ImageUploadButton = forwardRef<HTMLInputElement, ImageUploadButtonP
           data-pressed={pressed && !props.disabled ? '' : undefined}
           {...handlers}
           className={cn(
-            'bg-white0 data-pressed:bg-gray0 has-focus-visible:outline-primary1 relative block aspect-square w-full cursor-pointer overflow-hidden rounded-sm border has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-disabled:cursor-default',
-            invalid ? 'border-error1' : 'border-gray2',
+            'bg-primary4 data-pressed:bg-primary3 has-focus-visible:outline-primary1 relative block aspect-square w-full cursor-pointer overflow-hidden rounded-sm border has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-disabled:cursor-default',
+            invalid ? 'border-error1' : 'border-primary3',
           )}
         >
           <input
@@ -100,9 +121,17 @@ export const ImageUploadButton = forwardRef<HTMLInputElement, ImageUploadButtonP
           {src ? (
             <img src={src} alt={`${name} 사진`} className="block size-full object-cover" />
           ) : (
-            <span className="gap-space-8 pt-space-8 text-gray7 absolute inset-0 flex flex-col items-center justify-center">
-              <Icon name={meta.art} />
-              <span className="text-head03">{name}</span>
+            <span className="gap-space-4 text-gray7 absolute inset-0 flex flex-col items-center justify-center">
+              <span aria-hidden className="relative size-25 shrink-0 overflow-hidden">
+                <img
+                  src={meta.art}
+                  alt=""
+                  draggable={false}
+                  className="absolute inset-0 size-full object-cover"
+                  style={meta.crop}
+                />
+              </span>
+              <span className="text-body03">{name}</span>
             </span>
           )}
         </label>

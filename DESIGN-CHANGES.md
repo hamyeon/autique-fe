@@ -87,14 +87,16 @@ Figma와 다르게 구현했거나 Figma에 없어서 새로 정한 부분을 �
   - 목록 API가 예정 · 진행 중 경매만 주므로 끝난 경매는 검색되지 않음
   - 정렬은 목록 API 그대로 최신순
 
-## 로그인 (Figma 로그인 948:6123)
+## 로그인 (Figma 로그인 1198:7021, 2026-11-16 갱신 · 이전 948:6123)
 
 경로 `/login`, 카카오에서 돌아오는 주소 `/login/kakao`. `RequireAuth`가 보낸 화면(`state.from`)으로 로그인 뒤 돌아감(없으면 홈).
 
 ### Figma와 다르게 구현했거나 정한 부분
 
-- **배치**: Figma의 고정 간격 대신 늘어나는 여백 3칸(Figma Spacer 975:2407~2409) 사이에 로고 · 버튼(화면 비율 배치, 사용자 결정)
-- **로고**: Figma 231×60 그대로(`autique-logo`, 같은 그림)
+- **바탕**: grad/primary 방사형 그라데이션(`Screen background="primary"`, `bg-grad-primary`). 승인된 그라데이션 예외(AIChip · FAB와 같은 스타일). 노치 자리도 같은 바탕
+- **배치**: Figma의 고정 간격 대신 늘어나는 여백 4칸 사이에 로고 · 운동화 일러스트 · 버튼(화면 비율 배치, 사용자 결정). Figma 여백 142 · 47 · 48 · 190을 3 : 1 : 1 : 4로 나눔
+- **로고**: Figma 231×60 흰 로고(`autique-logo-white`)
+- **운동화 일러스트**: 215 정사각 안에 운동화(191)를 8° 기울이고 흩날리는 조각(256×134)을 겹침. Figma에 같은 레이어가 두 번 겹쳐 있어 한 번만 그림. PNG는 1024px 원본을 600px로 줄여 씀(화면 191의 3배)
 - **카카오 버튼**: 폭 최대 320(Figma 값), 좁은 화면에선 좌우 20 안쪽을 채움. 브랜드 값은 DS 예외
 - **헤더 · 뒤로 가기 버튼 없음**(Figma 그대로). 브라우저 · 기기 뒤로 가기로 이전 화면
 
@@ -103,7 +105,7 @@ Figma와 다르게 구현했거나 Figma에 없어서 새로 정한 부분을 �
 - **카카오로 넘어가는 중**: 버튼 비활성(반투명)으로 두 번 눌림 방지
 - **로그인 처리 중**(`/login/kakao`): 같은 배치에 버튼 문구만 "로그인하는 중이에요"(비활성). 화면이 튀지 않게 별도 로딩 화면을 두지 않음
 - **동의 화면에서 취소**: 안내 없이 로그인 화면으로 돌아감
-- **실패**(`ErrorState`, 버튼 자리): "다시 시도"는 로그인 화면으로(카카오 인가 코드는 한 번만 쓸 수 있어 처음부터)
+- **실패**(`ErrorState`, 버튼 자리): 그라데이션 위에서 글자가 잘 안 읽혀 흰 바탕 + 검정 로고만(일러스트 없음, `LoginLayout tone="plain"`). "다시 시도"는 로그인 화면으로(카카오 인가 코드는 한 번만 쓸 수 있어 처음부터)
   - 연결 끊김: "연결이 불안정해요" · "인터넷 연결을 확인한 뒤 다시 시도해 주세요"
   - 카카오 서버 실패(50201): "카카오 연결이 원활하지 않아요" · "잠시 후 다시 시도해 주세요"
   - 요청 만료(새로고침 · 다른 탭에서 시작 등 state 불일치): "로그인 요청이 만료됐어요" · "처음부터 다시 로그인해 주세요"
@@ -700,7 +702,8 @@ Figma와 다르게 구현했거나 Figma에 없어서 새로 정한 부분을 �
   - LoadMoreButton, LoadMoreDownButton 머리: 눌림 없음 → gray0
   - SegmentedControl 칸: gray2 → **gray0** (DS 원본 gray2에서 바꿈)
   - MyPageListButton: gray1 → gray0
-  - TimeInput 날짜 · 시간 칸(버튼일 때), ImageUploadButton 빈 칸: 눌림 없음 → gray0
+  - TimeInput 날짜 · 시간 칸(버튼일 때): 눌림 없음 → gray0
+  - ImageUploadButton 빈 칸: 바탕이 primary4로 바뀌어(2026-11-16) 눌림은 primary3(Figma에 없음)
   - 마이페이지 프로필 행: gray0
   - 흰 바탕이 아닌 요소(Button primary gray7, KakaoLoginButton 어둡게, InfoRow · InfoField 반투명)와 아이콘만 있는 버튼(HeaderActions, TabBar)은 그대로
 
@@ -723,3 +726,11 @@ Figma와 다르게 구현했거나 Figma에 없어서 새로 정한 부분을 �
 - **ProductCard**(572:6531): Figma에서 이미지 fill, 브랜드 1줄 · 상품명 2줄 말줄임을 코드와 같게 맞춤. 코드 변경 없음
 - **FloatingActionButton**: Figma 오른쪽 12 대신 코드 20 유지(사용자 결정)
 - ~~**SearchHeader**(Figma ProductSearchHeader 207:470)~~: 2026-10-29 삭제. 검색 헤더는 Header `search` + HeaderInput으로 바꿈(아래)
+
+## 상품 이미지 업로드 칸 (Figma 상품 이미지 업로드 1149:4739 · ImageUploadButton 628:9569, 2026-11-16)
+
+- **칸**: primary4 바탕 · primary3 테두리 · radius-sm(이전 white0 · gray2). invalid는 그대로 error1 테두리
+- **일러스트**: 3D 운동화 PNG 100×100(이전 선 일러스트 SVG 100×48). 앞면 · 밑창은 Figma의 이미지 배치(%)를 그대로 옮김. 1024px 원본을 300px로 줄여 씀(화면 100의 3배)
+- **라벨**: body03 gray7, 일러스트와 사이 4(이전 head03, 사이 8)
+- **눌림**: primary3 바탕(Figma에 없음)
+- 예전 선 일러스트(`img_shoe_*` SVG)는 분석 중 로딩 화면 등 다른 곳에서 그대로 씀

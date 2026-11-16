@@ -234,6 +234,10 @@ function IconLegacyArtDemo() {
         <Icon name="autique-logo" label="Autique" className="*:h-7 *:w-27" />
         <Caption>autique-logo (108×28로 표시)</Caption>
       </div>
+      <div className="bg-grad-primary gap-stack-tight py-space-12 flex flex-col items-center rounded-sm">
+        <Icon name="autique-logo-white" label="Autique" className="*:h-7 *:w-27" />
+        <Caption className="text-white0">autique-logo-white (로그인 화면, 108×28로 표시)</Caption>
+      </div>
     </Demo>
   )
 }
