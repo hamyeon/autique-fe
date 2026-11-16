@@ -147,7 +147,7 @@ const GROUPS: { title: string; links: RouteLink[] }[] = [
     ],
   },
   {
-    title: '실시간 경매',
+    title: '실시간 경매(목 데이터로 보기를 켜고)',
     links: [
       { to: '/auctions/2/live', label: '참여 전(watching)' },
       { to: '/auctions/20/live', label: '자동 입찰 중 · 최고가(leading)' },

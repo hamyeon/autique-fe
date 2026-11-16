@@ -19,7 +19,7 @@ const IN_PROGRESS: readonly PurchaseGoalStatus[] = ['ACTIVE', 'ENGAGED', 'CANCEL
 export const isGoalInProgress = (goal: Pick<PurchaseGoal, 'status'>) =>
   IN_PROGRESS.includes(goal.status)
 
-/** 서버 스캔은 5분마다지만, 알림을 보고 들어왔을 때 금방 맞춰지도록 30초마다 */
+/** 서버 탐색 주기(30초마다, 서버 안내 2026-11-16)에 맞춰 30초마다 */
 const POLL_MS = 30_000
 
 /* ───────── API 함수 ───────── */

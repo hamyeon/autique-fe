@@ -162,7 +162,7 @@ export function toRegisterFailure(error: unknown): RegisterFailure {
       return {
         kind: 'invalid',
         title: '경매 일정을 확인해 주세요',
-        message: '경매 시간은 1시간 이상이어야 하고, 시작 시간은 지금 이후여야 해요',
+        message: '경매 시간은 2분 이상이어야 하고, 시작 시간은 지금 이후여야 해요',
         step: '5',
       }
     case API_ERROR_CODE.INVALID_REQUEST:

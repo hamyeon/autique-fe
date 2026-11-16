@@ -46,7 +46,7 @@ export const mockErrors = {
   AUCTION_TIME_INVALID: error(
     400,
     'AUCTION_TIME_INVALID',
-    '경매 진행 시간은 최소 1시간이어야 합니다.',
+    '경매 진행 시간은 최소 2분이어야 합니다.',
   ),
   PHOTO_REQUIRED_SLOTS: error(
     400,
@@ -171,7 +171,7 @@ export const mockErrors = {
   KAKAO_API_FAILED: error(502, 'KAKAO_API_FAILED', 'Kakao 사용자 정보 조회에 실패했습니다.'),
 }
 
-/** 경매 시각 규칙(종료 ≥ 시작 + 1시간)은 refine이라 code가 custom입니다. 그 외 검증 실패는 40001 */
+/** 경매 시각 규칙(종료 ≥ 시작 + 2분)은 refine이라 code가 custom입니다. 그 외 검증 실패는 40001 */
 export function invalidAuctionTime(error: z.ZodError) {
   return error.issues.some((issue) => issue.code === 'custom')
     ? mockErrors.AUCTION_TIME_INVALID

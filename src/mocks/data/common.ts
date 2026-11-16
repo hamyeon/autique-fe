@@ -5,7 +5,8 @@ import mockProduct04 from '@/assets/illustrations/img_mock_product_04.jpg'
 
 /* 목 데이터 공통: 시각, 이미지, 사용자 */
 
-export const MINUTE = 60 * 1000
+export const SECOND = 1000
+export const MINUTE = 60 * SECOND
 export const HOUR = 60 * MINUTE
 export const DAY = 24 * HOUR
 
@@ -42,5 +43,8 @@ export const SHIPPING_FEE = 3000
 /** 서버가 정하는 입찰 단위 */
 export const BID_INCREMENT = 5000
 
-/** 경매 종료 연장 최대 횟수 */
-export const MAX_EXTENSIONS = 3
+/**
+ * 경매 종료 연장 최대 횟수. 서버 안내(2026-11-16): 최대 1회.
+ * 명세(GET /live maxExtensions) 표 · 예시는 아직 3이지만 서버 안내를 따릅니다.
+ */
+export const MAX_EXTENSIONS = 1

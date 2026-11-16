@@ -188,11 +188,12 @@ export type CalculatePriceResponse = z.infer<typeof calculatePriceResponseSchema
 
 /* ───────── POST /api/products (상품 등록 + 첫 경매) ───────── */
 
-const HOUR_MS = 60 * 60 * 1000
+/** 경매 최소 진행 시간: 2분(명세 POST /api/products · relist, 2026-11 '최소 1시간'에서 변경) */
+export const MIN_AUCTION_DURATION_MS = 2 * 60 * 1000
 
-/** 경매 시각 규칙: 종료는 시작으로부터 최소 1시간 뒤(명세 · 40006) */
+/** 경매 시각 규칙: 종료는 시작으로부터 최소 2분 뒤(명세 · 40006). 등록 · 재경매가 같이 씁니다. */
 export function isAuctionLongEnough(startAt: string, endAt: string) {
-  return Date.parse(endAt) - Date.parse(startAt) >= HOUR_MS
+  return Date.parse(endAt) - Date.parse(startAt) >= MIN_AUCTION_DURATION_MS
 }
 
 /** 등록 요청 필드(검증 규칙 없이). 등록 단계별 폼 스키마가 여기서 필드를 골라 씁니다(src/features/register/schemas.ts). */
@@ -232,13 +233,13 @@ export const createProductFieldsSchema = z.object({
   auctionStartPrice: z.number().int().positive('경매 시작가는 0원보다 커야 해요.'),
   /** ISO-8601, 오프셋 포함 */
   auctionStartAt: z.iso.datetime({ offset: true }),
-  /** 시작 시각으로부터 최소 1시간 뒤 */
+  /** 시작 시각으로부터 최소 2분 뒤 */
   auctionEndAt: z.iso.datetime({ offset: true }),
 })
 
 export const createProductRequestSchema = createProductFieldsSchema.refine(
   (v) => isAuctionLongEnough(v.auctionStartAt, v.auctionEndAt),
-  { path: ['auctionEndAt'], message: '경매 진행 시간은 최소 1시간이어야 합니다.' },
+  { path: ['auctionEndAt'], message: '경매 진행 시간은 최소 2분이어야 합니다.' },
 )
 export type CreateProductRequest = z.infer<typeof createProductRequestSchema>
 
