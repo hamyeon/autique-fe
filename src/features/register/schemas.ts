@@ -174,7 +174,7 @@ export const scheduleStepSchema = createProductFieldsSchema
   })
   .refine((v) => isAuctionLongEnough(v.auctionStartAt, v.auctionEndAt), {
     path: ['auctionEndAt'],
-    message: '경매 시간은 1시간부터 설정할 수 있어요.',
+    message: '경매 시간은 2분부터 설정할 수 있어요.',
   })
 
 /* ───────── 단계 묶음 ───────── */

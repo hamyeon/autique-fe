@@ -22,6 +22,7 @@ import {
   ME,
   MINUTE,
   PRODUCT_IMAGES,
+  SECOND,
   SELLERS,
   fromNow,
   kst,
@@ -634,12 +635,20 @@ export function toDetail(a: MockAuction): AuctionDetail {
   }
 }
 
+/**
+ * 실시간 응답에서 종료 시각이 지난 뒤에도 이만큼은 LIVE로 둡니다. 서버가 종료를 확정하기 전 구간을 흉내 내서
+ * 실시간 화면의 '결과 집계 중'을 확인할 수 있게 합니다(상세 · 목록 등 다른 응답은 그대로 ENDED).
+ */
+const LIVE_SETTLE_MS = 2 * SECOND
+
 export function toLive(a: MockAuction): AuctionLive {
   const reason = cannotBidReasonOf(a)
   const autoBid = activeAutoBid(a)
+  const status = statusOf(a)
+  const settling = status === 'ENDED' && !a.canceled && Date.now() < a.endsAt + LIVE_SETTLE_MS
   return {
     auctionId: a.auctionId,
-    status: statusOf(a),
+    status: settling ? 'LIVE' : status,
     currentPrice: currentPriceOf(a),
     minNextBidAmount: minNextBidOf(a),
     bidIncrement: a.bidIncrement,
@@ -767,11 +776,12 @@ export function runProxyBidding(a: MockAuction) {
   return { myLastAutoBid, rivalResponded }
 }
 
-/** 마감 3분 이내 입찰이면 3분 연장(최대 MAX_EXTENSIONS회) */
+/** 종료 10초 이내 입찰이면 종료를 20초 미룹니다(최대 MAX_EXTENSIONS회, 서버 안내 2026-11-16). */
 export function extendIfClosing(a: MockAuction) {
-  const EXTEND_WINDOW = 3 * MINUTE
-  if (a.endsAt - Date.now() <= EXTEND_WINDOW && a.extensionCount < MAX_EXTENSIONS) {
-    a.endsAt += EXTEND_WINDOW
+  const EXTEND_WINDOW_MS = 10 * SECOND
+  const EXTEND_BY_MS = 20 * SECOND
+  if (a.endsAt - Date.now() <= EXTEND_WINDOW_MS && a.extensionCount < MAX_EXTENSIONS) {
+    a.endsAt += EXTEND_BY_MS
     a.extensionCount += 1
   }
 }

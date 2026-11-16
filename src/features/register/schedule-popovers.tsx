@@ -5,7 +5,8 @@ import { cn } from '@/lib/utils'
 
 /*
  * PC(마우스) 웹의 경매 일정 선택 팝오버. 휴대폰은 기기 기본 선택 창을 씁니다(schedule-field.tsx).
- * 날짜는 shadcn/ui Calendar(react-day-picker), 시간은 오전/오후 · 시 · 분(10분 단위) 목록(사용자 결정, 2026-11-05).
+ * 날짜는 shadcn/ui Calendar(react-day-picker), 시간은 오전/오후 · 시 · 분 목록(사용자 결정, 2026-11-05).
+ * 분은 1분 단위입니다. 최소 진행 시간이 2분이라 10분 단위로는 짧은 경매를 만들 수 없어서(2026-11-16).
  * 값은 <input type="date|time">과 같은 'YYYY-MM-DD' · 'HH:mm' 문자열로 주고받습니다.
  */
 
@@ -67,7 +68,7 @@ export function DatePopover({
 }
 
 const HOURS = Array.from({ length: 12 }, (_, i) => i + 1)
-const MINUTES = [0, 10, 20, 30, 40, 50]
+const MINUTES = Array.from({ length: 60 }, (_, i) => i)
 
 /** 시간: 오전/오후 · 시 · 분 세 열. 누를 때마다 바로 반영하고, 바깥을 누르거나 Esc로 닫습니다. */
 export function TimePopover({
@@ -80,8 +81,7 @@ export function TimePopover({
   const [h, min] = value.split(':').map(Number)
   const pm = h >= 12
   const hour12 = h % 12 || 12
-  /* 10분 단위가 아닌 값(휴대폰에서 고른 값 등)은 아래 10분 칸에 표시합니다. */
-  const minute = Math.floor(min / 10) * 10
+  const minute = min
   const set = (next: { pm?: boolean; hour12?: number; minute?: number }) => {
     const p = next.pm ?? pm
     const hh = ((next.hour12 ?? hour12) % 12) + (p ? 12 : 0)

@@ -20,9 +20,10 @@ export interface ScreenProps {
   /**
    * 화면 바탕. 기본 default(white0, MobileLayout 그대로).
    * grad = Figma grad/background(white0 → primary3, 경매 AI Agent). 하단 sticky 영역은 바탕 없이 투명(Figma 그대로).
+   * primary = Figma grad/primary(방사형, 로그인 1198:7021). 헤더 자리(노치)도 바탕 없이 투명.
    * 그라데이션은 화면(뷰포트)에 고정돼 스크롤해도 색이 그대로입니다(사용자 결정, 2026-11-05).
    */
-  background?: 'default' | 'grad'
+  background?: 'default' | 'grad' | 'primary'
   /** 본문 영역에 더할 클래스(예: 가운데 정렬 화면의 justify-center) */
   className?: string
 }
@@ -44,7 +45,7 @@ export function Screen({
   background = 'default',
   className,
 }: ScreenProps) {
-  const grad = background === 'grad'
+  const grad = background !== 'default'
   return (
     <div className={cn('flex min-h-dvh flex-col', grad && 'relative isolate')}>
       {/*
@@ -55,11 +56,16 @@ export function Screen({
       {grad && (
         <div
           aria-hidden
-          className="bg-grad-background pointer-events-none fixed inset-y-0 left-1/2 -z-10 w-full max-w-md -translate-x-1/2"
+          className={cn(
+            'pointer-events-none fixed inset-y-0 left-1/2 -z-10 w-full max-w-md -translate-x-1/2',
+            background === 'primary' ? 'bg-grad-primary' : 'bg-grad-background',
+          )}
         />
       )}
       {/* 헤더가 없어도 노치 영역을 덮도록 자리는 남깁니다. */}
-      <div className="bg-white0 pt-safe sticky top-0 z-10">{header}</div>
+      <div className={cn('pt-safe sticky top-0 z-10', background !== 'primary' && 'bg-white0')}>
+        {header}
+      </div>
 
       <div
         className={cn(

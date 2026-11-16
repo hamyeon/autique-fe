@@ -21,7 +21,7 @@ import { hasErrorCode } from '@/features/auction/auto-bid'
 import { toOffsetIso } from '@/features/register/schedule'
 import { ScheduleField } from '@/features/register/schedule-field'
 import { showToast } from '@/stores/toast-store'
-import { conditionLabel } from './agent-messages'
+import { conditionLabel, formatRatio } from './agent-messages'
 
 /** 예산 기본값 · 단위. 초안에 예산이 없을 때 시작값(사용자가 확인 후 등록) */
 const BUDGET_STEP = 10000
@@ -73,7 +73,9 @@ function toFormValues(draft: PurchaseGoalDraft): ConfirmForm {
     freeTextConditions: draft.freeTextConditions ?? '',
     /* 서버가 문장에서 해석한 기한. 없거나 이미 지났으면 기본값(사용자가 시트에서 고침) */
     deadline:
-      draft.deadline && Date.parse(draft.deadline) > Date.now() ? draft.deadline : defaultDeadline(),
+      draft.deadline && Date.parse(draft.deadline) > Date.now()
+        ? draft.deadline
+        : defaultDeadline(),
   }
 }
 
@@ -185,7 +187,12 @@ export function AgentConfirmSheet({ open, draft, onClose, onConfirm }: AgentConf
               onChange={field.onChange}
               min={BUDGET_STEP}
               step={BUDGET_STEP}
-              hint="이 금액 안에서만 자동 입찰해요"
+              /* 서버가 시세의 capRatio배까지 상한을 올릴 수 있어(시세보다 비싸게 낙찰 가능) 미리 알립니다. */
+              hint={
+                draft
+                  ? `AI 시세의 최대 ${formatRatio(draft.capRatio)}배까지 입찰할 수 있어요. 최대 예산은 넘지 않아요.`
+                  : undefined
+              }
               error={fieldState.error?.message}
             />
           )}

@@ -10,6 +10,7 @@ import {
   productSummarySchema,
 } from '@/api/schemas/common'
 import { orderStatusSchema } from '@/api/schemas/orders'
+import { isAuctionLongEnough } from '@/api/schemas/products'
 
 /* ───────── GET /api/auctions/{auctionId} ───────── */
 
@@ -142,6 +143,10 @@ export const auctionLiveSchema = z.object({
   endsAt: dateTimeSchema,
   serverTime: dateTimeSchema,
   extensionCount: z.number().int(),
+  /**
+   * 최대 연장 횟수. 서버 안내(2026-11-16): 종료 10초 이내 입찰 시 20초 연장, 최대 1회.
+   * 명세 표 · 예시는 아직 3이라 값을 고정하지 말고 응답 그대로 씁니다.
+   */
   maxExtensions: z.number().int(),
   myAutoBidStatus: autoBidStatusSchema.nullish(),
   myCap: z.number().int().nullish(),
@@ -260,19 +265,17 @@ export type AuctionLikeResponse = z.infer<typeof auctionLikeResponseSchema>
 
 /* ───────── POST /api/auctions/{previousAuctionId}/relist ───────── */
 
-const HOUR_MS = 60 * 60 * 1000
-
 export const relistAuctionRequestSchema = z
   .object({
     startPrice: z.number().int().positive(),
     /** ISO-8601, 오프셋 포함 */
     startAt: z.iso.datetime({ offset: true }),
-    /** 시작 시각으로부터 최소 1시간 뒤 */
+    /** 시작 시각으로부터 최소 2분 뒤 */
     endAt: z.iso.datetime({ offset: true }),
   })
-  .refine((v) => Date.parse(v.endAt) - Date.parse(v.startAt) >= HOUR_MS, {
+  .refine((v) => isAuctionLongEnough(v.startAt, v.endAt), {
     path: ['endAt'],
-    message: '경매 진행 시간은 최소 1시간이어야 합니다.',
+    message: '경매 진행 시간은 최소 2분이어야 합니다.',
   })
 export type RelistAuctionRequest = z.infer<typeof relistAuctionRequestSchema>
 

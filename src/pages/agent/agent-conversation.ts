@@ -1,5 +1,9 @@
 import type { AuctionDetail, AuctionResult } from '@/api/schemas/auctions'
-import type { PurchaseGoal, PurchaseGoalDetail } from '@/api/schemas/purchase-goals'
+import type {
+  PurchaseGoal,
+  PurchaseGoalDetail,
+  PurchaseGoalParticipation,
+} from '@/api/schemas/purchase-goals'
 import type { AgentEntry } from './agent-messages'
 import {
   bidStartedEntry,
@@ -26,6 +30,18 @@ export interface ParticipationInfo {
   result?: AuctionResult
 }
 
+/**
+ * 다음 입찰가(경매 상세 minNextBidAmount) vs 참여 당시 AI 시세(estimatedPriceAtEngage).
+ * 끝난 참여는 '지금 다음 입찰가'가 의미 없어 뺍니다. 기능 도입 전 참여(시세 null)는 경매 상세의
+ * aiEstimatedPrice로 대신합니다(지금 계산한 값이라 알림 숫자와 조금 다를 수 있음).
+ */
+function priceCompareOf(p: PurchaseGoalParticipation, auction: AuctionDetail | undefined) {
+  if (!auction || (p.status !== 'SCHEDULED' && p.status !== 'LIVE')) return undefined
+  const estimate = p.estimatedPriceAtEngage ?? auction.aiEstimatedPrice
+  if (!estimate) return undefined
+  return { nextBid: auction.minNextBidAmount, estimate }
+}
+
 /** 목표 하나의 대화. detail이 없으면(참여 없음 · 아직 못 불러옴) 참여 이력 없이 만듭니다. */
 export function goalEntries(
   goal: PurchaseGoal,
@@ -49,7 +65,9 @@ export function goalEntries(
           productName: auction?.product.name,
           startAt: auction ? new Date(auction.startsAt) : undefined,
           startPrice: auction?.startPrice,
-          maxAmount: auction?.myState.autoBidCap ?? goal.hardMaxAmount,
+          /* 명세: 참여에서 실제 등록한 상한(participations[].autoBidCap) */
+          maxAmount: p.autoBidCap,
+          priceCompare: priceCompareOf(p, auction),
         }),
         `${key}-found`,
       ),

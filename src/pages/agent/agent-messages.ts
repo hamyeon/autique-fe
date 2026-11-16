@@ -105,6 +105,24 @@ export function draftEntry(draft: PurchaseGoalDraft, draftId: string): AgentEntr
   ])
 }
 
+/** 배수 표기: 2 → '2', 1.5 → '1.5', 1.55 → '1.6' */
+export function formatRatio(ratio: number) {
+  return String(Math.round(ratio * 10) / 10)
+}
+
+/**
+ * 다음 입찰가와 AI 시세 비교 문장. 비싸면 'N배', 싸면 'N% 저렴', 거의 같으면 '비슷해요'.
+ * 알림 본문을 잘라 쓰지 않고 숫자로 직접 만듭니다(문구가 바뀌어도 깨지지 않게).
+ */
+export function priceCompareText(nextBid: number, estimate: number) {
+  const ratio = nextBid / estimate
+  const cheaper = Math.round((1 - ratio) * 100)
+  if (ratio >= 1.05)
+    return `지금 다음 입찰가는 AI 시세(${formatPrice(estimate)})의 ${formatRatio(ratio)}배예요`
+  if (cheaper >= 1) return `지금 다음 입찰가는 AI 시세보다 ${cheaper}% 저렴해요`
+  return `지금 다음 입찰가는 AI 시세(${formatPrice(estimate)})와 비슷해요`
+}
+
 /** 확인한 조건(등록 요청 · 목표). 사용자가 보낸 말풍선으로 남깁니다. */
 export function confirmedEntry(
   values: Pick<
@@ -144,6 +162,7 @@ export function foundEntry({
   startAt,
   startPrice,
   maxAmount,
+  priceCompare,
   now = new Date(),
 }: {
   auctionId: number
@@ -152,6 +171,8 @@ export function foundEntry({
   startPrice?: number
   /** 실제 자동입찰 상한(경매 상세 myState.autoBidCap), 없으면 목표 예산 상한 */
   maxAmount: number
+  /** 다음 입찰가 vs AI 시세. 진행 전 · 진행 중 참여만, 시세를 모르면 생략 */
+  priceCompare?: { nextBid: number; estimate: number }
   now?: Date
 }): AgentEntry {
   const what = productName ? `“${productName}” 경매를` : '경매를'
@@ -170,6 +191,9 @@ export function foundEntry({
     { text: 'AI가 조건에 맞는 상품을 찾았어요' },
     { text: `조건에 맞는 ${what} 찾았어요!` },
     ...when.map((text) => ({ text })),
+    ...(priceCompare
+      ? [{ text: priceCompareText(priceCompare.nextBid, priceCompare.estimate) }]
+      : []),
     { text: `설정하신 최대 예산 ${formatPrice(maxAmount)}에 맞게 자동 입찰을 시도할게요` },
     { text: '상품 상세 화면 바로 보러가기', href: `/products/${auctionId}` },
   ])

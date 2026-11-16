@@ -45,7 +45,7 @@ export function withTime(iso: string, timeValue: string) {
   return toOffsetIso(date)
 }
 
-/** 처음 들어왔을 때의 일정: 30분 이상 남은 가장 가까운 정각에 시작, 최소 시간(1시간) 뒤 종료 */
+/** 처음 들어왔을 때의 일정: 30분 이상 남은 가장 가까운 정각에 시작, 1시간 뒤 종료(최소 진행 시간은 2분이라 사용자가 더 짧게 줄일 수 있음) */
 export function defaultSchedule(now = new Date()) {
   const start = new Date(now.getTime() + 30 * 60 * 1000)
   start.setMinutes(0, 0, 0)

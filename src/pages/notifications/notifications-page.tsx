@@ -10,6 +10,7 @@ import { useInfiniteScroll } from '@/hooks/use-infinite-scroll'
 import { usePressed } from '@/hooks/use-pressed'
 import { Screen } from '@/layouts/screen'
 import { formatDateTime } from '@/lib/format'
+import { cn } from '@/lib/utils'
 
 /** 알림을 누르면 갈 화면. 명세: resourceId 뜻이 타입마다 달라 type을 먼저 봅니다. */
 const TARGET: Record<NotificationType, (n: Notification) => string> = {
@@ -58,7 +59,8 @@ export function NotificationsPage() {
     content = (
       <EmptyState
         title="아직 알림이 없어요"
-        description="낙찰 · 결제 소식이 생기면 여기에서 알려드릴게요"
+        description="낙찰 · 결제 소식이 생기면 알려드릴게요"
+        className="flex-1 justify-center"
       />
     )
   } else {
@@ -168,7 +170,15 @@ function NotificationItem({
           {formatDateTime(new Date(notification.createdAt))}
         </span>
       </span>
-      <span className="text-body05 text-gray6 line-clamp-2">{notification.body}</span>
+      {/* 에이전트 참여 알림은 시세 비교 · 최대 상한이 뒤에 붙어 잘리지 않게 전부 보여줍니다. */}
+      <span
+        className={cn(
+          'text-body05 text-gray6',
+          notification.type !== 'PURCHASE_AGENT_ENGAGED' && 'line-clamp-2',
+        )}
+      >
+        {notification.body}
+      </span>
     </button>
   )
 }

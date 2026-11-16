@@ -29,11 +29,13 @@ async function enableMocking() {
 }
 
 /**
- * VITE_DEV_REFRESH_TOKEN이 있으면 개발용 토큰으로 로그인 상태를 채웁니다(개발: .env.local, 배포: Vercel 환경 변수).
- * 값이 없는 빌드에서는 이 import가 통째로 빠집니다.
+ * 개발 모드에서 주소에 ?dev-login 을 붙였을 때만 .env.local 의 개발용 토큰으로 로그인합니다(src/app/dev-auth.ts).
+ * 처음 들어온 사람이 자동으로 로그인돼 있지 않게, 저절로 채우지 않습니다.
+ * 빌드에서는 import.meta.env.DEV가 false라 이 import와 토큰이 번들에서 통째로 빠집니다.
  */
 async function seedDevAuth() {
-  if (!import.meta.env.VITE_DEV_REFRESH_TOKEN) return
+  if (!import.meta.env.DEV || !import.meta.env.VITE_DEV_REFRESH_TOKEN) return
+  if (!new URLSearchParams(window.location.search).has('dev-login')) return
   const { seedDevTokens } = await import('@/app/dev-auth')
   seedDevTokens()
 }

@@ -42,7 +42,7 @@ function LiveAuction({ auctionId, valid }: { auctionId: number; valid: boolean }
     />
   )
 
-  /* 서버가 종료를 확인하면 결과 화면으로(뒤로 가기로 다시 오지 않게 replace) */
+  /* 서버가 종료를 확정하면(ENDED) 결과 화면으로(뒤로 가기로 다시 오지 않게 replace). 그 전까지는 '결과 집계 중' */
   const status = live.data?.status
   useEffect(() => {
     if (status === 'ENDED') navigate(`/auctions/${auctionId}/result`, { replace: true })
@@ -115,6 +115,9 @@ function LiveAuction({ auctionId, valid }: { auctionId: number; valid: boolean }
   )
 }
 
+/** 카운트다운이 0이 된 뒤 서버가 종료를 확정하기 전 */
+const RESULT_PENDING_LABEL = '결과 집계 중'
+
 /** 참여 전 / 내가 최고가 / 내가 밀림 */
 type LiveView = 'watching' | 'leading' | 'exceeded'
 
@@ -154,7 +157,8 @@ function LiveContent({
   const capReached = myAutoBid?.status === 'CAP_REACHED'
   const isSeller = live.cannotBidReason === 'SELLER_CANNOT_BID'
 
-  const remaining = formatRemaining(remainingMs, 'clock')
+  /* 0초 뒤 서버가 종료를 확정하기 전까지는 남은 시간 자리에 '결과 집계 중'(서버 안내 2026-11-16) */
+  const remaining = timeUp ? RESULT_PENDING_LABEL : formatRemaining(remainingMs, 'clock')
 
   return (
     <Screen
@@ -175,14 +179,15 @@ function LiveContent({
         />
       }
     >
-      <div className="gap-layout-section flex flex-col">
+      {/* 입찰 내역이 비었을 때 안내를 남은 높이 가운데에 두도록 본문을 아래까지 늘립니다. */}
+      <div className="gap-layout-section flex flex-1 flex-col">
         <AuctionStatusCard
           /* 상태가 바뀌어도 카드는 그대로 두고 색만 부드럽게 바꿉니다. */
           className="transition-colors duration-300"
           {...statusCardProps({ view, live, myAutoBid, remaining })}
         />
 
-        <section className="gap-space-8 flex flex-col">
+        <section className="gap-space-8 flex flex-1 flex-col">
           <h2 className="text-body04 text-gray7">입찰 내역</h2>
           {bidsState === 'loading' && <BidRowsSkeleton />}
           {bidsState === 'error' && (
@@ -198,7 +203,7 @@ function LiveContent({
             <EmptyState
               title="아직 입찰이 없어요"
               description="첫 입찰자가 되어 보세요"
-              className="py-space-24"
+              className="py-space-24 flex-1 justify-center"
             />
           )}
           {bidsState === 'ready' && bids && bids.length > 0 && (
@@ -347,7 +352,7 @@ function LiveBanner({
  * 하단 버튼.
  * - 참여 전 · 직접 입찰만 한 경우: '자동 입찰하기' / '직접 입찰하기'
  * - 자동 입찰 중(참여 후): triple '자동 입찰 상한가 수정' / '직접 입찰하기' · '입찰 중단하기'
- * - 카운트다운이 0이면 서버 종료 확인 전까지 비활성, 판매자 본인은 비활성
+ * - 카운트다운이 0이면 서버가 종료를 확정할 때까지 '결과 집계 중이에요'(비활성), 판매자 본인은 비활성
  * - 구매 에이전트가 관리 중이면 비활성(명세 40917)
  */
 function LiveBottom({
@@ -370,7 +375,7 @@ function LiveBottom({
   onCancel: () => void
 }) {
   if (timeUp) {
-    return <BottomButtonBar layout="single" primaryLabel="경매가 종료됐어요" primaryDisabled />
+    return <BottomButtonBar layout="single" primaryLabel="결과 집계 중이에요" primaryDisabled />
   }
   if (isSeller) {
     return <BottomButtonBar layout="single" primaryLabel="내가 등록한 경매예요" primaryDisabled />

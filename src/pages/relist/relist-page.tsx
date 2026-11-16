@@ -80,7 +80,7 @@ export function RelistPage() {
 
 /**
  * 재경매 폼. 필드는 명세 요청(relistAuctionRequestSchema)과 같고, 메시지는 화면용 해요체입니다.
- * 등록 5/6과 같은 규칙: 시작은 지금 이후(프론트 규칙) · 진행 1시간 이상(명세 40006)
+ * 등록 5/6과 같은 규칙: 시작은 지금 이후(프론트 규칙) · 진행 2분 이상(명세 40006)
  */
 const relistFormSchema = z
   .object({
@@ -94,7 +94,7 @@ const relistFormSchema = z
   })
   .refine((v) => isAuctionLongEnough(v.startAt, v.endAt), {
     path: ['endAt'],
-    message: '경매 시간은 1시간부터 설정할 수 있어요.',
+    message: '경매 시간은 2분부터 설정할 수 있어요.',
   })
 type RelistForm = z.input<typeof relistFormSchema>
 
@@ -136,7 +136,7 @@ function RelistForm({ detail }: { detail: AuctionDetail }) {
     } catch (e) {
       if (hasErrorCode(e, 'AUCTION_TIME_INVALID')) {
         setFieldError('endAt', {
-          message: '경매 시간은 1시간 이상이어야 하고, 시작 시간은 지금 이후여야 해요.',
+          message: '경매 시간은 2분 이상이어야 하고, 시작 시간은 지금 이후여야 해요.',
         })
         return
       }
