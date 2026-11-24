@@ -285,8 +285,15 @@ export async function request<E extends EndpointDef>(
 
   const first = await send(input)
   /* 토큰이 만료됐거나 refresh 토큰만 있는 경우(개발용 토큰 등) 한 번 재발급하고 다시 보냅니다. */
-  if (first.response.status === 401 && def.auth !== 'none' && (await refreshAccessToken())) {
-    return unwrap(def, label, (await send(input)).response)
+  if (first.response.status === 401 && def.auth !== 'none') {
+    if (await refreshAccessToken()) return unwrap(def, label, (await send(input)).response)
+    /*
+     * 로그인 선택 API는 잘못된 토큰(만료 · 다른 서버에서 받은 토큰)을 보내면 서버가 비로그인으로 보지 않고 401을 줍니다
+     * (2026-11-24 확인). 재발급이 실패해 토큰을 지웠으면 토큰 없이 한 번 더 보내 비로그인 응답을 받습니다.
+     */
+    if (def.auth === 'optional' && !useAuthStore.getState().accessToken) {
+      return unwrap(def, label, (await send(input)).response)
+    }
   }
   return unwrap(def, label, first.response)
 }
