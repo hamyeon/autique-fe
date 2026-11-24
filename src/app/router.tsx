@@ -74,6 +74,8 @@ export const router = createBrowserRouter([
           { path: '/my/participating', element: <MyParticipatingAuctionsPage /> },
           { path: '/my/likes', element: <LikedAuctionsPage /> },
           // 낙찰 이후: 본인 결과 · 주문 · 차순위 제안이라 모두 로그인이 필요합니다.
+          // 실시간 경매: 명세상 GET /live가 로그인 필수(토큰 없이 401 확인, 2026-11-24)
+          { path: '/auctions/:id/live', element: <LiveAuctionPage /> },
           { path: '/auctions/:id/result', element: <AuctionResultPage /> },
           { path: '/orders/:id', element: <OrderPage /> },
           { path: '/orders/:id/complete', element: <OrderCompletePage /> },
@@ -104,8 +106,8 @@ export const router = createBrowserRouter([
       { path: '/login', element: <LoginPage /> },
       // 카카오 로그인 후 돌아오는 주소(src/lib/kakao.ts KAKAO_REDIRECT_PATH). 카카오 콘솔 Redirect URI와 같아야 합니다.
       { path: '/login/kakao', element: <KakaoCallbackPage /> },
+      // 상품 상세는 둘러보기용으로 열어 둡니다(토큰 없이 200 확인, 2026-11-24). 찜 · 자동 입찰은 useRequireLogin으로 막습니다.
       { path: '/products/:id', element: <ProductDetailPage /> },
-      { path: '/auctions/:id/live', element: <LiveAuctionPage /> },
       ...devRoutes,
       { path: '*', element: <NotFoundPage /> },
     ],
