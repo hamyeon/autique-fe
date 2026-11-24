@@ -37,6 +37,7 @@ import { formatDateTime, formatGrade, formatPrice } from '@/lib/format'
 import { formatRemaining } from '@/lib/remaining-time'
 import { DetailBodySkeleton, DetailTopSkeleton } from '@/pages/product-detail/detail-skeleton'
 import { ImageCarousel } from '@/components/image-carousel'
+import { useRequireLogin } from '@/hooks/use-require-login'
 
 const STATUS_CHIP: Record<AuctionStatus, { kind: ChipKind; label: string }> = {
   SCHEDULED: { kind: 'plan', label: '경매 예정' },
@@ -65,6 +66,7 @@ function ProductDetail({ auctionId, valid }: { auctionId: number; valid: boolean
   const navigate = useNavigate()
   const detail = useAuctionDetailQuery(auctionId, { enabled: valid })
   const toggleLike = useToggleAuctionLikeMutation()
+  const requireLogin = useRequireLogin()
 
   const loggedIn = useAuthStore((s) => s.accessToken !== null || s.refreshToken !== null)
   const notFound =
@@ -77,7 +79,11 @@ function ProductDetail({ auctionId, valid }: { auctionId: number; valid: boolean
       title="경매 상품"
       trailing={data ? 'favorite' : undefined}
       favorited={data?.isLiked}
-      onFavorite={data ? () => toggleLike.mutate({ auctionId, liked: !data.isLiked }) : undefined}
+      onFavorite={
+        data
+          ? requireLogin(() => toggleLike.mutate({ auctionId, liked: !data.isLiked }))
+          : undefined
+      }
     />
   )
 
@@ -382,8 +388,10 @@ function DetailSection({
 function SimilarSection({ auctionId }: { auctionId: number }) {
   const similar = useSimilarAuctionsQuery(auctionId)
   const toggleLike = useToggleAuctionLikeMutation()
-  const onToggleLike = (item: AuctionCard) =>
-    toggleLike.mutate({ auctionId: item.auctionId, liked: !item.isLiked })
+  const requireLogin = useRequireLogin()
+  const onToggleLike = requireLogin((item: AuctionCard) =>
+    toggleLike.mutate({ auctionId: item.auctionId, liked: !item.isLiked }),
+  )
 
   let content: ReactNode
   if (similar.isPending) content = <ProductGridSkeleton />
@@ -452,6 +460,8 @@ function ResultBottom({ auctionId }: { auctionId: number }) {
 
 function AutoBidBottom({ detail }: { detail: AuctionDetail }) {
   const myAutoBid = myAutoBidOf(detail)
+  /* 로그아웃 상태에서도 버튼은 보여 주고, 누르면 로그인으로 보냅니다(시트의 추천 · 등록 API는 로그인 필수). */
+  const requireLogin = useRequireLogin()
 
   const [sheetOpen, setSheetOpen] = useState(false)
   /* 취소에 성공하면 myAutoBid가 먼저 사라지므로, 닫히는 동안 연 시점의 설정으로 문구를 유지합니다. */
@@ -477,7 +487,7 @@ function AutoBidBottom({ detail }: { detail: AuctionDetail }) {
         <BottomButtonBar
           layout="single"
           primaryLabel="자동 입찰 예약"
-          onPrimary={() => setSheetOpen(true)}
+          onPrimary={requireLogin(() => setSheetOpen(true))}
         />
       )}
 

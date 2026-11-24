@@ -20,6 +20,7 @@ import { AuctionGrid } from '@/components/auction-grid'
 import { ImageCarousel } from '@/components/image-carousel'
 import promotionImage01 from '@/assets/illustrations/img_promotion_01.png'
 import promotionImage02 from '@/assets/illustrations/img_promotion_02.png'
+import { useRequireLogin } from '@/hooks/use-require-login'
 
 /** 홈 섹션마다 보여줄 카드 수(2열 × 2줄). 명세: 홈은 limit=4 */
 const HOME_CARD_LIMIT = 4
@@ -36,8 +37,10 @@ export function HomePage() {
   const toggleLike = useToggleAuctionLikeMutation()
   const hasUnread = useHasUnreadNotifications()
 
-  const onToggleLike = (item: AuctionCard) =>
-    toggleLike.mutate({ auctionId: item.auctionId, liked: !item.isLiked })
+  const requireLogin = useRequireLogin()
+  const onToggleLike = requireLogin((item: AuctionCard) =>
+    toggleLike.mutate({ auctionId: item.auctionId, liked: !item.isLiked }),
+  )
 
   const recommendedItems = recommended.data?.items ?? []
   const popularItems = popular.data?.items ?? []

@@ -11,6 +11,7 @@ import {
 } from '@/components/feedback'
 import { useInfiniteScroll } from '@/hooks/use-infinite-scroll'
 import { Screen } from '@/layouts/screen'
+import { useRequireLogin } from '@/hooks/use-require-login'
 
 export interface AuctionListScreenProps {
   /** 화면마다 다른 부분. 경매 리스트는 정렬 탭 헤더, 마이페이지 하위 목록은 제목 헤더 */
@@ -38,8 +39,10 @@ export function AuctionListScreen({
   errorTitle,
 }: AuctionListScreenProps) {
   const toggleLike = useToggleAuctionLikeMutation()
-  const onToggleLike = (item: AuctionCard) =>
-    toggleLike.mutate({ auctionId: item.auctionId, liked: !item.isLiked })
+  const requireLogin = useRequireLogin()
+  const onToggleLike = requireLogin((item: AuctionCard) =>
+    toggleLike.mutate({ auctionId: item.auctionId, liked: !item.isLiked }),
+  )
 
   const loadMoreRef = useInfiniteScroll<HTMLDivElement>({
     enabled: query.hasNextPage && !query.isFetchingNextPage && !query.isFetchNextPageError,

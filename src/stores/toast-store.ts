@@ -27,3 +27,6 @@ export const PREPARING_MESSAGE = '아직 준비 중인 기능이에요'
 export function showPreparingToast() {
   showToast(PREPARING_MESSAGE)
 }
+
+/** 로그아웃 상태에서 로그인이 필요한 행동(찜 · 자동 입찰)을 눌렀을 때 안내(DESIGN-CHANGES 기록 문구) */
+export const LOGIN_REQUIRED_MESSAGE = '로그인이 필요한 기능이에요'
